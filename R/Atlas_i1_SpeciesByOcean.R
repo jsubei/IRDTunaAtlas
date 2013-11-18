@@ -2,16 +2,10 @@
 #yearAttributeName="year"
 #oceanAttributeName="ocean"
 #speciesAttributeName="species"
-#gearTypeAttributeName="gear_type"
 #valueAttributeName="value"
 
-# Atlas_i1_SpeciesByOcean(inputFilePath="/home/norbert/Boulot/iMarine/WPS/Atlas/CSV/i1i2.csv", 
-#                         yearAttributeName="year", 
-#                         oceanAttributeName="ocean", 
-#                         speciesAttributeName="species", 
-#                         valueAttributeName="value")
 
-Atlas_i1_SpeciesByOcean <- function(inputFilePath, 
+Atlas_i1_SpeciesByOcean <- function(df, 
                                     yearAttributeName="ns0:year", 
                                     oceanAttributeName="ns0:ocean", 
                                     speciesAttributeName="ns0:species",
@@ -21,41 +15,36 @@ Atlas_i1_SpeciesByOcean <- function(inputFilePath,
     stop("Missing library")
   }
   
-  if (missing(inputFilePath)) {
-    stop("Input file not specified")
+  if (missing(df)) {
+    stop("Input data frame not specified")
   }
   
-  checkInputFile(inputFilePath)
-  
-  #for gml input file
-  if (tolower(substring(inputFilePath, nchar(inputFilePath)-3)) == ".gml") {
-    #read the input file
-    my.XML <- xmlInternalTreeParse(inputFilePath)
-    
-    df <- data.frame(year=as.numeric(xpathSApply(my.XML, paste("//", yearAttributeName, sep=""), xmlValue)), 
-                     ocean=as.factor(xpathSApply(my.XML, paste("//", oceanAttributeName, sep=""), xmlValue)), 
-                     species=as.factor(xpathSApply(my.XML, paste("//", speciesAttributeName, sep=""), xmlValue)), 
-                     value=as.numeric(xpathSApply(my.XML, paste("//", valueAttributeName, sep=""), xmlValue)))
-    rm(my.XML)
+  #check for input attributes
+  if(sum(names(df) == yearAttributeName) == 0) {
+    stop("Cannot found year attribute")
+  } else {
+    df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  }
+
+  if(sum(names(df) == oceanAttributeName) == 0) {
+    stop("Cannot found ocean attribute")
+  } else {
+    df[, oceanAttributeName] <- as.factor(df[, oceanAttributeName])
+  }
+
+  if(sum(names(df) == speciesAttributeName) == 0) {
+    stop("Cannot found species attribute")
+  } else {
+    df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  }
+
+  if(sum(names(df) == valueAttributeName) == 0) {
+    stop("Cannot found value attribute")
+  } else {
+    df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])
   }
   
-  #for csv input file
-  if (tolower(substring(inputFilePath, nchar(inputFilePath)-3)) == ".csv") {
-    #read the input file
-    csv_df <- read.csv(inputFilePath, stringsAsFactors=FALSE)
-    
-    df <- data.frame(year=as.numeric(csv_df[,yearAttributeName]),
-                     ocean=as.factor(csv_df[,oceanAttributeName]),
-                     species=as.factor(csv_df[,speciesAttributeName]),
-                     value=as.numeric(csv_df[,valueAttributeName]))
-    rm(csv_df)
-  }
-  
-  if (! exists("df")) {
-    stop("Error with input file")
-  }
-  
-  #define the resulr df  
+  #define the result df  
   result.df <- c()
   
   #test if IRD usual ocean names are used
@@ -74,7 +63,7 @@ Atlas_i1_SpeciesByOcean <- function(inputFilePath,
     #aggregate values by years and ocean
     aggData <- aggregate(value ~ ocean + year, data=current.df, sum)
     
-    #keep only common time line
+    #keep only common time extent
     max_year <- min(unlist(lapply(levels(aggData$ocean), function(o) {return(if(length(subset(aggData, ocean==o)$year) > 0) max(subset(aggData, ocean==o)$year) else NA)})), na.rm=TRUE)
     min_year <- max(unlist(lapply(levels(aggData$ocean), function(o) {return(if(length(subset(aggData, ocean==o)$year) > 0) min(subset(aggData, ocean==o)$year) else NA)})), na.rm=TRUE)
     aggData <- subset(aggData, year >= min_year & year <= max_year)

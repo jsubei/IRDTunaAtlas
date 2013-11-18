@@ -1,9 +1,23 @@
-#inputFilePath <- "/home/norbert/Boulot/iMarine/WPS/Atlas/CSV/i1i2.csv"
-#yearAttributeName="year"
-#oceanAttributeName="ocean"
-#speciesAttributeName="species"
-#valueAttributeName="value"
-
+#Atlas_i1_SpeciesByOcean.R
+#Tuna Atlas - IRD / MR EME
+#
+#This indicator produce a graph of annual catches by ocean for each species present in the input data. An associated RDF file is also produced.
+##################################################################
+#Norbert Billet - IRD
+#2013/11/04: V2 version: add RDF export and allow production of multiple graph (i.e. species)
+#2013/09/03: Norbert - Add attributes names as parameters
+#2013/08/30: Norbert - Modifications to use with IRDTunaAtlas package
+#2013/03/15: Norbert - Initial version
+##################################################################
+#Use example:
+# library(IRDTunaAtlas)
+# csv.df <- read.csv("/home/norbert/Boulot/iMarine/WPS/Atlas/CSV/i1i2.csv", stringsAsFactors=FALSE)
+# Atlas_i1_SpeciesByOcean(csv.df, 
+#                         yearAttributeName="year", 
+#                         oceanAttributeName="ocean", 
+#                         speciesAttributeName="species", 
+#                         valueAttributeName="value")
+##################################################################
 
 Atlas_i1_SpeciesByOcean <- function(df, 
                                     yearAttributeName="ns0:year", 
@@ -47,7 +61,7 @@ Atlas_i1_SpeciesByOcean <- function(df,
   #define the result df  
   result.df <- c()
   
-  #test if IRD usual ocean names are used
+  #test if FAO usual ocean codes are used
   if (length(intersect(levels(df$ocean), c("ATL", "IND", "PAC_E", "PAC_W"))) == length(levels(df$ocean))) {
     df$ocean <- factor(df$ocean, levels=c("ATL", "IND", "PAC_E", "PAC_W"), labels=c("Atlantic O.", "Indian O.", "East Pacific O.", "West Pacific O."))
   }

@@ -105,13 +105,13 @@ Atlas_i1_SpeciesByOcean <- function(df,
       theme(legend.position="bottom")
     
     #draw the plot
-    base_temp_file <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.current), "_", sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
-    ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
+    tempfile.base <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.current), "_", sep=""))
+    plot.filepath <- paste(tempfile.base, ".png", sep="")
+    ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
     #create the RDF metadata
-    rdf_file_path <- paste(base_temp_file, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(base_temp_file, ".rdf", sep=""),
+    rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
+    buildRdf(rdf.filepath=paste(tempfile.base, ".rdf", sep=""),
               rdf_subject="http://ecoscope.org/indicatorI1", 
               titles=c("IRD Tuna Atlas: indicator #1 - catches by species and by ocean", 
                        "IRD Atlas thonier : indicateur #1 - captures par espèces et par océan"),
@@ -123,7 +123,7 @@ Atlas_i1_SpeciesByOcean <- function(df,
               end=as.character(max(aggData$year)),
               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
         
-    result.df <- rbind(result.df, c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
+    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
   }
   return(result.df)
 }

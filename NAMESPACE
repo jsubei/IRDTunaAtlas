@@ -1,0 +1,10 @@
+import(XML)
+import(ggplot2)
+import(rgdal)
+import(RCurl)
+import(rrdf)
+import(RColorBrewer)
+
+export(
+        Atlas_i1_SpeciesByOcean
+)

@@ -1,0 +1,12 @@
+Package: IRDTunaAtlas
+Type: Package
+Title: IRD (www.ird.fr) - UMR EME - Tuna atlas
+Version: 0.2
+Date: 2013-10-14
+Author: Norbert Billet <norbert.billet@ird.fr>
+Maintainer: Norbert Billet <norbert.billet@ird.fr>
+Description: IRD Tuna Atlas - iMarine project.
+License: GPL (version 2 or later)
+Depends: R (>= 2.15)
+Imports: methods, XML, ggplot2, rgdal, RCurl, rrdf, RColorBrewer
+URL: https://github.com/jsubei/IRDTunaAtlas

@@ -7,5 +7,6 @@ import(RColorBrewer)
 
 export(
   Atlas_i1_SpeciesByOcean,
-  Atlas_i2_SpeciesByGear
+  Atlas_i2_SpeciesByGear,
+  Atlas_i3_SpeciesYearByGearMonth
 )

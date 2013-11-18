@@ -111,7 +111,7 @@ Atlas_i1_SpeciesByOcean <- function(df,
     
     #create the RDF metadata
     rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
-    buildRdf(rdf.filepath=paste(tempfile.base, ".rdf", sep=""),
+    buildRdf(rdf_file_path=rdf.filepath,
               rdf_subject="http://ecoscope.org/indicatorI1", 
               titles=c("IRD Tuna Atlas: indicator #1 - catches by species and by ocean", 
                        "IRD Atlas thonier : indicateur #1 - captures par espèces et par océan"),

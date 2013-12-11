@@ -1,4 +1,7 @@
-
+#"enRichment
+# Append environmental data from netcdf/OPeNDAP dataset to observation data.
+# UMR EME / IRD - N. Billet
+#
 enRichment <- function(data, opendapUrl, varName, 
                        geomMethod="closest", geomDistMethod="dirty", 
                        timeMethod="closest", 
@@ -126,8 +129,7 @@ enRichment <- function(data, opendapUrl, varName,
       if (att.get.ncdf(nc, netcdf.var$dim[[current.dim.index]]$name, "climatology")$hasatt) {
         #yes, this is a climatology. Read the climatology var
         time.climatology.var.name <- att.get.ncdf(nc, netcdf.var$dim[[current.dim.index]]$name, "climatology")$value
-        time.climatology.bounds <- get.var.ncdf(nc=nc, varid=time.climatology.var.name)
-        
+        time.climatology.bounds <- get.var.ncdf(nc=nc, varid=time.climatology.var.name)        
       }
       
       time.dim.index <- current.dim.index

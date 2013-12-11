@@ -32,32 +32,37 @@ Atlas_i1_SpeciesByOcean <- function(df,
   if (missing(df)) {
     stop("Input data frame not specified")
   }
-  
+
   #check for input attributes
   if(sum(names(df) == yearAttributeName) == 0) {
     stop("Cannot found year attribute")
-  } else {
-    df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
-  }
-
-  if(sum(names(df) == oceanAttributeName) == 0) {
-    stop("Cannot found ocean attribute")
-  } else {
-    df[, oceanAttributeName] <- as.factor(df[, oceanAttributeName])
-  }
-
-  if(sum(names(df) == speciesAttributeName) == 0) {
-    stop("Cannot found species attribute")
-  } else {
-    df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
-  }
-
-  if(sum(names(df) == valueAttributeName) == 0) {
-    stop("Cannot found value attribute")
-  } else {
-    df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])
   }
   
+  if(sum(names(df) == oceanAttributeName) == 0) {
+    stop("Cannot found ocean attribute")
+  }
+  
+  if(sum(names(df) == speciesAttributeName) == 0) {
+    stop("Cannot found species attribute")
+  }
+  
+  if(sum(names(df) == valueAttributeName) == 0) {
+    stop("Cannot found value attribute")
+  }  
+  
+  #format columns  
+  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  df[, oceanAttributeName] <- as.factor(df[, oceanAttributeName])
+  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])    
+  
+  #aggregate to cut other columns
+  df <- aggregate(x=df[, valueAttributeName], 
+                  by=list(df[, yearAttributeName], df[, oceanAttributeName], df[, speciesAttributeName]), 
+                  FUN=sum)
+  #rename columns
+  names(df) <- c("year", "ocean", "species", "value")
+    
   #define the result df  
   result.df <- c()
   
@@ -105,7 +110,7 @@ Atlas_i1_SpeciesByOcean <- function(df,
       theme(legend.position="bottom")
     
     #draw the plot
-    tempfile.base <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.current), "_", sep=""))
+    tempfile.base <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""))
     plot.filepath <- paste(tempfile.base, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     

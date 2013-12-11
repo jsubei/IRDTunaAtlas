@@ -36,28 +36,33 @@ Atlas_i2_SpeciesByGear <- function(df,
   #check for input attributes
   if(sum(names(df) == yearAttributeName) == 0) {
     stop("Cannot found year attribute")
-  } else {
-    df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
-  }
-  
-  if(sum(names(df) == gearTypeAttributeName) == 0) {
-    stop("Cannot found gear attribute")
-  } else {
-    df[, gearTypeAttributeName] <- as.factor(df[, gearTypeAttributeName])
   }
   
   if(sum(names(df) == speciesAttributeName) == 0) {
     stop("Cannot found species attribute")
-  } else {
-    df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  }
+  
+  if(sum(names(df) == gearTypeAttributeName) == 0) {
+    stop("Cannot found gear attribute")
   }
   
   if(sum(names(df) == valueAttributeName) == 0) {
     stop("Cannot found value attribute")
-  } else {
-    df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])
-  }
+  }  
   
+  #format columns  
+  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  df[, gearTypeAttributeName] <- as.factor(df[, gearTypeAttributeName])
+  df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])    
+  
+  #aggregate to cut other columns
+  df <- aggregate(x=df[, valueAttributeName], 
+                  by=list(df[, yearAttributeName], df[, speciesAttributeName], df[, gearTypeAttributeName], ), 
+                  FUN=sum)
+  #rename columns
+  names(df) <- c("year", "species", "gear_type", "value")
+    
   #test if FAO usual gear codes are used
   if (length(intersect(levels(df$gear_type), c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"))) == length(levels(df$gear_type))) {
     df$gear_type <- factor(df$gear_type, levels=c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"), labels=c("Baitboat", "Gillnet", "Longline", "Purse seine", "Unclass. art. Indian O.", "Unclass. art. Atl. O.", "Trol.", "Trap"))
@@ -103,7 +108,7 @@ Atlas_i2_SpeciesByGear <- function(df,
       theme(legend.position="bottom")
 
     #draw the plot
-    tempfile.base <- tempfile(pattern=paste("I2_", gsub(" ", "_", species.current), "_", sep=""))
+    tempfile.base <- tempfile(pattern=paste("I2_", gsub(" ", "_", species.label), "_", sep=""))
     plot.filepath <- paste(tempfile.base, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     

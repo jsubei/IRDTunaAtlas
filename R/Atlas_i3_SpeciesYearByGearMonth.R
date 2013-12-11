@@ -1,7 +1,7 @@
 #Atlas_i3_SpeciesYearByGearMonth.R
 #Tuna Atlas - IRD / MR EME
 #
-#Build a graph of catches of a given species for a given year by gear type and by month. Provide comparaison with monthly mean of the 5 previous years
+#This indicator build a graph of catches of a given species for a given year by gear type and by month. Provide comparaison with monthly mean of the 5 previous years. An associated RDF file is also produced.
 ##################################################################
 #Norbert Billet - IRD
 #2013/11/04: V2 version: add RDF export and allow production of multiple graph (i.e. species)
@@ -12,6 +12,7 @@
 #Use example:
 # library(IRDTunaAtlas)
 # csv.df <- read.csv("/home/norbert/Boulot/iMarine/WPS/Atlas/CSV/i3.csv", stringsAsFactors=FALSE)
+# csv.df <- csv.df[csv.df$species == "MLS",]
 # Atlas_i3_SpeciesYearByGearMonth(csv.df, 
 #                                    yearAttributeName="year",
 #                                    monthAttributeName="month",
@@ -42,45 +43,49 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
   #check for input attributes
   if(sum(names(df) == yearAttributeName) == 0) {
     stop("Cannot found year attribute")
-  } else {
-    df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
   }
   
   if(sum(names(df) == monthAttributeName) == 0) {
     stop("Cannot found month attribute")
-  } else {
-    df[, monthAttributeName] <- as.numeric(df[, monthAttributeName])
-  }
-  
-  if(sum(names(df) == gearTypeAttributeName) == 0) {
-    stop("Cannot found gear attribute")
-  } else {
-    df[, gearTypeAttributeName] <- as.factor(df[, gearTypeAttributeName])
   }
   
   if(sum(names(df) == speciesAttributeName) == 0) {
     stop("Cannot found species attribute")
-  } else {
-    df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  }
+  
+  if(sum(names(df) == gearTypeAttributeName) == 0) {
+    stop("Cannot found gear attribute")
   }
   
   if(sum(names(df) == valueAttributeName) == 0) {
     stop("Cannot found value attribute")
-  } else {
-    df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])
-  }
+  }  
   
   if(sum(names(df) == meanPrev5YearsAttributeName) == 0) {
     stop("Cannot found mean for previous years attribute")
-  } else {
-    df[, meanPrev5YearsAttributeName] <- as.numeric(df[, meanPrev5YearsAttributeName])
   }
   
   if(sum(names(df) == stddevPrev5YearsAttributeName) == 0) {
     stop("Cannot found std_dev for previous years attribute")
-  } else {
-    df[, stddevPrev5YearsAttributeName] <- as.numeric(df[, stddevPrev5YearsAttributeName])
   }
+  
+  #format columns  
+  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  df[, monthAttributeName] <- as.numeric(df[, monthAttributeName])
+  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  df[, gearTypeAttributeName] <- as.factor(df[, gearTypeAttributeName])
+  df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])
+  df[, meanPrev5YearsAttributeName] <- as.numeric(df[, meanPrev5YearsAttributeName])
+  df[, stddevPrev5YearsAttributeName] <- as.numeric(df[, stddevPrev5YearsAttributeName])
+  
+  #rename columns
+  names(df)[which(names(df) == yearAttributeName)] <- "year"
+  names(df)[which(names(df) == monthAttributeName)] <- "month"  
+  names(df)[which(names(df) == speciesAttributeName)] <- "species"
+  names(df)[which(names(df) == gearTypeAttributeName)] <- "gear_type"
+  names(df)[which(names(df) == valueAttributeName)] <- "value"
+  names(df)[which(names(df) == meanPrev5YearsAttributeName)] <- "mean_prev_5_years"
+  names(df)[which(names(df) == stddevPrev5YearsAttributeName)] <- "stddev_prev_5_years"
   
   #from std deviation to variance, and root square the sum of variances
   fct <- function(vec)
@@ -163,7 +168,7 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
         ggtitle(paste(species.label, "monthly catches by gear type on", year.current))
         
       #draw the plot
-      tempfile.base <- tempfile(pattern=paste("I3_", gsub(" ", "_", species.current), "_", as.character(year.current), "_", sep=""))
+      tempfile.base <- tempfile(pattern=paste("I3_", gsub(" ", "_", species.label), "_", as.character(year.current), "_", sep=""))
       plot.filepath <- paste(tempfile.base, ".png", sep="")
       ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
       

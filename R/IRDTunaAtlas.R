@@ -65,7 +65,7 @@ WFS2GMLFile <- function(URL, layerName, filter)
     stop("Missing XML library")
   }
   
-  message(desc)
+#  message(desc)
   res <- getURLContent(desc)
   
   con <- xmlTreeParse(res, useInternalNodes = TRUE)

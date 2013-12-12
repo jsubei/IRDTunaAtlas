@@ -12,14 +12,14 @@
 ##################################################################
 # Use example:
 #  library(IRDTunaAtlas)
- csv.df <- read.csv("/home/norbert/Boulot/iMarine/WPS/Atlas/CSV/i9i10.csv", stringsAsFactors=FALSE)
- csv.df <- csv.df[csv.df$species == "ALB",]
- Atlas_i9_RelativeSizeFrequenciesBySchoolType(csv.df,                       
-                       yearAttributeName="year",
-                       speciesAttributeName="species",
-                       schoolAttributeName="school",
-                       sizeClassAttributeName="class",                                              
-                       fishCountAttributeName="fish_count")
+#  csv.df <- read.csv("/home/norbert/Boulot/iMarine/WPS/Atlas/CSV/i9i10.csv", stringsAsFactors=FALSE)
+#  csv.df <- csv.df[csv.df$species == "ALB",]
+#  Atlas_i9_RelativeSizeFrequenciesBySchoolType(csv.df,                       
+#                        yearAttributeName="year",
+#                        speciesAttributeName="species",
+#                        schoolAttributeName="school",
+#                        sizeClassAttributeName="class",                                              
+#                        fishCountAttributeName="fish_count")
 ##################################################################
 
 Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,

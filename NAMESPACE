@@ -18,5 +18,6 @@ export(
   Atlas_i6_SpeciesMap,
   Atlas_i7_SpeciesMapRelativeCatches,
   Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies,
-  Atlas_i9_RelativeSizeFrequenciesBySchoolType
+  Atlas_i9_RelativeSizeFrequenciesBySchoolType,
+  Atlas_i10_RelativeSizeFrequenciesByDecade
 )

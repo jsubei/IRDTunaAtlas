@@ -8,6 +8,7 @@ import(plyr)
 import(mapdata)
 import(rgeos)
 import(maps)
+import(mapplots)
 
 
 export(
@@ -19,5 +20,6 @@ export(
   Atlas_i7_SpeciesMapRelativeCatches,
   Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies,
   Atlas_i9_RelativeSizeFrequenciesBySchoolType,
-  Atlas_i10_RelativeSizeFrequenciesByDecade
+  Atlas_i10_RelativeSizeFrequenciesByDecade,
+  Atlas_i11_CatchesByCountry
 )

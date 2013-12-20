@@ -18,7 +18,8 @@
 #                        yearAttributeName="year",
 #                        speciesAttributeName="species",
 #                        schoolAttributeName="school",
-#                        sizeClassAttributeName="class",                                              
+#                        sizeClassLowerBoundAttributeName="class_low",
+#                        sizeClassUpperBoundAttributeName="class_up",
 #                        fishCountAttributeName="fish_count")
 ##################################################################
 
@@ -26,7 +27,8 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
                                                          yearAttributeName="ns0:year",
                                                          speciesAttributeName="ns0:species",
                                                          schoolAttributeName="ns0:school",
-                                                         sizeClassAttributeName="ns0:class",
+                                                         sizeClassLowerBoundAttributeName="ns0:class_low",
+                                                         sizeClassUpperBoundAttributeName="ns0:class_up",
                                                          fishCountAttributeName="ns0:fish_count")
 {
   if (! require(ggplot2) | ! require(RColorBrewer)) {
@@ -50,9 +52,13 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
     stop("Cannot found school type attribute")
   }  
   
-  if(sum(names(df) == sizeClassAttributeName) == 0) {
-    stop("Cannot found size class attribute")
+  if(sum(names(df) == sizeClassLowerBoundAttributeName) == 0) {
+    stop("Cannot found size class lower bound attribute")
   }  
+  
+  if(sum(names(df) == sizeClassUpperBoundAttributeName) == 0) {
+    stop("Cannot found size class upper bound attribute")
+  }
   
   if(sum(names(df) == fishCountAttributeName) == 0) {
     stop("Cannot found fish count attribute")
@@ -62,14 +68,16 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
   df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
   df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
   df[, schoolAttributeName] <- as.factor(df[, schoolAttributeName])
-  df[, sizeClassAttributeName] <- as.numeric(df[, sizeClassAttributeName])    
+  df[, sizeClassLowerBoundAttributeName] <- as.numeric(df[, sizeClassLowerBoundAttributeName])    
+  df[, sizeClassUpperBoundAttributeName] <- as.numeric(df[, sizeClassUpperBoundAttributeName])
   df[, fishCountAttributeName] <- as.numeric(df[, fishCountAttributeName])    
   
   #rename columns
   names(df)[which(names(df) == yearAttributeName)] <- "year"  
   names(df)[which(names(df) == speciesAttributeName)] <- "species"
   names(df)[which(names(df) == schoolAttributeName)] <- "school"
-  names(df)[which(names(df) == sizeClassAttributeName)] <- "sizeClass"
+  names(df)[which(names(df) == sizeClassLowerBoundAttributeName)] <- "sizeClassLowerBound"
+  names(df)[which(names(df) == sizeClassUpperBoundAttributeName)] <- "sizeClassUpperBound"
   names(df)[which(names(df) == fishCountAttributeName)] <- "fishCount"
   
   #test if usual school codes are used
@@ -84,7 +92,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
   #plot fct
   plotFct <- function(subDf, species.label, lims=c()) {
     #aggregate values by size class and school type
-    valuesSum <- aggregate(fishCount ~ sizeClass + school, data=subDf, FUN=sum)
+    valuesSum <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school, data=subDf, FUN=sum)
     valuesSum$relative <- (valuesSum$fishCount / sum(valuesSum$fishCount)) * 100
 #     mergedDf <- data.frame(sizeClass=valuesSum$sizeClass, school=valuesSum$school, relative=valuesSum$fishCount / sum(valuesSum$fishCount))
 #     mergedDf$relative <- mergedDf$relative * 100
@@ -98,7 +106,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
     
     #build the plot
     plot.result <- ggplot(mapping=aes(fill=school, order=school)) +
-      geom_rect(data=valuesSum, mapping=aes(xmin = sizeClass, xmax = sizeClass + 1.8, ymin = 0, ymax = relative)) +
+      geom_rect(data=valuesSum, mapping=aes(xmin = sizeClassLowerBound, xmax = sizeClassUpperBound, ymin = 0, ymax = relative), colour="grey25") +
       scale_fill_manual(name="School type", values=my.colors) +
       xlab("Size (in cm)") + ylab("Relative contribution (in %)") + 
       labs(colour="School type", title=my.title) +
@@ -146,7 +154,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
     }
     
     #species.df <- df[df$species == species.current,]
-    species.df <- aggregate(fishCount ~ sizeClass + school + year, data=df[df$species == species.current,], FUN=sum)
+    species.df <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school + year, data=df[df$species == species.current,], FUN=sum)
     
     #plot for all the period
     result.plot.df <- plotFct(species.df, species.label)
@@ -156,7 +164,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
     if (length(years) > 1)
     {      
       contrib.max <- max(unlist(lapply(years, FUN=function(x) {max((species.df[species.df$year == x,]$fishCount / sum(species.df[species.df$year == x,]$fishCount)) * 100)})))
-      sizeClass.range <- range(species.df$sizeClass)
+      sizeClass.range <- range(species.df$sizeClassLowerBound, species.df$sizeClassUpperBound)
       #for each year
       for(year.current in years) {
         result.plot.df <- plotFct(species.df[species.df$year==year.current,], species.label, lims=c(sizeClass.range[1], sizeClass.range[2], 0, contrib.max))
@@ -168,7 +176,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
       decades <- unique(species.df$decade)
       if (length(decades) > 1)
       {
-        species.decade.df <- aggregate(fishCount ~ sizeClass + school + decade, data=species.df, FUN=sum)
+        species.decade.df <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school + decade, data=species.df, FUN=sum)
         contrib.max <- max(unlist(lapply(decades, FUN=function(x) {max((species.decade.df[species.decade.df$decade == x,]$fishCount / sum(species.decade.df[species.decade.df$decade == x,]$fishCount)) * 100)})))
         for(decade.current in decades) {
           result.plot.df <- plotFct(species.df[species.df$decade==decade.current,], species.label, lims=c(sizeClass.range[1], sizeClass.range[2], 0, contrib.max))

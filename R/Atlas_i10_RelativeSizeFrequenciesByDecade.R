@@ -13,18 +13,20 @@
 # Use example:
 #  library(IRDTunaAtlas)
 #  csv.df <- read.csv("/home/norbert/Boulot/iMarine/WPS/Atlas/CSV/i9i10.csv", stringsAsFactors=FALSE)
-#  csv.df <- csv.df[csv.df$species == "ALB",]
+#  #csv.df <- csv.df[csv.df$species == "ALB",]
 #  Atlas_i10_RelativeSizeFrequenciesByDecade(csv.df, temporalAgg=5,
 #                        yearAttributeName="year",
 #                        speciesAttributeName="species",
-#                        sizeClassAttributeName="class",                                              
+#                        sizeClassLowerBoundAttributeName="class_low",
+#                        sizeClassUpperBoundAttributeName="class_up",
 #                        fishCountAttributeName="fish_count")
 ##################################################################
 
 Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
                                                       yearAttributeName="ns0:year",
                                                       speciesAttributeName="ns0:species",
-                                                      sizeClassAttributeName="ns0:class",
+                                                      sizeClassLowerBoundAttributeName="ns0:class_low",
+                                                      sizeClassUpperBoundAttributeName="ns0:class_up",
                                                       fishCountAttributeName="ns0:fish_count")
 {  
   if (! require(ggplot2) | ! require(RColorBrewer)) {
@@ -48,9 +50,13 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
     stop("Cannot found species attribute")
   }
     
-  if(sum(names(df) == sizeClassAttributeName) == 0) {
-    stop("Cannot found size class attribute")
+  if(sum(names(df) == sizeClassLowerBoundAttributeName) == 0) {
+    stop("Cannot found size class lower bound attribute")
   }  
+  
+  if(sum(names(df) == sizeClassUpperBoundAttributeName) == 0) {
+    stop("Cannot found size class upper bound attribute")
+  }
   
   if(sum(names(df) == fishCountAttributeName) == 0) {
     stop("Cannot found fish count attribute")
@@ -59,13 +65,15 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
   #format columns
   df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
   df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
-  df[, sizeClassAttributeName] <- as.numeric(df[, sizeClassAttributeName])    
+  df[, sizeClassLowerBoundAttributeName] <- as.numeric(df[, sizeClassLowerBoundAttributeName])    
+  df[, sizeClassUpperBoundAttributeName] <- as.numeric(df[, sizeClassUpperBoundAttributeName])    
   df[, fishCountAttributeName] <- as.numeric(df[, fishCountAttributeName])    
   
   #rename columns
   names(df)[which(names(df) == yearAttributeName)] <- "year"  
   names(df)[which(names(df) == speciesAttributeName)] <- "species"
-  names(df)[which(names(df) == sizeClassAttributeName)] <- "sizeClass"
+  names(df)[which(names(df) == sizeClassLowerBoundAttributeName)] <- "sizeClassLowerBound"
+  names(df)[which(names(df) == sizeClassUpperBoundAttributeName)] <- "sizeClassUpperBound"
   names(df)[which(names(df) == fishCountAttributeName)] <- "fishCount"
   
 
@@ -109,21 +117,23 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
     species.df.year.min <- min(species.df$year)
     species.df.year.max <- max(species.df$year)
       
-    species.df <- aggregate(fishCount ~ sizeClass + decade, data=species.df, FUN=sum)
+    species.df <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + decade, data=species.df, FUN=sum)
     species.df$decade <- factor(species.df$decade, levels=decade.df$decade, labels=decade.df$label)  
     
     #order data
-    species.df <- species.df[order(species.df$decade, species.df$sizeClass),]
+    species.df <- species.df[order(species.df$decade, species.df$sizeClassLowerBound),]
     #compute mean and median by decade
-    median.df <- ddply(species.df, .(decade), function(x) calculateMeanMedian(x$sizeClass, x$sizeClass + 2, x$fishCount))
+    median.df <- ddply(species.df, .(decade), function(x) calculateMeanMedian(x$sizeClassLowerBound, x$sizeClassUpperBound, x$fishCount))
     
     #compute sum and relative contribution
     species.df <- merge(species.df, aggregate(list(sum=species.df$fishCount), by=list(decade=species.df$decade), FUN=sum))
     species.df$relative <- species.df$fishCount / species.df$sum
-        
+    
+    #detrmine a little space on the plot btw each class
+    
     #build the plot
     plot.result <- ggplot(data=species.df) + 
-      geom_rect(mapping=aes(fill=decade, order=decade, xmin = sizeClass, xmax = sizeClass + 1.8, ymin = 0, ymax = relative), show_guide=FALSE) +
+      geom_rect(mapping=aes(fill=decade, order=decade, xmin = sizeClassLowerBound, xmax = sizeClassUpperBound, ymin = 0, ymax = relative), colour="grey25", show_guide=FALSE) +
       facet_grid(decade ~ .) +
       geom_vline(data=median.df, mapping=aes(xintercept=median), linetype="dashed", colour="grey25") +
       geom_vline(data=median.df, mapping=aes(xintercept=mean), colour="grey25") +

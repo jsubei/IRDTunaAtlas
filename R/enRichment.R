@@ -351,11 +351,17 @@ if (verbose) {
       result.df[which(unique.id == fetch.df[i,]$id),]$time <- time.var.realValues[fetch.df[i,]$time]
     }
   }
-  #remplacing missval with NA
-  if ("missval" %in% names(netcdf.var) && 
-        ! is.na(netcdf.var$missval) && 
-        length(result.df[! is.na(result.df$value) & result.df$value == netcdf.var$missval, ]$value) > 0) {
-    result.df[! is.na(result.df$value) & result.df$value == netcdf.var$missval, ]$value <- NA
+  #remplacing missing value with NA
+  if (att.get.ncdf(nc, netcdf.var$name, "_FillValue")$hasatt) {
+    #ok, CF _FillValue found
+    result.df[! is.na(result.df$value) & result.df$value == att.get.ncdf(nc, netcdf.var$name, "_FillValue")$value, ]$value <- NA
+  } else {
+    #try for missval var
+    if ("missval" %in% names(netcdf.var) && 
+          ! is.na(netcdf.var$missval) && 
+          length(result.df[! is.na(result.df$value) & result.df$value == netcdf.var$missval, ]$value) > 0) {
+      result.df[! is.na(result.df$value) & result.df$value == netcdf.var$missval, ]$value <- NA
+    }
   }
   
   names(result.df)[1] <- varName

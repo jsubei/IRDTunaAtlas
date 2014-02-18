@@ -9,9 +9,13 @@ import(mapdata)
 import(rgeos)
 import(maps)
 import(mapplots)
+import(ncdf)
+import(sp)
+import(fpc)
 
 
 export(
+  WFS2GMLFile,
   Atlas_i1_SpeciesByOcean,
   Atlas_i2_SpeciesByGear,
   Atlas_i3_SpeciesYearByGearMonth,
@@ -21,5 +25,7 @@ export(
   Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies,
   Atlas_i9_RelativeSizeFrequenciesBySchoolType,
   Atlas_i10_RelativeSizeFrequenciesByDecade,
-  Atlas_i11_CatchesByCountry
+  Atlas_i11_CatchesByCountry,
+  enRichment,
+  readData
 )

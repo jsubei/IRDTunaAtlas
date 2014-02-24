@@ -1,3 +1,20 @@
+# df: a data.frame
+# attributesList: list of vectore size 2 af attribute name and new names. Ex. list(c("a", "A"), c("b", "B"))
+renameAttributes <- function(df, attributesList) {
+  for (currentAttribute in attributesList) {
+    if (is.na(currentAttribute[1]) || nchar(currentAttribute[1]) == 0
+        || is.na(currentAttribute[2]) || nchar(currentAttribute[2]) == 0) {
+      stop("Bad syntax")
+    }
+    
+    if (sum(names(df) == currentAttribute[1]) == 0) {
+      stop(paste("Cannot found", currentAttribute[1], "attribute"))
+    }
+    names(df)[which(names(df) == currentAttribute[1])] <- currentAttribute[2]
+  }
+  return(df)
+}
+
 checkInputFile <- function(inputFilePath)
 {
   if(missing(inputFilePath))
@@ -427,7 +444,7 @@ readData <- function(connectionType="local", dataType="csv", url, MDSTQuery, lay
     wfsUrl <- paste(url, "?REQUEST=GetFeature&SERVICE=WFS&VERSION=", wfsVersion, "&TYPENAME=", layer, sep="")
     #test for OGC Filter
     if(! missing(ogcFilter) && nchar(ogcFilter) > 0) {
-      if(substr(ogcFilter, 1, 7) == "<ogc:Filter") {
+      if(substr(ogcFilter, 1, 11) == "<ogc:Filter") {
         ogcFilter <- curlEscape(ogcFilter)
       }
       wfsUrl <- paste(wfsUrl, "&filter=", ogcFilter, sep="")
@@ -438,7 +455,7 @@ readData <- function(connectionType="local", dataType="csv", url, MDSTQuery, lay
     #read the file
     #df <- readData(connectionType="local", dataType="OGR", url=localFilePath)
     #delete the downloaded file
-#new version
+#new version from E. Blondel
     df <- readWFS(wfsUrl)
 
     return(df)

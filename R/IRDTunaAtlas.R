@@ -112,7 +112,7 @@ readWFS <- function(url, outputFormat = "GML", p4s = NULL, gmlIdAttributeName="g
       if(is.na(srs)){
         warning("Unable to convert GML srsName to a CRS object. CRS will be set to NA", call. = T)
       }
-      
+
       if (missing(p4s)){
         features = readOGR(destfile, layername, p4s = srs, disambiguateFIDs=TRUE, stringsAsFactors=FALSE)
       }else{

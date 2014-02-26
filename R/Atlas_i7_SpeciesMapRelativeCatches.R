@@ -24,7 +24,6 @@
 #                        valueAttributeName="value")
 ##################################################################
 Atlas_i7_SpeciesMapRelativeCatches <- function(df,
-                                               GMLIdAttributeName="gml_id",
                                                geomIdAttributeName="geom_id",
                                                yearAttributeName="year", 
                                                speciesAttributeName="species",                                         

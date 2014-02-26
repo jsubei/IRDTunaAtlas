@@ -58,7 +58,7 @@ Atlas_i2_SpeciesByGear <- function(df,
   
   #aggregate to cut other columns
   df <- aggregate(x=df[, valueAttributeName], 
-                  by=list(df[, yearAttributeName], df[, speciesAttributeName], df[, gearTypeAttributeName], ), 
+                  by=list(df[, yearAttributeName], df[, speciesAttributeName], df[, gearTypeAttributeName]), 
                   FUN=sum)
   #rename columns
   names(df) <- c("year", "species", "gear_type", "value")

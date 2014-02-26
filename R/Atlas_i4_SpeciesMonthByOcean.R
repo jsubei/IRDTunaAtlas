@@ -1,7 +1,7 @@
 # Atlas_i4_SpeciesMonthByOcean.R
 # Tuna Atlas - IRD / MR EME
 #
-# This indicator build a graph of monthly (seasonal) catches by ocean for a unique species. An associated RDF file is also produced.
+# This indicator build a graph of monthly (seasonal) catches by ocean for a species. An associated RDF file is also produced.
 ##################################################################
 # Norbert Billet - IRD
 # 2013/11/04: V2 version: add RDF export and allow production of multiple graph (i.e. species)

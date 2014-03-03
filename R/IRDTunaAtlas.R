@@ -1,3 +1,18 @@
+# df: a data frame
+# objList: list of objects in the environment
+# attrSuffixCst: suffix of the mapping attribute name variables
+evaluateAndRenameAttributesNames <- function(df, objList=ls(), attrSuffixCst="AttributeName") {
+  dfName <- substitute(df)
+  for (aObj in objList) {
+    if (substr(aObj, 0, nchar(dfName)) == dfName && substr(aObj, nchar(aObj) - nchar(attrSuffixCst) + 1, nchar(aObj)) == attrSuffixCst) {
+      if (sum(names(df) == get(aObj)) == 1) {
+        names(df)[which(names(df) == get(aObj))] <- tolower(substr(aObj, nchar(dfName) + 1, nchar(aObj) - nchar(attrSuffixCst)))
+      }
+    }
+  }
+  return(df)
+}
+
 # df: a data.frame
 # attributesList: list of vectore size 2 af attribute name and new names. Ex. list(c("a", "A"), c("b", "B"))
 renameAttributes <- function(df, attributesList) {

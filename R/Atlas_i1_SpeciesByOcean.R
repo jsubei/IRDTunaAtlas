@@ -20,10 +20,10 @@
 ##################################################################
 
 Atlas_i1_SpeciesByOcean <- function(df, 
-                                    yearAttributeName="ns0:year", 
-                                    oceanAttributeName="ns0:ocean", 
-                                    speciesAttributeName="ns0:species",
-                                    valueAttributeName="ns0:value")
+                                    yearAttributeName="year", 
+                                    oceanAttributeName="ocean", 
+                                    speciesAttributeName="species",
+                                    valueAttributeName="value")
 {
   if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")

@@ -73,7 +73,7 @@ readWFS <- function(url, outputFormat = "GML", p4s = NULL, gmlIdAttributeName="g
   if(outputFormat == "GML") {
     # download the data
     content <- getURL(wfsRequest)
-    xmlfile <- xmlTreeParse(content, useInternalNodes = TRUE)
+    xmlfile <- xmlTreeParse(content, useInternalNodes=TRUE, options=c(HUGE))
     #write the file to disk
     
     tempf = tempfile()
@@ -85,41 +85,53 @@ readWFS <- function(url, outputFormat = "GML", p4s = NULL, gmlIdAttributeName="g
       stop("Mistake with layers in the input dataset")
     }
     
-    hasGeometry = ((length(getNodeSet(xmlfile, "//gml:featureMember//gml:coordinates")) > 0)
-                   || (length(getNodeSet(xmlfile, "//gml:featureMember//gml:pos")) > 0)
-                   || (length(getNodeSet(xmlfile, "//gml:featureMember//gml:posList")) > 0))
-    if(hasGeometry){
+    hasGeometry <- ( (length(getNodeSet(xmlfile, "//gml:featureMember//gml:coordinates")) > 0)
+      || (length(getNodeSet(xmlfile, "//gml:featureMember//gml:pos")) > 0) 
+      || (length(getNodeSet(xmlfile, "//gml:featureMember//gml:posList")) > 0)  
+      || (length(getNodeSet(xmlfile, "//wfs:member[1]//gml:pos")) > 0) )
+    
+    if (hasGeometry) {
       
       # get the Spatial Reference System (SRS)
       srs <- NA
       #xmlfile<-xmlTreeParse(destfile, useInternalNodes = TRUE)
       srsName <- getNodeSet(xmlfile, "(//gml:featureMember//@srsName)[1]")
+      if (is.null(srsName)) {
+        srsName <- getNodeSet(xmlfile, "//wfs:member[1]//gml:pos[1]/@srsName")
+      }
       if (length(srsName) == 1) {
         srsName <- as.character(srsName[[1]])
         
         #srsName patterns matching
         srsPattern = "http://www.opengis.net/gml/srs/epsg.xml#" #match case 1
-        if(attr(regexpr(srsPattern, srsName, ignore.case = T),"match.length") > 0){
+        if (attr(regexpr(srsPattern, srsName, ignore.case = T),"match.length") > 0) {
           epsg <- unlist(strsplit(srsName, srsPattern))[2]
           srs <- paste("+init=epsg:", epsg, sep="")
-        }else{
+        } else {
           srsPattern = "urn:(x-)?ogc:def:crs:EPSG" #match case 2
-          if(attr(regexpr(srsPattern, srsName, ignore.case = T),"match.length") > 0){
+          if (attr(regexpr(srsPattern, srsName, ignore.case = T),"match.length") > 0) {
             srsStr <- unlist(strsplit(srsName, ":"))
             epsg <- srsStr[length(srsStr)]
             srs <- paste("+init=epsg:", epsg, sep="")
-          }else{
-            #search if srsName is a WKT PROJ name (PROJCS or GEOGCS)
-            #if yes set srs with the corresponding proj4string
-            #first search without any consideration of the ESRI representation
-            srs <- findP4s(srsName, morphToESRI=FALSE)
-            if (is.na(srs)) {
-              #if not found search with consideration of the ESRI representation
-              srs <- findP4s(srsName, morphToESRI=TRUE)
-            }
-            if (! is.na(srs) && ! length(srs) == 1) {
-              srs <- NA
-            }
+          } else {
+            srsPattern = "EPSG:" #match case 3
+            if (attr(regexpr(srsPattern, srsName, ignore.case = T),"match.length") > 0) {
+              srsStr <- unlist(strsplit(srsName, ":"))
+              epsg <- srsStr[length(srsStr)]
+              srs <- paste("+init=epsg:", epsg, sep="")
+            } else {
+              #search if srsName is a WKT PROJ name (PROJCS or GEOGCS)
+              #if yes set srs with the corresponding proj4string
+              #first search without any consideration of the ESRI representation
+              srs <- findP4s(srsName, morphToESRI=FALSE)
+              if (is.na(srs)) {
+                #if not found search with consideration of the ESRI representation
+                srs <- findP4s(srsName, morphToESRI=TRUE)
+              }
+              if (! is.na(srs) && ! length(srs) == 1) {
+                srs <- NA
+              }
+            }            
           }
         }
       }  
@@ -133,8 +145,9 @@ readWFS <- function(url, outputFormat = "GML", p4s = NULL, gmlIdAttributeName="g
       }else{
         features = readOGR(destfile, layername, p4s = p4s, disambiguateFIDs=TRUE, stringsAsFactors=FALSE)
       }
-      features <- spChFIDs(features, as.character(features@data[,gmlIdAttributeName]))
-      
+      if (class(features) == "SpatialLinesDataFrame" || class(features) == "SpatialPolygonsDataFrame") {
+        features <- spChFIDs(features, as.character(features@data[,gmlIdAttributeName]))  
+      }
     }else{
       membersContent <- sapply(getNodeSet(xmlfile, "//gml:featureMember"), function(x) xmlChildren(x))
       fid <- sapply(membersContent, function(x) xmlAttrs(x))
@@ -180,11 +193,11 @@ WFS2GMLFile <- function(URL, layerName, filter)
     stop("Missing RCurl library")
   }
   
-  #we add the filter
-  if(! missing(filter) && nchar(filter) > 0)
+  #we add the ogc filter
+  if(! missing(filter) && ! is.na(filter) && ! is.null(filter) && filter != "null" && filernchar(filter) > 0)
   {
     ogc_filter_prefix <- "<ogc:Filter"
-    if(substr(filter, 1, 7) == ogc_filter_prefix)
+    if(substr(filter, 1, 11) == ogc_filter_prefix)
     {
       filter <- curlEscape(filter)
     }
@@ -452,17 +465,18 @@ readData <- function(connectionType="local", dataType="csv", url, MDSTQuery, lay
   
   #WFS
   if (dataType == "WFS") {
-    if (missing(layer)) {
-      stop("Missing layer parameter")
-    }
-    #build base wfs getFeature request url
-    wfsUrl <- paste(url, "?REQUEST=GetFeature&SERVICE=WFS&VERSION=", wfsVersion, "&TYPENAME=", layer, sep="")
-    #test for OGC Filter
-    if(! missing(ogcFilter) && nchar(ogcFilter) > 0) {
-      if(substr(ogcFilter, 1, 11) == "<ogc:Filter") {
-        ogcFilter <- curlEscape(ogcFilter)
+    if(! missing(layer) && ! is.na(layer) && ! is.null(layer) && layer != "null" && nchar(layer) > 0) {
+      #build base wfs getFeature request url
+      wfsUrl <- paste(url, "?REQUEST=GetFeature&SERVICE=WFS&VERSION=", wfsVersion, "&TYPENAME=", layer, sep="")
+      #test for OGC Filter
+      if(! missing(ogcFilter) && ! is.na(ogcFilter) && ! is.null(ogcFilter) && ogcFilter != "null" && nchar(ogcFilter) > 0) {
+        if(substr(ogcFilter, 1, 11) == "<ogc:Filter") {
+          ogcFilter <- curlEscape(ogcFilter)
+        }
+        wfsUrl <- paste(wfsUrl, "&filter=", ogcFilter, sep="")
       }
-      wfsUrl <- paste(wfsUrl, "&filter=", ogcFilter, sep="")
+    } else {
+      wfsUrl <- url
     }
     #read the GML file
 #old version    

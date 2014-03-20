@@ -159,6 +159,11 @@ enRichment <- function(data, opendapUrl, varName,
       cat("Preprocessing time\n")
     }
     
+    if(inherits(d, "character")) {
+      #try to convert to time
+      d <- convertToDate(d)
+    }
+    
     time.diff <- outer(time.var.realValues, d, "-")
     
     if (timeMethod == "closest") {
@@ -354,7 +359,9 @@ if (verbose) {
   #remplacing missing value with NA
   if (att.get.ncdf(nc, netcdf.var$name, "_FillValue")$hasatt) {
     #ok, CF _FillValue found
-    result.df[! is.na(result.df$value) & result.df$value == att.get.ncdf(nc, netcdf.var$name, "_FillValue")$value, ]$value <- NA
+    if (nrow(result.df[! is.na(result.df$value) & result.df$value == att.get.ncdf(nc, netcdf.var$name, "_FillValue")$value, ]) > 0) {
+      result.df[! is.na(result.df$value) & result.df$value == att.get.ncdf(nc, netcdf.var$name, "_FillValue")$value, ]$value <- NA  
+    }    
   } else {
     #try for missval var
     if ("missval" %in% names(netcdf.var) && 

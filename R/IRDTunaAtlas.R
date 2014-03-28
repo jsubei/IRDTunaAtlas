@@ -510,6 +510,7 @@ downloadRemoteFile <- function(url) {
   return(NA)
 }
 
+#2014/03/28: test if xmlQuery is encoded
 downloadMDSTServerData <- function(MDSTServerUrl, xmlQuery) {
   require(RCurl)
   require(XML)
@@ -517,6 +518,10 @@ downloadMDSTServerData <- function(MDSTServerUrl, xmlQuery) {
   #create a CURL reader
   r <- basicTextGatherer()
   r$reset()
+  #test if xmlQuery is encoded
+  if (substr(xmlQuery, 1, 3) == "%3C") {
+    xmlQuery <- curlUnescape(xmlQuery)
+  }
   #post the query
   curlPerform(url=MDSTServerUrl, 
               postfields=xmlQuery,

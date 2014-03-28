@@ -11,7 +11,8 @@ enRichment <- function(data, opendapUrl, varName,
                        xName="x",
                        yName="y",
                        timeName="time",
-                       verbose=FALSE)
+                       verbose=FALSE,
+                       window=0)
 {  
   library(ncdf)
   library(sp)
@@ -233,16 +234,38 @@ enRichment <- function(data, opendapUrl, varName,
     indices.df <- cbind(indices.df, time=time.indices)
   }
   
+  if(window > 0) {
+    #experimental, fetch a window of data around each cell
+    
+    window.seq <- seq(from=-window, to=window, by=1)
+    if (withTime) {
+      window.expand <- expand.grid(window.seq, window.seq, window.seq)
+    } else {
+      window.expand <- expand.grid(window.seq, window.seq)
+    }
+        
+    indices.df.window <- indices.df[0,]
+    #BOUCLE ! tres lent, a modifier, ne prend pas an compte si il n'y a pas de dim temps
+    for (i in 1:nrow(indices.df)) {
+      indices.df.window <- rbind(indices.df.window, cbind(indices.df[i,1] + window.expand[,1], indices.df[i,2] + window.expand[,2], indices.df[i,3] + window.expand[,3]))      
+    }
+    indices.df <- indices.df.window
+    names(indices.df) <- c("lon", "lat", "time")
+  }
+  
   #on ne va pas demander 2 fois la même cellule !
   unique.id <- rep(x=NA, times=nrow(indices.df))
   indices.df.unique <- na.omit(unique(indices.df))
 
-if (verbose) {
-  cat("lon range", max(indices.df.unique$lon) - min(indices.df.unique$lon), "\n")
-  cat("lat range", max(indices.df.unique$lat) - min(indices.df.unique$lat), "\n")
-  cat("time range", max(indices.df.unique$time) - min(indices.df.unique$time), "\n")
-}  
+  if (verbose) {
+    cat("lon range", max(indices.df.unique$lon) - min(indices.df.unique$lon), "\n")
+    cat("lat range", max(indices.df.unique$lat) - min(indices.df.unique$lat), "\n")
+    if (withTime) {
+      cat("time range", max(indices.df.unique$time) - min(indices.df.unique$time), "\n")
+    }
+  }  
   
+  #TODO: lent BOUCLE
   for (i in 1:nrow(indices.df.unique)) {
     unique.id[which(apply(mapply(indices.df, indices.df.unique[i,], FUN="=="), MARGIN=1, FUN=all))] <- i
   }

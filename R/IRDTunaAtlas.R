@@ -291,8 +291,8 @@ FAO2URIFromEcoscope <- function(FAOId) {
   return(NA)
 }
 
-
-buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), start=NA, end=NA, spatial=NA) {
+#2014/03/28: add the possibility to desactivate ecoscope sparql query
+buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), start=NA, end=NA, spatial=NA, withSparql=TRUE) {
   if (! require(rrdf)) {
     stop("Missing rrdf library")
   }
@@ -346,7 +346,10 @@ buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), s
   }
   
   for (subject.current in subjects) {
-    URI <- FAO2URIFromEcoscope(subject.current)
+    URI <- NA
+    if (withSparql) {
+      URI <- FAO2URIFromEcoscope(subject.current)
+    }
     if (! is.na(URI)) {
       add.triple(store,
                       subject=rdf_subject,

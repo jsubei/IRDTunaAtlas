@@ -24,13 +24,14 @@
 ##################################################################
 
 Atlas_i3_SpeciesYearByGearMonth <- function(df, 
-                                            yearAttributeName="ns0:year", 
-                                            monthAttributeName="ns0:month", 
-                                            speciesAttributeName="ns0:species",
-                                            gearTypeAttributeName="ns0:gear_type",
-                                            valueAttributeName="ns0:value",
-                                            meanPrev5YearsAttributeName="ns0:mean_prev_5_years",
-                                            stddevPrev5YearsAttributeName="ns0:stddev_prev_5_years")
+                                            yearAttributeName="year", 
+                                            monthAttributeName="month", 
+                                            speciesAttributeName="species",
+                                            gearTypeAttributeName="gear_type",
+                                            valueAttributeName="value",
+                                            meanPrev5YearsAttributeName="mean_prev_5_years",
+                                            stddevPrev5YearsAttributeName="stddev_prev_5_years",
+                                            withSparql=TRUE)
 {
   if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -110,11 +111,16 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
   #for each species
   for (species.current in unique(df$species)) {
     
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current
@@ -184,7 +190,8 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
                processes="&localfile;/processI3",
                start=as.character(year.current),
                end=as.character(year.current),
-               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+               withSparql)
       
       result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
       

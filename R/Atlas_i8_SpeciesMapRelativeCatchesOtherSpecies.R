@@ -27,7 +27,8 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
                                                            geomIdAttributeName="geom_id",
                                                            yearAttributeName="year", 
                                                            speciesAttributeName="species",                                         
-                                                           valueAttributeName="value")
+                                                           valueAttributeName="value",
+                                                           withSparql=TRUE)
 {
   require(maps)
   
@@ -140,16 +141,22 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
              processes="&localfile;/processI8",
              start=as.character(min(subDf$year)),
              end=as.character(max(subDf$year)),
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
     
     return(c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
   }
   
-  #get species scietific name from ecoscope sparql
-  sparqlResult <- getSpeciesFromEcoscope(as.character(targetedSpecies))
-  if (length(sparqlResult) > 0) {
-    species.label <- sparqlResult[1,"scientific_name"]
-    species.URI <- sparqlResult[1,"uri"]
+  if (withSparql) {      
+    #get species scientific name from ecoscope sparql
+    sparqlResult <- getSpeciesFromEcoscope(as.character(targetedSpecies))
+    if (length(sparqlResult) > 0) {
+      species.label <- sparqlResult[1,"scientific_name"]
+      species.URI <- sparqlResult[1,"uri"]
+    } else {
+      species.label <- species
+      species.URI <- species
+    } 
   } else {
     species.label <- species
     species.URI <- species

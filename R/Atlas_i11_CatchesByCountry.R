@@ -28,7 +28,8 @@ Atlas_i11_CatchesByCountry <- function(df,
                                        geomIdAttributeName="geom_id",
                                        countryAttributeName="country", 
                                        speciesAttributeName="species",                                         
-                                       valueAttributeName="value")
+                                       valueAttributeName="value",
+                                       withSparql=TRUE)
 {
   sizeX <- 1200
   sizeY <- 600
@@ -112,11 +113,16 @@ Atlas_i11_CatchesByCountry <- function(df,
   
   for (species.current in unique(df$species)) {
     
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current
@@ -213,7 +219,8 @@ Atlas_i11_CatchesByCountry <- function(df,
                             paste("Carte des captures de", species.label)),
              subjects=c(species.label),
              processes="&localfile;/processI11",
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
     
     result.df <- rbind(result.df, c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
   }

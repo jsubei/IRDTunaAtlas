@@ -540,11 +540,6 @@ downloadMDSTServerData <- function(MDSTServerUrl, xmlQuery) {
     file.csv <- grep("*.csv", tolower(zip.files.list$Name))    
     if (length(file.csv) == 1) {
       #extract the csv file
-print(zip.files.list$Name)
-print(class(zip.files.list$Name))
-print(file.csv)
-print(zip.files.list$Name[file.csv])
-print(as.character(zip.files.list$Name[file.csv]))
       unzip(zipfile=zip.file.dest, files=as.character(zip.files.list$Name[file.csv]), exdir=tempdir())
       #delete zip file
       file.remove(zip.file.dest)

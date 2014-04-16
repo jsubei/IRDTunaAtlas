@@ -20,10 +20,11 @@
 ##################################################################
 
 Atlas_i2_SpeciesByGear <- function(df, 
-                                   yearAttributeName="ns0:year", 
-                                   speciesAttributeName="ns0:species",
-                                   gearTypeAttributeName="ns0:gear_type",
-                                   valueAttributeName="ns0:value")
+                                   yearAttributeName="year", 
+                                   speciesAttributeName="species",
+                                   gearTypeAttributeName="gear_type",
+                                   valueAttributeName="value",
+                                   withSparql=TRUE)
 {
   if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -87,12 +88,17 @@ Atlas_i2_SpeciesByGear <- function(df,
     
     #order factors levels by value
     aggData$gear_type <- factor(aggData$gear_type, levels=rev(levels(reorder(aggData$gear_type, aggData$value))))
-    
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+      
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current
@@ -124,7 +130,8 @@ Atlas_i2_SpeciesByGear <- function(df,
              processes="&localfile;/processI2",
              start=as.character(min(aggData$year)),
              end=as.character(max(aggData$year)),
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
     
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
   }

@@ -27,7 +27,7 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
                                                       speciesAttributeName="species",
                                                       sizeClassLowerBoundAttributeName="class_low",
                                                       sizeClassUpperBoundAttributeName="class_up",
-                                                      fishCountAttributeName="fish_count"
+                                                      fishCountAttributeName="fish_count",
                                                       withSparql=TRUE)
 {  
   if (! require(ggplot2) | ! require(RColorBrewer)) {

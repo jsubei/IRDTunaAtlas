@@ -117,25 +117,26 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
     }
     
     #draw the plot
-    base_temp_file <- tempfile(pattern=paste("I9_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
-    ggsave(filename=plot_file_path, plot=plot.result, dpi=100)
+    tempfile.base <- tempfile(pattern=paste("I9_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
+    plot.filepath <- paste(tempfile.base, ".png", sep="")
+    ggsave(filename=plot.filepath, plot=plot.result, dpi=100)
     
     #create the RDF metadata
-    rdf_file_path <- paste(base_temp_file, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(base_temp_file, ".rdf", sep=""),
-             rdf_subject="http://ecoscope.org/indicatorI9", 
+    rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
+    buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
              titles=c("IRD Tuna Atlas: indicator #9 - Graph relative contribution of size frequencies in catches for a species by school type", 
                       "IRD Atlas thonier : indicateur #9 - Graphique des contributions des classes de tailles aux captures par type de banc"),
              descriptions=c(paste(species.label, "size frequencies contribution catches plot"), 
                             paste("Contributions des classes de tailles aux captures de", species.label)),
-             subjects=c(species.label),
-             processes="&localfile;/processI9",
+             subjects=c(as.character(species.current)),
+             processes="http://www.ecoscope.org/ontologies/resources/processI9",
+             data_output_identifier=plot.filepath,
              start=as.character(min(subDf$year)),
              end=as.character(max(subDf$year)),
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
     
-    return(c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
+    return(c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }
   
   #define the resulr df  

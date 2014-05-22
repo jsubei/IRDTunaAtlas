@@ -128,25 +128,28 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
       #resultPlot <- ggplot(data=mergedDf) + facet_grid(facets=year ~ month) + geom_bar(mapping=aes(x=ocean, y=value, fill=ocean), stat="identity") + theme(axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + labs(title="Montly catches by ocean")
       
       #draw the plot
-      base_temp_file <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.label), "_", as.character(decade.current), "_", sep=""))
-      plot_file_path <- paste(base_temp_file, ".png", sep="")
-      ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
+      tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.label), "_", as.character(decade.current), "_", sep=""))
+      plot.filepath <- paste(tempfile.base, ".png", sep="")
+      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
       
       #create the RDF metadata
-      rdf_file_path <- paste(base_temp_file, ".rdf", sep="")
-      buildRdf(rdf_file_path=paste(base_temp_file, ".rdf", sep=""),
-               rdf_subject="http://ecoscope.org/indicatorI4", 
+      #julien => pourquoi ici et en bas ?
+      rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
+      buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+               #rdf_subject="http://ecoscope.org/indicatorI4", 
+               rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
                titles=c("IRD Tuna Atlas: indicator #4 - monthly catches by ocean", 
                         "IRD Atlas thonier : indicateur #4 - captures mensuelle par océan"),
                descriptions=c(paste(species.label, "monthly catches by ocean"), 
                               paste("Captures mensuelles de", species.label, "par océan")),
                subjects=c(as.character(species.current), as.character(unique(current.df$ocean))),
-               processes="&localfile;/processI4",
+               processes="http://www.ecoscope.org/ontologies/resources/processI4",
+               data_output_identifier=plot.filepath,  
                start=as.character(min(current.df$year)),
                end=as.character(max(current.df$year)),
                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
       
-      result.df <- rbind(result.df, c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
+      result.df <- rbind(result.df, c(plot.file.path=pplot.filepath, rdf.file.path=rdf_file_path))
     }
     
     #if multiple decade we produce a graph by decade
@@ -168,25 +171,28 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
         labs(title=paste(species.label, "monthly catches by ocean and by decade"))
       
       #draw the plot
-      base_temp_file <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.current), "_byDecade_", sep=""))
-      plot_file_path <- paste(base_temp_file, ".png", sep="")
-      ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
+      tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.current), "_byDecade_", sep=""))
+      #plot_file_path <- paste(tempfile.base, ".png", sep="")
+      plot.filepath <- paste(tempfile.base, ".png", sep="")
+      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
       
       #create the RDF metadata
-      rdf_file_path <- paste(base_temp_file, ".rdf", sep="")
-      buildRdf(rdf_file_path=paste(base_temp_file, ".rdf", sep=""),
-               rdf_subject="http://ecoscope.org/indicatorI4", 
+      rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
+      buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+               #rdf_subject="http://ecoscope.org/indicatorI4", 
+               rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
                titles=c("IRD Tuna Atlas: indicator #4 - monthly catches by ocean and by decade", 
                         "IRD Atlas thonier : indicateur #4 - captures mensuelle par océan et par décénie"),
                descriptions=c(paste(species.label, "monthly catches by ocean and by decade"), 
                               paste("Captures mensuelles de", species.label, "par océan et par décénie")),
                subjects=c(species.current, levels(current.df$ocean)),
-               processes="&localfile;/processI4",
+               processes="http://www.ecoscope.org/ontologies/resources/processI4",
+               data_output_identifier=plot.filepath,             
                start=as.character(min(current.df$year)),
                end=as.character(max(current.df$year)),
                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
       
-      result.df <- rbind(result.df, c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
+      result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
     }
   }
   

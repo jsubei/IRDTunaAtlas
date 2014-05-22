@@ -141,25 +141,26 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
       labs(x="Size class (in cm). With mean (solid grey line) and median (dashed)", y="Relative contribution", title=paste(species.label, "size frequencies contribution"), fill=NA)
     
     #draw the plot
-    base_temp_file <- tempfile(pattern=paste("I10_", gsub(" ", "_", species.label), "_", as.character(species.df.year.min), "-", as.character(species.df.year.max), "_", sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
-    ggsave(filename=plot_file_path, plot=plot.result, dpi=100)
+    tempfile.base <- tempfile(pattern=paste("I10_", gsub(" ", "_", species.label), "_", as.character(species.df.year.min), "-", as.character(species.df.year.max), "_", sep=""))
+    plot.filepath <- paste(tempfile.base, ".png", sep="")
+    ggsave(filename=plot.filepath, plot=plot.result, dpi=100)
     
     #create the RDF metadata
-    rdf_file_path <- paste(base_temp_file, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(base_temp_file, ".rdf", sep=""),
-             rdf_subject="http://ecoscope.org/indicatorI10", 
+    rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
+    buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
              titles=c("IRD Tuna Atlas: indicator #10 - Graph relative contribution of size frequencies over decades", 
                       "IRD Atlas thonier : indicateur #10 - Graphique des contributions des classes de tailles par décades"),
              descriptions=c(paste(species.label, "size frequencies contribution catches plot"), 
                             paste("Contributions des classes de tailles aux captures de", species.label)),
-             subjects=c(species.label),
-             processes="&localfile;/process10",
+             subjects=c(as.character(species.current)),
+             processes="http://www.ecoscope.org/ontologies/resources/processI10",
+             data_output_identifier=plot.filepath,
              start=as.character(species.df.year.min),
              end=as.character(species.df.year.max),
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
     
-    result.df <- rbind(result.df, c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
+    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }
   return(result.df)  
 }

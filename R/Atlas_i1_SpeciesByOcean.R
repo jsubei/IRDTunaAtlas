@@ -117,16 +117,19 @@ Atlas_i1_SpeciesByOcean <- function(df,
     #create the RDF metadata
     rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
     buildRdf(rdf_file_path=rdf.filepath,
-              rdf_subject="http://ecoscope.org/indicatorI1", 
+              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
+              #rdf_subject="http://ecoscope.org/indicatorI1", 
               titles=c("IRD Tuna Atlas: indicator #1 - catches by species and by ocean", 
                        "IRD Atlas thonier : indicateur #1 - captures par espèces et par océan"),
               descriptions=c(paste(species.label, "catches by ocean"), 
                        paste("Captures de", species.label, "par océan")),
               subjects=c(as.character(species.current)),
-              processes="&localfile;/processI1",
+              processes="http://www.ecoscope.org/ontologies/resources/processI1",
+              data_output_identifier=plot.filepath,
               start=as.character(min(aggData$year)),
               end=as.character(max(aggData$year)),
-              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+             #julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
         
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
   }

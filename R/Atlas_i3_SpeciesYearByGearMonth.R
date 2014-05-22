@@ -96,9 +96,9 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
   }
   
   #test if FAO usual gear codes are used
-  if (length(intersect(levels(df$gear_type), c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"))) == length(levels(df$gear_type))) {
-    df$gear_type <- factor(df$gear_type, levels=c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"), labels=c("Baitboat", "Gillnet", "Longline", "Purse seine", "Unclass. art. Indian O.", "Unclass. art. Atl. O.", "Trol.", "Trap"))
-  }
+  #if (length(intersect(levels(df$gear_type), c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"))) == length(levels(df$gear_type))) {
+  #  df$gear_type <- factor(df$gear_type, levels=c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"), labels=c("Baitboat", "Gillnet", "Longline", "Purse seine", "Unclass. art. Indian O.", "Unclass. art. Atl. O.", "Trol.", "Trap"))
+  #}
   
   #setup the palette
   my.colors <- brewer.pal(length(levels(df$gear_type)), "Set1")
@@ -175,15 +175,19 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
       #create the RDF metadata
       rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
       buildRdf(rdf_file_path=rdf.filepath,
-               rdf_subject="http://ecoscope.org/indicatorI3", 
+               #rdf_subject="http://ecoscope.org/indicatorI3", 
+               rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
                titles=c("IRD Tuna Atlas: indicator #3 - catches by species for a given year by gear type and by month", 
                         "IRD Atlas thonier : indicateur #3 - captures par espèces pour une année donnée par mois et par type d'engin"),
                descriptions=c(paste(species.label, "catches by gear type and by month on", as.character(year.current)), 
                               paste("Captures de", species.label, "par mois et par type d'engin pour l'année", as.character(year.current))),
                subjects=c(as.character(species.current), as.character(unique(current.df$gear_type))),
-               processes="&localfile;/processI3",
+               #processes="&localfile;/processI3",
+               processes="http://www.ecoscope.org/ontologies/resources/processI3",
+               data_output_identifier=plot.filepath,             
                start=as.character(year.current),
                end=as.character(year.current),
+               #julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
       
       result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))

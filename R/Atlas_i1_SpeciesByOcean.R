@@ -4,6 +4,7 @@
 #This indicator produce a graph of annual catches by ocean for each species present in the input data. An associated RDF file is also produced.
 ##################################################################
 #Norbert Billet - IRD
+#2014/03/28: add the possibility to desactivate ecoscope sparql query
 #2013/11/04: V2 version: add RDF export and allow production of multiple graph (i.e. species)
 #2013/09/03: Norbert - Add attributes names as parameters
 #2013/08/30: Norbert - Modifications to use with IRDTunaAtlas package
@@ -20,10 +21,11 @@
 ##################################################################
 
 Atlas_i1_SpeciesByOcean <- function(df, 
-                                    yearAttributeName="ns0:year", 
-                                    oceanAttributeName="ns0:ocean", 
-                                    speciesAttributeName="ns0:species",
-                                    valueAttributeName="ns0:value")
+                                    yearAttributeName="year", 
+                                    oceanAttributeName="ocean", 
+                                    speciesAttributeName="species",
+                                    valueAttributeName="value",
+                                    withSparql=TRUE)
 {
   if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -90,11 +92,16 @@ Atlas_i1_SpeciesByOcean <- function(df,
     #convert values from tons to thousand tons
     aggData$value <- aggData$value / 1000
     
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current
@@ -128,8 +135,13 @@ Atlas_i1_SpeciesByOcean <- function(df,
               data_output_identifier=plot.filepath,
               start=as.character(min(aggData$year)),
               end=as.character(max(aggData$year)),
+<<<<<<< HEAD
              #julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+=======
+              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+              withSparql)
+>>>>>>> deec6525610dde2bbdfa885f40a81e710334a6ab
         
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
   }

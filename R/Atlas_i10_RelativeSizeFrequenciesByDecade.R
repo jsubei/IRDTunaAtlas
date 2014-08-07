@@ -23,11 +23,12 @@
 ##################################################################
 
 Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
-                                                      yearAttributeName="ns0:year",
-                                                      speciesAttributeName="ns0:species",
-                                                      sizeClassLowerBoundAttributeName="ns0:class_low",
-                                                      sizeClassUpperBoundAttributeName="ns0:class_up",
-                                                      fishCountAttributeName="ns0:fish_count")
+                                                      yearAttributeName="year",
+                                                      speciesAttributeName="species",
+                                                      sizeClassLowerBoundAttributeName="class_low",
+                                                      sizeClassUpperBoundAttributeName="class_up",
+                                                      fishCountAttributeName="fish_count",
+                                                      withSparql=TRUE)
 {  
   if (! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -102,11 +103,16 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
   
   for (species.current in unique(df$species)) {
     
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current
@@ -158,7 +164,8 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
              data_output_identifier=plot.filepath,
              start=as.character(species.df.year.min),
              end=as.character(species.df.year.max),
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
     
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }

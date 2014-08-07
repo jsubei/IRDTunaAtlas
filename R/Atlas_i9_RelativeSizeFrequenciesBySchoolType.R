@@ -24,12 +24,13 @@
 ##################################################################
 
 Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
-                                                         yearAttributeName="ns0:year",
-                                                         speciesAttributeName="ns0:species",
-                                                         schoolAttributeName="ns0:school",
-                                                         sizeClassLowerBoundAttributeName="ns0:class_low",
-                                                         sizeClassUpperBoundAttributeName="ns0:class_up",
-                                                         fishCountAttributeName="ns0:fish_count")
+                                                         yearAttributeName="year",
+                                                         speciesAttributeName="species",
+                                                         schoolAttributeName="school",
+                                                         sizeClassLowerBoundAttributeName="class_low",
+                                                         sizeClassUpperBoundAttributeName="class_up",
+                                                         fishCountAttributeName="fish_count",
+                                                         withSparql=TRUE)
 {
   if (! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -134,7 +135,8 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
              data_output_identifier=plot.filepath,
              start=as.character(min(subDf$year)),
              end=as.character(max(subDf$year)),
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
     
     return(c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }
@@ -142,13 +144,18 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
   #define the resulr df  
   result.df <- c()
   
-  for (species.current in unique(df$species)) {
+  for (species.current in unique(df$species)) {    
     
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current

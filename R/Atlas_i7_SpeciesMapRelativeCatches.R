@@ -27,7 +27,8 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
                                                geomIdAttributeName="geom_id",
                                                yearAttributeName="year", 
                                                speciesAttributeName="species",                                         
-                                               valueAttributeName="value")
+                                               valueAttributeName="value",
+                                               withSparql=TRUE)
 {
 
   #check inputs
@@ -120,7 +121,8 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
              data_output_identifier=plot.filepath, 
              start=as.character(min(subDf$year)),
              end=as.character(max(subDf$year)),
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
     
     return(c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }
@@ -132,11 +134,16 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
   #fisrt subset by species
   for (species.current in unique(df$species)) {
     
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current

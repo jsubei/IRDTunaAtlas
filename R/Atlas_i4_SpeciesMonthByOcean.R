@@ -21,11 +21,12 @@
 #                                    valueAttributeName="value")
 ##################################################################
 Atlas_i4_SpeciesMonthByOcean <- function(df, 
-                                         oceanAttributeName="ns0:ocean",
-                                         yearAttributeName="ns0:year", 
-                                         monthAttributeName="ns0:month", 
-                                         speciesAttributeName="ns0:species",                                         
-                                         valueAttributeName="ns0:value")
+                                         oceanAttributeName="ocean",
+                                         yearAttributeName="year", 
+                                         monthAttributeName="month", 
+                                         speciesAttributeName="species",                                         
+                                         valueAttributeName="value",
+                                         withSparql=TRUE)
 {
   if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -87,11 +88,16 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
   
   for (species.current in unique(df$species)) {
     
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current
@@ -147,7 +153,8 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
                data_output_identifier=plot.filepath,  
                start=as.character(min(current.df$year)),
                end=as.character(max(current.df$year)),
-               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+               withSparql)
       
       result.df <- rbind(result.df, c(plot.file.path=pplot.filepath, rdf.file.path=rdf_file_path))
     }
@@ -190,7 +197,8 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
                data_output_identifier=plot.filepath,             
                start=as.character(min(current.df$year)),
                end=as.character(max(current.df$year)),
-               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+               withSparql)
       
       result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
     }

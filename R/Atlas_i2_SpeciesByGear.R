@@ -20,10 +20,11 @@
 ##################################################################
 
 Atlas_i2_SpeciesByGear <- function(df, 
-                                   yearAttributeName="ns0:year", 
-                                   speciesAttributeName="ns0:species",
-                                   gearTypeAttributeName="ns0:gear_type",
-                                   valueAttributeName="ns0:value")
+                                   yearAttributeName="year", 
+                                   speciesAttributeName="species",
+                                   gearTypeAttributeName="gear_type",
+                                   valueAttributeName="value",
+                                   withSparql=TRUE)
 {
   if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -87,12 +88,17 @@ Atlas_i2_SpeciesByGear <- function(df,
     
     #order factors levels by value
     aggData$gear_type <- factor(aggData$gear_type, levels=rev(levels(reorder(aggData$gear_type, aggData$value))))
-    
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+      
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current
@@ -154,9 +160,14 @@ Atlas_i2_SpeciesByGear <- function(df,
              data_output_identifier=plot.filepath,
              start=as.character(min(aggData$year)),
              end=as.character(max(aggData$year)),
+<<<<<<< HEAD
              #julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
             )
+=======
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
+>>>>>>> deec6525610dde2bbdfa885f40a81e710334a6ab
     
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
   }

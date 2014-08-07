@@ -27,5 +27,6 @@ export(
   Atlas_i10_RelativeSizeFrequenciesByDecade,
   Atlas_i11_CatchesByCountry,
   enRichment,
-  readData
+  readData,
+  evaluateAndRenameAttributesNames
 )

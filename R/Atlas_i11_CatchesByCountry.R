@@ -28,7 +28,8 @@ Atlas_i11_CatchesByCountry <- function(df,
                                        geomIdAttributeName="geom_id",
                                        countryAttributeName="country", 
                                        speciesAttributeName="species",                                         
-                                       valueAttributeName="value")
+                                       valueAttributeName="value",
+                                       withSparql=TRUE)
 {
   sizeX <- 1200
   sizeY <- 600
@@ -112,11 +113,16 @@ Atlas_i11_CatchesByCountry <- function(df,
   
   for (species.current in unique(df$species)) {
     
-    #get species scietific name from ecoscope sparql
-    sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-    if (length(sparqlResult) > 0) {
-      species.label <- sparqlResult[1,"scientific_name"]
-      species.URI <- sparqlResult[1,"uri"]
+    if (withSparql) {      
+      #get species scientific name from ecoscope sparql
+      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+      if (length(sparqlResult) > 0) {
+        species.label <- sparqlResult[1,"scientific_name"]
+        species.URI <- sparqlResult[1,"uri"]
+      } else {
+        species.label <- species.current
+        species.URI <- species.current
+      } 
     } else {
       species.label <- species.current
       species.URI <- species.current
@@ -211,10 +217,17 @@ Atlas_i11_CatchesByCountry <- function(df,
                       "IRD Atlas thonier : indicateur #11 - Carte des captures"),
              descriptions=c(paste(species.label, "catches map"), 
                             paste("Carte des captures de", species.label)),
+<<<<<<< HEAD
              subjects=c(as.character(species.current)),
              processes="http://www.ecoscope.org/ontologies/resources/processI10",
              data_output_identifier=plot.filepath,
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
+=======
+             subjects=c(species.label),
+             processes="&localfile;/processI11",
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
+>>>>>>> deec6525610dde2bbdfa885f40a81e710334a6ab
     
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }

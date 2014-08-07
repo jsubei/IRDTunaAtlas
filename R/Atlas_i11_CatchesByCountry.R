@@ -217,17 +217,11 @@ Atlas_i11_CatchesByCountry <- function(df,
                       "IRD Atlas thonier : indicateur #11 - Carte des captures"),
              descriptions=c(paste(species.label, "catches map"), 
                             paste("Carte des captures de", species.label)),
-<<<<<<< HEAD
              subjects=c(as.character(species.current)),
-             processes="http://www.ecoscope.org/ontologies/resources/processI10",
+             processes="http://www.ecoscope.org/ontologies/resources/processI11",
              data_output_identifier=plot.filepath,
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
-=======
-             subjects=c(species.label),
-             processes="&localfile;/processI11",
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
              withSparql)
->>>>>>> deec6525610dde2bbdfa885f40a81e710334a6ab
     
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }

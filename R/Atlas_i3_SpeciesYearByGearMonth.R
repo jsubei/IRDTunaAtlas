@@ -193,13 +193,8 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
                data_output_identifier=plot.filepath,             
                start=as.character(year.current),
                end=as.character(year.current),
-<<<<<<< HEAD
-               #julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
-=======
                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
                withSparql)
->>>>>>> deec6525610dde2bbdfa885f40a81e710334a6ab
       
       result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
       

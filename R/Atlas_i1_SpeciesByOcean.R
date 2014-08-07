@@ -135,14 +135,10 @@ Atlas_i1_SpeciesByOcean <- function(df,
               data_output_identifier=plot.filepath,
               start=as.character(min(aggData$year)),
               end=as.character(max(aggData$year)),
-<<<<<<< HEAD
-             #julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))")
-=======
+             #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
               withSparql)
->>>>>>> deec6525610dde2bbdfa885f40a81e710334a6ab
-        
+      
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
   }
   return(result.df)

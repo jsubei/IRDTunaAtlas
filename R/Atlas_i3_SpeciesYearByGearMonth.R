@@ -177,6 +177,18 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
       tempfile.base <- tempfile(pattern=paste("I3_", gsub(" ", "_", species.label), "_", as.character(year.current), "_", sep=""))
       plot.filepath <- paste(tempfile.base, ".png", sep="")
       ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+            
+      p8  <- hPlot(value ~ year, data = aggData, type = c('column', 'line'), group = 'gear_type', radius = 6)
+      p8 $plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
+      p8 $xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
+      p8 
+      
+      
+      plot.filepathtml <- paste(tempdir(), tempfile.base, ".html", sep="")
+      p8$save(plot.filepathtml) 
+      #p8$save(paste("titi.html", sep="")) 
+      p8
+      
       
       #create the RDF metadata
       rdf.filepath <- paste(tempfile.base, ".rdf", sep="")

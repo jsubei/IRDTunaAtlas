@@ -173,10 +173,10 @@ Atlas_i11_CatchesByCountry <- function(df,
       }
     }
     
-    base_temp_file <- tempfile(pattern=paste("I11_", gsub(" ", "_", species.label), sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
+    tempfile.base <- tempfile(pattern=paste("I11_", gsub(" ", "_", species.label), sep=""))
+    plot.filepath <- paste(tempfile.base, ".png", sep="")
   
-    png(plot_file_path, width=sizeX, height=sizeY)
+    png(plot.filepath, width=sizeX, height=sizeY)
 
     #base map  
     basemap(xlim=bb[1,], ylim=bb[2,], main=paste(species.label, "catches per country"), xlab=NA, ylab=NA, bg=NA)
@@ -210,19 +210,20 @@ Atlas_i11_CatchesByCountry <- function(df,
     dev.off()
     
     #create the RDF metadata
-    rdf_file_path <- paste(base_temp_file, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(base_temp_file, ".rdf", sep=""),
-             rdf_subject="http://ecoscope.org/indicatorI11", 
+    rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
+    buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
              titles=c("IRD Tuna Atlas: indicator #11 - Map of catches", 
                       "IRD Atlas thonier : indicateur #11 - Carte des captures"),
              descriptions=c(paste(species.label, "catches map"), 
                             paste("Carte des captures de", species.label)),
-             subjects=c(species.label),
-             processes="&localfile;/processI11",
+             subjects=c(as.character(species.current)),
+             processes="http://www.ecoscope.org/ontologies/resources/processI11",
+             data_output_identifier=plot.filepath,
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
              withSparql)
     
-    result.df <- rbind(result.df, c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
+    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }
   
   return(result.df)

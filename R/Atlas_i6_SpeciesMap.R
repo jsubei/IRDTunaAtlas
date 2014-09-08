@@ -106,26 +106,28 @@ Atlas_i6_SpeciesMap <- function(df,
       labs(title=my.title)
     
     #draw the plot
-    base_temp_file <- tempfile(pattern=paste("I6_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
-    ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
+    tempfile.base <- tempfile(pattern=paste("I6_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "_to_", as.character(max(subDf$year)), "_", sep=""))
+    plot.filepath <- paste(tempfile.base, ".png", sep="")
+    ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
     #create the RDF metadata
-    rdf_file_path <- paste(base_temp_file, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(base_temp_file, ".rdf", sep=""),
-             rdf_subject="http://ecoscope.org/indicatorI6", 
+    rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
+    buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
              titles=c("IRD Tuna Atlas: indicator #6 - Map of catches", 
                       "IRD Atlas thonier : indicateur #6 - Carte des captures"),
              descriptions=c(paste(species.label, "catches map"), 
                             paste("Carte des captures de", species.label)),
-             subjects=c(species.label),
-             processes="&localfile;/processI6",
+             subjects=c(as.character(species.current)),
+             #subjects=c(species.label),
+             processes="http://www.ecoscope.org/ontologies/resources/processI4",
+             data_output_identifier=plot.filepath,  
              start=as.character(min(subDf$year)),
              end=as.character(max(subDf$year)),
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
              withSparql)
     
-    return(c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
+    return(c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }
   
   #define the resulr df  

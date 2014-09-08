@@ -125,26 +125,28 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
       labs(title=my.title)
     
     #draw the plot
-    base_temp_file <- tempfile(pattern=paste("I8_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
-    ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
+    tempfile.base <- tempfile(pattern=paste("I8_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
+    plot.filepath <- paste(tempfile.base, ".png", sep="")
+    ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
     #create the RDF metadata
-    rdf_file_path <- paste(base_temp_file, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(base_temp_file, ".rdf", sep=""),
-             rdf_subject="http://ecoscope.org/indicatorI8", 
+    rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
+    buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
              titles=c("IRD Tuna Atlas: indicator #8 - Map of contribution of catches in percent of catches for all species", 
                       "IRD Atlas thonier : indicateur #8 - Carte des contribution aux captures en pourcentage des captures pour toutes les espèces"),
              descriptions=c(paste(species.label, "contribution catches map"), 
                             paste("Carte des contributions aux captures de", species.label)),
-             subjects=c(species.label),
-             processes="&localfile;/processI8",
+             #subjects=c(species.label),
+             subjects=c(as.character(targetedSpecies)),
+             processes="http://www.ecoscope.org/ontologies/resources/processI8",
+             data_output_identifier=plot.filepath, 
              start=as.character(min(subDf$year)),
              end=as.character(max(subDf$year)),
              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
              withSparql)
     
-    return(c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
+    return(c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
   }
   
   if (withSparql) {      

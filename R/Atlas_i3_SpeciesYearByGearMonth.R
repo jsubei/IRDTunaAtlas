@@ -97,9 +97,9 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
   }
   
   #test if FAO usual gear codes are used
-  if (length(intersect(levels(df$gear_type), c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"))) == length(levels(df$gear_type))) {
-    df$gear_type <- factor(df$gear_type, levels=c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"), labels=c("Baitboat", "Gillnet", "Longline", "Purse seine", "Unclass. art. Indian O.", "Unclass. art. Atl. O.", "Trol.", "Trap"))
-  }
+  #if (length(intersect(levels(df$gear_type), c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"))) == length(levels(df$gear_type))) {
+  #  df$gear_type <- factor(df$gear_type, levels=c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"), labels=c("Baitboat", "Gillnet", "Longline", "Purse seine", "Unclass. art. Indian O.", "Unclass. art. Atl. O.", "Trol.", "Trap"))
+  #}
   
   #setup the palette
   my.colors <- brewer.pal(length(levels(df$gear_type)), "Set1")
@@ -177,17 +177,32 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
       tempfile.base <- tempfile(pattern=paste("I3_", gsub(" ", "_", species.label), "_", as.character(year.current), "_", sep=""))
       plot.filepath <- paste(tempfile.base, ".png", sep="")
       ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+            
+      p8  <- hPlot(value ~ year, data = aggData, type = c('column', 'line'), group = 'gear_type', radius = 6)
+      p8 $plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
+      p8 $xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
+      p8 
+      
+      
+      plot.filepathtml <- paste(tempdir(), tempfile.base, ".html", sep="")
+      p8$save(plot.filepathtml) 
+      #p8$save(paste("titi.html", sep="")) 
+      p8
+      
       
       #create the RDF metadata
       rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
       buildRdf(rdf_file_path=rdf.filepath,
-               rdf_subject="http://ecoscope.org/indicatorI3", 
+               #rdf_subject="http://ecoscope.org/indicatorI3", 
+               rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
                titles=c("IRD Tuna Atlas: indicator #3 - catches by species for a given year by gear type and by month", 
                         "IRD Atlas thonier : indicateur #3 - captures par espèces pour une année donnée par mois et par type d'engin"),
                descriptions=c(paste(species.label, "catches by gear type and by month on", as.character(year.current)), 
                               paste("Captures de", species.label, "par mois et par type d'engin pour l'année", as.character(year.current))),
                subjects=c(as.character(species.current), as.character(unique(current.df$gear_type))),
-               processes="&localfile;/processI3",
+               #processes="&localfile;/processI3",
+               processes="http://www.ecoscope.org/ontologies/resources/processI3",
+               data_output_identifier=plot.filepath,             
                start=as.character(year.current),
                end=as.character(year.current),
                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",

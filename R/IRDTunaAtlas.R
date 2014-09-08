@@ -193,7 +193,7 @@ readWFS <- function(url, outputFormat = "GML", p4s = NULL, gmlIdAttributeName="g
       if(is.na(srs)){
         warning("Unable to convert GML srsName to a CRS object. CRS will be set to NA", call. = T)
       }
-
+      
       if (missing(p4s)){
         features = readOGR(destfile, layername, p4s = srs, disambiguateFIDs=TRUE, stringsAsFactors=FALSE)
       }else{
@@ -262,7 +262,7 @@ WFS2GMLFile <- function(URL, layerName, filter)
     stop("Missing XML library")
   }
   
-#  message(desc)
+  #  message(desc)
   res <- getURLContent(desc)
   
   con <- xmlTreeParse(res, useInternalNodes = TRUE)
@@ -321,9 +321,34 @@ getSpeciesFromEcoscope <- function(speciesFAOName) {
                                       speciesFAOName, 
                                       "' .?uri skos:prefLabel ?scientific_name}", 
                                       sep="")
-                                )
+  )
   return(sparqlResult)
 }
+
+
+# getFishingGearIdFromEcoscope <- function(FishingGearId) {
+#   if (! require(rrdf)) {
+#     stop("Missing rrdf library")
+#   }
+#   
+#   if (missing(FishingGearId) || is.na(FishingGearId) || nchar(FishingGearId) == 0) {
+#     stop("Missing speciesFAOName parameter")
+#   }
+#   
+#   sparqlQuery <-  paste("PREFIX ecosystems_def: <http://www.ecoscope.org/ontologies/ecosystems_def/> ", 
+#                         "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ", 
+#                         "SELECT * WHERE { ?uri ecosystems_def:faoId '", 
+#                         FishingGearId, 
+#                         "' .?uri skos:prefLabel ?label}", 
+#                         sep="")
+#   sparqlResult <- sparql.remote("http://ecoscopebc.mpl.ird.fr/joseki/ecoscope", sparqlQuery  )
+#   
+#   print (sparqlQuery)
+#   return(sparqlResult)
+# }
+
+
+
 
 FAO2URIFromEcoscope <- function(FAOId) {
   if (! require(rrdf)) {
@@ -345,16 +370,16 @@ FAO2URIFromEcoscope <- function(FAOId) {
   return(NA)
 }
 
-#2014/03/28: add the possibility to desactivate ecoscope sparql query
-buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), start=NA, end=NA, spatial=NA, withSparql=TRUE) {
+buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), data_output_identifier=c(), start=NA, end=NA, spatial=NA, withSparql=TRUE) {
   if (! require(rrdf)) {
     stop("Missing rrdf library")
+  
   }
   
   store = new.rdf(ontology=FALSE)
   
   add.prefix(store,
-             prefix="ecoscope",
+             prefix="resources_def",
              namespace="http://www.ecoscope.org/ontologies/resources_def/")
   
   add.prefix(store,
@@ -370,12 +395,41 @@ buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), s
              subject=rdf_subject,
              predicate="http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
              object="http://www.ecoscope.org/ontologies/resources_def/indicator")
+  #process
+  add.triple(store,
+             subject=rdf_subject,
+             predicate="http://www.ecoscope.org/ontologies/resources_def/usesProcess",
+             object=processes)
+  
+  #has_data_input
+  #add.data.triple(store,
+  #            subject=rdf_subject,
+  #           predicate="http://www.ecoscope.org/ontologies/resources_def/has_data_input",
+  #           data=data_input)
+  
+  #has_data_input
+  add.data.triple(store,
+                  subject=rdf_subject,
+                  predicate="http://purl.org/dc/elements/1.1/identifier",
+                  data=data_output_identifier)
+  
+  
   #title
   for (title.current in titles) {
-    add.data.triple(store,
-                  subject=rdf_subject,
-                  predicate="http://purl.org/dc/elements/1.1/title",
-                  data=title.current)
+    if (length(title.current) == 2) {
+      #here we know the language attribute
+      add.data.triple(store,
+                      subject=rdf_subject,
+                      predicate="http://purl.org/dc/elements/1.1/title",
+                      lang=title.current[1],
+                      data=title.current[2])
+    } else {
+      #here we dont know 
+      add.data.triple(store,
+                      subject=rdf_subject,
+                      predicate="http://purl.org/dc/elements/1.1/title",
+                      data=title.current)
+    }
   }
   #description
   for (description.current in descriptions) {
@@ -406,16 +460,18 @@ buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), s
     }
     if (! is.na(URI)) {
       add.triple(store,
-                      subject=rdf_subject,
-                      predicate="http://purl.org/dc/elements/1.1/subject",
-                      object=URI)
-    } else {
-      add.data.triple(store,
                  subject=rdf_subject,
                  predicate="http://purl.org/dc/elements/1.1/subject",
-                 data=subject.current)
+                 object=URI)
+    } else {
+      add.data.triple(store,
+                      subject=rdf_subject,
+                      predicate="http://purl.org/dc/elements/1.1/subject",
+                      data=subject.current)
     }
   }
+  
+  
   
   if (! is.na(spatial)) {
     add.data.triple(store,
@@ -426,6 +482,10 @@ buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), s
   
   save.rdf(store=store, filename=rdf_file_path)
 }
+
+
+
+
 
 readData <- function(connectionType="local", dataType="csv", url, MDSTQuery, layer, ogcFilter, wfsVersion="1.1.0", ...) {
   
@@ -536,14 +596,14 @@ readData <- function(connectionType="local", dataType="csv", url, MDSTQuery, lay
       wfsUrl <- url
     }
     #read the GML file
-#old version    
+    #old version    
     #localFilePath <- downloadRemoteFile(wfsUrl)
     #read the file
     #df <- readData(connectionType="local", dataType="OGR", url=localFilePath)
     #delete the downloaded file
-#new version from E. Blondel
+    #new version from E. Blondel
     df <- readWFS(wfsUrl)
-
+    
     return(df)
   }
 }

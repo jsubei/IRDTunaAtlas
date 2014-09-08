@@ -7,6 +7,6 @@ Author: Norbert Billet <norbert.billet@ird.fr>
 Maintainer: Norbert Billet <norbert.billet@ird.fr>
 Description: IRD Tuna Atlas - iMarine project.
 License: GPL (version 2 or later)
-Depends: R (>= 2.15), XML, ggplot2, rgdal, RCurl, rrdf, RColorBrewer, plyr, mapdata, rgeos, maps, mapplots, ncdf, sp, fpc, rCharts
+Depends: R (>= 2.15), XML, ggplot2, rgdal, RCurl, rrdf, RColorBrewer, plyr, mapdata, rgeos, maps, mapplots, ncdf, sp, fpc, rCharts 
 Imports: methods
 URL: https://github.com/jsubei/IRDTunaAtlas

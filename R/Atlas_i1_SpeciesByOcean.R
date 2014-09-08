@@ -19,6 +19,7 @@
 #                         speciesAttributeName="species", 
 #                         valueAttributeName="value")
 ##################################################################
+library(rCharts)
 
 Atlas_i1_SpeciesByOcean <- function(df, 
                                     yearAttributeName="year", 
@@ -120,6 +121,49 @@ Atlas_i1_SpeciesByOcean <- function(df,
     tempfile.base <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""))
     plot.filepath <- paste(tempfile.base, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+    
+    ## AJOUT Julien RChart
+    #p8 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
+
+    ## AJOUT Julien RChart
+    
+    p8 <- hPlot(value ~ year, data = aggData, type = "bubble", title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
+    p8$chart(zoomType = "xy")
+    p8$yAxis(title = list(text = "Captures"))
+    
+  
+
+    ##p8 <- Rickshaw$new()
+    ##p8$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")#, colors = 'steelblue', , subtitle = species.label
+    ###p8$xAxis(type = 'Time')
+    ##p8$yAxis(orientation = 'right')
+    ##p8$set(width = 1080, height = 480)
+    #p8$chart(zoomType = "xy")
+    
+    
+    plot.filepathtml <- paste(tempfile.base, ".html", sep="")
+
+    #p8$save(plot.filepathtml) 
+    #p8$save(plot.filepathtml,cdn=TRUE) 
+    #p8$save(plot.filepathtml,include_assets = TRUE,cdn=TRUE) 
+    
+    #{p8 results = "asis", comment = NA}
+    #p8$show('iframe', cdn = TRUE)
+    p8$save(plot.filepathtml,standalone=TRUE) 
+  
+    p8
+    
+        
+    
+    dt <- dTable(
+      aggData,
+      sPaginationType= "full_numbers"
+    )
+    plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
+    dt$save(plot.filepathtmltable,standalone=TRUE) 
+    
+    dt
+        
     
     #create the RDF metadata
     rdf.filepath <- paste(tempfile.base, ".rdf", sep="")

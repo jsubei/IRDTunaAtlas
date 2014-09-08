@@ -18,6 +18,7 @@
 #                         speciesAttributeName="species", 
 #                         valueAttributeName="value")
 ##################################################################
+library(rCharts)
 
 Atlas_i2_SpeciesByGear <- function(df, 
                                    yearAttributeName="year", 
@@ -141,7 +142,35 @@ Atlas_i2_SpeciesByGear <- function(df,
 #     plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")
     plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+
+
+## AJOUT Julien RChart
+
+#p8 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarHorizontalChart')
+#p8$chart(showControls = F)
+#p8  <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart')
+p8  <- hPlot(value ~ year, group = 'gear_type', data = aggData, type = 'column', radius = 6)
+p8 $plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
+p8 $xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
+p8 
     
+
+plot.filepathtml <- paste(tempdir(), tempfile.base, ".html", sep="")
+p8$save(plot.filepathtml) 
+#p8$save(paste("titi.html", sep="")) 
+p8
+
+dt <- dTable(
+  aggData,
+  sPaginationType= "full_numbers"
+)
+plot.filepathtmltable <- paste(tempdir(),tempfile.base, "_table.html", sep="")
+dt$save(plot.filepathtmltable) 
+
+dt
+
+
+
     #create the RDF metadata
     rdf.filepath <- paste(tempdir(), tempfile.base, ".rdf", sep="")
     buildRdf(rdf_file_path=rdf.filepath,

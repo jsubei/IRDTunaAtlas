@@ -156,7 +156,7 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
                withSparql)
       
-      result.df <- rbind(result.df, c(plot.file.path=pplot.filepath, rdf.file.path=rdf_file_path))
+      result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
     }
     
     #if multiple decade we produce a graph by decade

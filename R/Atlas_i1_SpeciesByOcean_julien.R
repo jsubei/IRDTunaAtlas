@@ -33,7 +33,7 @@
 ##################################################################
 library(rCharts)
 # source("/home/tomcat7/temp/IRDTunaAtlas.R")
-source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas.R")
+source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i1_SpeciesByOcean_julien <- function(df, 
                                     yearAttributeName="year", 
@@ -159,37 +159,48 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
     ## AJOUT Julien RChart
-    #p8 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
-
+    plotRchartsNDV3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
+#     plotRchartsNDV3$addFilters("East Pacific O.", "Atlantic O.")
+    
     ## AJOUT Julien RChart
     
-    p8 <- hPlot(value ~ year, data = aggData, type = "bubble", title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
-    p8$chart(zoomType = "xy")
-    p8$yAxis(title = list(text = "Captures"))
-#     p8$addControls("x", value = "value", values = names(aggData$value))
-#     p8$addControls("y", value = "year", values = names(aggData$year[1:3]))
-    p8$exporting(enabled = T)
-#     p8$addControls("group", value = "FacVar1", values = names(simoriginal[, 1:3]))
+    plotRchartsHighcharts <- hPlot(value ~ year, data = aggData, type = "bubble", title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
+    plotRchartsHighcharts$chart(zoomType = "xy")
+    plotRchartsHighcharts$yAxis(title = list(text = "Captures"))
+#     plotRchartsHighcharts$addControls("x", value = "value", values = names(aggData$ocean))
+#     plotRchartsHighcharts$addFilters("East Pacific O.", "Atlantic O.")
     
-    ##p8 <- Rickshaw$new()
-    ##p8$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")#, colors = 'steelblue', , subtitle = species.label
-    ###p8$xAxis(type = 'Time')
-    ##p8$yAxis(orientation = 'right')
-    ##p8$set(width = 1080, height = 480)
-    #p8$chart(zoomType = "xy")
+    
+#     plotRchartsHighcharts$addControls("y", value = "year", values = names(aggData$year[1:3]))
+    plotRchartsHighcharts$exporting(enabled = T)
+#     plotRchartsHighcharts$addControls("group", value = "FacVar1", values = names(simoriginal[, 1:3]))
+    
+    plotRchartsRickshaw <- Rickshaw$new()
+    plotRchartsRickshaw$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")#, colors = 'steelblue', , subtitle = species.label
+    ##plotRchartsRickshaw$xAxis(type = 'Time')
+    plotRchartsRickshaw$yAxis(orientation = 'right')
+    plotRchartsRickshaw$set(width = 1080, height = 480)
+#     plotRchartsRickshaw$chart(zoomType = "xy")
         
     #plot.filepathtml <- paste(tempfile.base, ".html", sep="")
 
-    #p8$save(plot.filepathtml) 
-    #p8$save(plot.filepathtml,cdn=TRUE) 
-    #p8$save(plot.filepathtml,include_assets = TRUE,cdn=TRUE) 
+    #plotRchartsHighcharts$save(plot.filepathtml) 
+    #plotRchartsHighcharts$save(plot.filepathtml,cdn=TRUE) 
+    #plotRchartsHighcharts$save(plot.filepathtml,include_assets = TRUE,cdn=TRUE) 
     
-    #{p8 results = "asis", comment = NA}
-    #p8$show('iframe', cdn = TRUE)
-    plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-    plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
-    p8$save(plot.filepathtml,standalone=TRUE) 
-    p8
+    #{plotRchartsHighcharts results = "asis", comment = NA}
+    #plotRchartsHighcharts$show('iframe', cdn = TRUE)
+plot.filepathtml <- paste(tempfile.base, ".html", sep="")
+plot.filepathtmlNDV3 <- paste(tempfile.base, "_NDV3.html", sep="")
+plot.filepathtmlRickshaw <- paste(tempfile.base, "_Rickshaw.html", sep="")
+plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
+plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+plotRchartsNDV3$save(plot.filepathtmlNDV3,standalone=TRUE) 
+plotRchartsRickshaw$save(plot.filepathtmlRickshaw,standalone=TRUE) 
+
+
+
+    plotRchartsHighcharts
     
     #Datatable in HTML to be browsed online
     Datatable <- dTable(

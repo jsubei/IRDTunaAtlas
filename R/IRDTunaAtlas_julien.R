@@ -370,7 +370,7 @@ FAO2URIFromEcoscope <- function(FAOId) {
   return(NA)
 }
 
-buildRdf <- function(store,rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), data_output_identifier=c(), start=NA, end=NA, spatial=NA, withSparql=TRUE) {
+buildRdf <- function(store,rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), data_output_identifiers=c(), start=NA, end=NA, spatial=NA, withSparql=TRUE) {
   if (! require(rrdf)) {
     stop("Missing rrdf library")
   
@@ -408,11 +408,12 @@ buildRdf <- function(store,rdf_file_path, rdf_subject, titles=c(), descriptions=
   #           data=data_input)
   
   #has_data_input
-  add.data.triple(store,
+for (data_output_identifier.current in data_output_identifiers) {
+    add.data.triple(store,
                   subject=rdf_subject,
                   predicate="http://purl.org/dc/elements/1.1/identifier",
-                  data=data_output_identifier)
-  
+                  data=data_output_identifier.current)
+}
   
   #title
   for (title.current in titles) {

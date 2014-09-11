@@ -171,10 +171,8 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
     #plotRchartsNVD3$addFilters("East Pacific O.", "Atlantic O.")
     #plotRchartsNVD3$addControls("group", value = "ocean", values = names(aggData$ocean[1:3]))
-    plotRchartsNVD3bis$xAxis(axisLabel = 'Year')
-    plotRchartsNVD3bis$yAxis(axisLabel = 'Catches')
-    plotRchartsNVD3bis$chart(useInteractiveGuideline=TRUE)    
-    
+
+  
     ## AJOUT Julien RChart Highcharts
     plotRchartsHighcharts <- hPlot(value ~ year, data = aggData, type = "bubble", title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
     plotRchartsHighcharts$chart(zoomType = "xy")

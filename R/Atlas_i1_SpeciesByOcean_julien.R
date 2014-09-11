@@ -153,14 +153,27 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     #draw the plot
     #tempfile.base <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""),tmpdir="/data/www/html/tmp/")
     filename <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
+    #filename <- paste("I1_", gsub(" ", "_", species.label), "_", sep="")
     tempfile.base <- paste("/data/www/html/tmp",filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
     plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
-    ## AJOUT Julien RChart NDV3
-    plotRchartsNDV3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
-    #plotRchartsNDV3$addFilters("East Pacific O.", "Atlantic O.")
+    ## AJOUT Julien RChart NVD3
+#     plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
+    plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'stackedAreaChart', id = 'chart')
+    #plotRchartsNVD3$addFilters("East Pacific O.", "Atlantic O.")
+    #plotRchartsNVD3$addControls("group", value = "ocean", values = names(aggData$ocean[1:3]))
+    plotRchartsNVD3$xAxis(axisLabel = 'Year')
+    plotRchartsNVD3$yAxis(axisLabel = 'Catches')
+    plotRchartsNVD3$chart(useInteractiveGuideline=TRUE)
+    
+    plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
+    #plotRchartsNVD3$addFilters("East Pacific O.", "Atlantic O.")
+    #plotRchartsNVD3$addControls("group", value = "ocean", values = names(aggData$ocean[1:3]))
+    plotRchartsNVD3bis$xAxis(axisLabel = 'Year')
+    plotRchartsNVD3bis$yAxis(axisLabel = 'Catches')
+    plotRchartsNVD3bis$chart(useInteractiveGuideline=TRUE)    
     
     ## AJOUT Julien RChart Highcharts
     plotRchartsHighcharts <- hPlot(value ~ year, data = aggData, type = "bubble", title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
@@ -171,7 +184,9 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     #plotRchartsHighcharts$addControls("x", value = "value", values = names(aggData$ocean))
     #plotRchartsHighcharts$addControls("group", value = "FacVar1", values = names(simoriginal[, 1:3]))
     #plotRchartsHighcharts$addControls("y", value = "year", values = names(aggData$year[1:3]))
-
+    #Display Plots
+    plotRchartsHighcharts
+    
     ## AJOUT Julien RChart Highcharts
     plotRchartsRickshaw <- Rickshaw$new()
     plotRchartsRickshaw$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")#, colors = 'steelblue', , subtitle = species.label
@@ -188,31 +203,28 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     #{plotRchartsHighcharts results = "asis", comment = NA}
     #plotRchartsHighcharts$show('iframe', cdn = TRUE)
     
-    plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-    plot.filepathtmlNDV3 <- paste(tempfile.base, "_NDV3.html", sep="")
-    plot.filepathtmlRickshaw <- paste(tempfile.base, "_Rickshaw.html", sep="")
-    plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
-    plotRchartsNDV3$save(plot.filepathtmlNDV3,standalone=TRUE) 
-    plotRchartsRickshaw$save(plot.filepathtmlRickshaw,standalone=TRUE) 
-    plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
-    
-
-    
     #Datatable in HTML to be browsed online
     Datatable <- dTable(
       aggData,
       sPaginationType= "full_numbers"
     )    
-  
+    
+    #     Display Plots
+    Datatable
+    
+    plot.filepathtml <- paste(tempfile.base, ".html", sep="")
+    plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
+    plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
+    plot.filepathtmlNVD3bis <- paste(tempfile.base, "_NVD3bis.html", sep="")
+    plot.filepathtmlRickshaw <- paste(tempfile.base, "_Rickshaw.html", sep="")
+    plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+    plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
+    plotRchartsNVD3bis$save(plot.filepathtmlNVD3bis,standalone=TRUE) 
+    plotRchartsRickshaw$save(plot.filepathtmlRickshaw,standalone=TRUE) 
     plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
+    Datatable$save(plot.filepathtmltable,standalone=TRUE)     
     plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp",filename, "_table.html", sep="")    
-    Datatable$save(plot.filepathtmltable,standalone=TRUE) 
-    
-    
-#     Display Plots
-     plotRchartsHighcharts
-     Datatable
-
+      
     
     #create the RDF metadata
     rdf.filepath <- paste("/data/www/html/tmp/La_totale", ".rdf", sep="")
@@ -227,7 +239,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
                        paste("Captures de", species.label, "par océan")),
               subjects=c(as.character(species.current)),
               processes="http://www.ecoscope.org/ontologies/resources/processI1",
-              data_output_identifier=c(plot.filepath,plot.filepathtmltable,plot.filepathtml,plot.filepathtmlNDV3),
+              data_output_identifier=c(plot.filepath,plot.filepathtmltable,plot.filepathtml,plot.filepathtmlNVD3,plot.filepathtmlNVD3bis),
               start=as.character(min(aggData$year)),
               end=as.character(max(aggData$year)),
              #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES

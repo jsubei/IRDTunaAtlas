@@ -94,22 +94,16 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   
   #List to store URLs of the set of files generated for each species
   liste <- list()
-  
-  
   store = new.rdf(ontology=FALSE)
-  
   add.prefix(store,
              prefix="resources_def",
              namespace="http://www.ecoscope.org/ontologies/resources_def/")
-  
   add.prefix(store,
              prefix="ical",
              namespace="http://www.w3.org/2002/12/cal/ical/")
-  
   add.prefix(store,
              prefix="dct",
              namespace="http://purl.org/dc/terms/")
-  
   
   #TODO : mcforeach ?
   for (species.current in unique(df$species)) {
@@ -160,7 +154,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
     ## AJOUT Julien RChart NVD3
-#     plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
+    #plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
     plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'stackedAreaChart', id = 'chart')
     #plotRchartsNVD3$addFilters("East Pacific O.", "Atlantic O.")
     #plotRchartsNVD3$addControls("group", value = "ocean", values = names(aggData$ocean[1:3]))

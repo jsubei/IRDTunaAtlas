@@ -172,49 +172,35 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
         scale_fill_manual(name="Gear type", values=my.colors) +
         xlab("Month") + ylab("Catches in tons") + 
         ggtitle(paste(species.label, "monthly catches by gear type on", year.current))
-        
+      
       #draw the plot
       tempfile.base <- tempfile(pattern=paste("I3_", gsub(" ", "_", species.label), "_", as.character(year.current), "_", sep=""))
       plot.filepath <- paste(tempfile.base, ".png", sep="")
-      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
-            
+      ggsave(filename=plot.filepath, plot=resultPlot, dpi=300)
       
-      ##debut Julien
-      p8  <- hPlot(value ~ year, data = aggData, type = c('column', 'line'), group = 'gear_type', radius = 6)
-      p8 $plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
-      p8 $xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
-      p8 
-      
-      
-      plot.filepathtml <- paste(tempdir(), tempfile.base, ".html", sep="")
-      p8$save(plot.filepathtml) 
-      #p8$save(paste("titi.html", sep="")) 
-      p8
-      ##fin Julien
-      
-      
-      #create the RDF metadata
+#       
+#       #create the RDF metadata
       rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
-      buildRdf(rdf_file_path=rdf.filepath,
-               #rdf_subject="http://ecoscope.org/indicatorI3", 
-               rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
-               titles=c("IRD Tuna Atlas: indicator #3 - catches by species for a given year by gear type and by month", 
-                        "IRD Atlas thonier : indicateur #3 - captures par espèces pour une année donnée par mois et par type d'engin"),
-               descriptions=c(paste(species.label, "catches by gear type and by month on", as.character(year.current)), 
-                              paste("Captures de", species.label, "par mois et par type d'engin pour l'année", as.character(year.current))),
-               subjects=c(as.character(species.current), as.character(unique(current.df$gear_type))),
-               #processes="&localfile;/processI3",
-               processes="http://www.ecoscope.org/ontologies/resources/processI3",
-               data_output_identifier=plot.filepath,             
-               start=as.character(year.current),
-               end=as.character(year.current),
-               spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-               withSparql)
+#       buildRdf(rdf_file_path=rdf.filepath,
+#                #rdf_subject="http://ecoscope.org/indicatorI3", 
+#                rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
+#                titles=c("IRD Tuna Atlas: indicator #3 - catches by species for a given year by gear type and by month", 
+#                         "IRD Atlas thonier : indicateur #3 - captures par espèces pour une année donnée par mois et par type d'engin"),
+#                descriptions=c(paste(species.label, "catches by gear type and by month on", as.character(year.current)), 
+#                               paste("Captures de", species.label, "par mois et par type d'engin pour l'année", as.character(year.current))),
+#                subjects=c(as.character(species.current), as.character(unique(current.df$gear_type))),
+#                #processes="&localfile;/processI3",
+#                processes="http://www.ecoscope.org/ontologies/resources/processI3",
+#                data_output_identifier=plot.filepath,             
+#                start=as.character(year.current),
+#                end=as.character(year.current),
+#                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+#                withSparql)
       
       result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
       
     }
   }
-
+  
   return(result.df)
 }

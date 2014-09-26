@@ -145,12 +145,12 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     theme(legend.position="bottom")
     
     #draw the plot
-    #tempfile.base <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""),tmpdir="/data/www/html/tmp/")
+    #tempfile.base <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""),tmpdir="/data/www/html/tmp/SpeciesByOcean")
     filename <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
     #filename <- paste("I1_", gsub(" ", "_", species.label), "_", sep="")
-    tempfile.base <- paste("/data/www/html/tmp",filename, sep="")
+    tempfile.base <- paste("/data/www/html/tmp/SpeciesByOcean",filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
-    plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".png", sep="")
+    plot.URLpng <- paste("http://mdst-macroes.ird.fr/SpeciesByOcean",filename, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
     ## AJOUT Julien RChart NVD3
@@ -168,7 +168,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
 
   
     ## AJOUT Julien RChart Highcharts
-    plotRchartsHighcharts <- hPlot(value ~ year, data = aggData, type = "bubble", title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
+    plotRchartsHighcharts <- hPlot(value ~ year, data = aggData, type = c("line","scatter", "bubble"), title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
     plotRchartsHighcharts$chart(zoomType = "xy")
     plotRchartsHighcharts$yAxis(title = list(text = "Captures"))
     plotRchartsHighcharts$exporting(enabled = T)
@@ -205,7 +205,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     Datatable
     
     plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-    plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
+    plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean",filename, ".html", sep="")
     plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
     plot.filepathtmlNVD3bis <- paste(tempfile.base, "_NVD3bis.html", sep="")
     plot.filepathtmlRickshaw <- paste(tempfile.base, "_Rickshaw.html", sep="")
@@ -215,13 +215,13 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     plotRchartsRickshaw$save(plot.filepathtmlRickshaw,standalone=TRUE) 
     plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-    plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp",filename, "_table.html", sep="")    
+    plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean",filename, "_table.html", sep="")    
       
     
     #create the RDF metadata
-    rdf.filepath <- paste("/data/www/html/tmp/La_totale", ".rdf", sep="")
+    rdf.filepath <- paste("/data/www/html/tmp/SpeciesByOcean/La_totale", ".rdf", sep="")
     #rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
-    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".rdf", sep="")
+    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean",filename, ".rdf", sep="")
     buildRdf(store=store, rdf_file_path=rdf.filepath,
               rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
               #rdf_subject="http://ecoscope.org/indicatorI1", 
@@ -274,3 +274,4 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   
   
 }
+

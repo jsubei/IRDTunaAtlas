@@ -102,8 +102,7 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
   add.prefix(store,
              prefix="dct",
              namespace="http://purl.org/dc/terms/")
-  
-  
+
     
   for (species.current in unique(df$species)) {
     
@@ -157,20 +156,16 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
       filename <- tempfile(pattern=paste("I4", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
       tempfile.base <- paste("/data/www/html/tmp/SpeciesByMonthByOcean",filename, sep="")
       plot.filepath <- paste(tempfile.base, ".png", sep="")
-      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+      ggsave(filename=plot.filepath, plot=resultPlot, dpi=300)
       plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean",filename, ".png", sep="")
-      
-      
-      ## Example 4
-      plotRchartsHighcharts <- data.frame(key = c("a", "b", "c"), value = c(1, 2, 3))
-      hPlot(x = "ocean", y = "value", data = mergedDf, type = "pie")
+           
+      ## plot Rcharts Highcharts
+      plotRchartsHighcharts <- hPlot(x = "ocean", y = "value", data = mergedDf, type = "pie")
       plotRchartsHighcharts
       
       ## {title: Pie Chart}
       plotRchartsNVD3 <- nPlot(~ ocean, data = mergedDf, type = 'pieChart')
       plotRchartsNVD3
-      
-      
       
       ## Dataset in HTML
       Datatable <- dTable(
@@ -184,8 +179,9 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
       plot.filepathtml <- paste(tempfile.base, ".html", sep="")
       plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean",filename, ".html", sep="")
       plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
-      plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
       plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
+      plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
+
 #       Datatable
       plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
       Datatable$save(plot.filepathtmltable,standalone=TRUE)     
@@ -193,8 +189,8 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
       
       
       #create the RDF metadata
-      rdf.filepath <- paste("/data/www/html/tmp/La_totale/SpeciesByMonthByOcean", ".rdf", sep="")
-      rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".rdf", sep="")
+      rdf.filepath <- paste("/data/www/html/tmp/SpeciesByMonthByOcean/La_totale", ".rdf", sep="")
+      rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean",filename, ".rdf", sep="")
       buildRdf(store=store, rdf_file_path=rdf.filepath,
                #rdf_subject="http://ecoscope.org/indicatorI4", 
                rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
@@ -204,13 +200,14 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
                               paste("Captures mensuelles de", species.label, "par océan")),
                subjects=c(as.character(species.current), as.character(unique(current.df$ocean))),
                processes="http://www.ecoscope.org/ontologies/resources/processI4",
-               data_output_identifier=plot.filepath,  
+               data_output_identifier=c(plot.filepath,plot.filepathtmltable,plot.filepathtmlNVD3),
+#                data_output_identifier=c(plot.filepath,plot.filepathtmltable,plot.filepathtml,plot.filepathtmlNVD3),
                start=as.character(min(current.df$year)),
                end=as.character(max(current.df$year)),
                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
                withSparql)
       
-      result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
+      result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
     }
     
     #if multiple decade we produce a graph by decade
@@ -232,14 +229,46 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
         labs(title=paste(species.label, "monthly catches by ocean and by decade"))
       
       #draw the plot
-      tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.current), "_byDecade_", sep=""))
+      #tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.current), "_byDecade_", sep=""))
+      filename <- tempfile(pattern=paste("I4", gsub(" ", "_", species.label), "_byDecade_", sep=""),tmpdir="")
+      tempfile.base <- paste("/data/www/html/tmp/SpeciesByMonthByOcean",filename, sep="")
       #plot_file_path <- paste(tempfile.base, ".png", sep="")
       plot.filepath <- paste(tempfile.base, ".png", sep="")
       ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+      plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean",filename, ".png", sep="")
+      
+      ## plot Rcharts Highcharts
+	#      plotRchartsHighcharts <- hPlot(x = "ocean", y = "value", data = mergedDf, type = "pie")
+
+      plotRchartsHighcharts <- hPlot(x = "ocean", y = "value", data = mergedDf, type = "pie",title = "Tableau de pies", subtitle = "species.label", size = "value", group = "ocean")
+      plotRchartsHighcharts
+      
+      ## {title: Pie Chart}
+      plotRchartsNVD3 <- nPlot(~ ocean, data = mergedDf, type = 'pieChart')
+      plotRchartsNVD3
+            
+      ## Dataset in HTML
+      Datatable <- dTable(
+        mergedDf,
+        sPaginationType= "full_numbers"
+      )
+      Datatable
+    
+      ## Storage of files in a given repository (temporary or permanent)
+      plot.filepathtml <- paste(tempfile.base, ".html", sep="")
+      plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean",filename, ".html", sep="")
+      plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+      plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
+      plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
+      
+      #       Datatable
+      plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
+      Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+      plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean",filename, "_table.html", sep="")    
       
       #create the RDF metadata
-      rdf.filepath <- paste("/data/www/html/tmp/La_totale/SpeciesByMonthByOcean", ".rdf", sep="")
-      rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".rdf", sep="")
+      rdf.filepath <- paste("/data/www/html/tmp/SpeciesByMonthByOcean/La_totale", ".rdf", sep="")
+      rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean",filename, ".rdf", sep="")
       buildRdf(store=store, rdf_file_path=rdf.filepath,               #rdf_subject="http://ecoscope.org/indicatorI4", 
                rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
                titles=c("IRD Tuna Atlas: indicator #4 - monthly catches by ocean and by decade", 
@@ -254,12 +283,13 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
                spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
                withSparql)
       
-      result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
+      result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
     }
   }
   
   return(result.df)
 }
+
 
 
 

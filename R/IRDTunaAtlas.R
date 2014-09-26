@@ -370,26 +370,26 @@ FAO2URIFromEcoscope <- function(FAOId) {
   return(NA)
 }
 
-buildRdf <- function(rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), data_output_identifier=c(), start=NA, end=NA, spatial=NA, withSparql=TRUE) {
+buildRdf <- function(store,rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), data_output_identifier=c(), start=NA, end=NA, spatial=NA, withSparql=TRUE) {
   if (! require(rrdf)) {
     stop("Missing rrdf library")
   
   }
   
-  store = new.rdf(ontology=FALSE)
+  #store = new.rdf(ontology=FALSE)
   
-  add.prefix(store,
-             prefix="resources_def",
-             namespace="http://www.ecoscope.org/ontologies/resources_def/")
-  
-  add.prefix(store,
-             prefix="ical",
-             namespace="http://www.w3.org/2002/12/cal/ical/")
-  
-  add.prefix(store,
-             prefix="dct",
-             namespace="http://purl.org/dc/terms/")
-  
+#   add.prefix(store,
+#              prefix="resources_def",
+#              namespace="http://www.ecoscope.org/ontologies/resources_def/")
+#   
+#   add.prefix(store,
+#              prefix="ical",
+#              namespace="http://www.w3.org/2002/12/cal/ical/")
+#   
+#   add.prefix(store,
+#              prefix="dct",
+#              namespace="http://purl.org/dc/terms/")
+#   
   #type
   add.triple(store,
              subject=rdf_subject,

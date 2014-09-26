@@ -155,19 +155,28 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
     
     #tempfile.base <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), as.character(min(aggData$year)), as.character(max(aggData$year)), "_", sep="_"), tmpdir="")
     filename <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
-    tempfile.base <- paste("/data/www/html/tmp",filename, sep="")
+    tempfile.base <- paste("/data/www/html/tmp/SpeciesByGear",filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
-    plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".png", sep="")
+    plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear",filename, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
 
     ## AJOUT Julien RChart
     #p8 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarHorizontalChart')
     #p8$chart(showControls = F)
     #p8  <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart')
-    plotRchartsHighcharts  <- hPlot(value ~ year, group = 'gear_type', data = aggData, type = 'column', radius = 6)
-    plotRchartsHighcharts$plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
-    plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
-    plotRchartsHighcharts 
+#     plotRchartsHighcharts  <- hPlot(value ~ year, group = 'gear_type', data = aggData, type = c("column","line","scatter", "bubble"), radius = 6, size='value')
+#     plotRchartsHighcharts$plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
+
+plotRchartsHighcharts  <- hPlot(value ~ year, data = aggData, type = 'column', group = 'gear_type', radius = 6, title = "Catches per month per fishing gear")
+plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
+plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
+plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, margin = 20)
+plotRchartsHighcharts$chart(height = 1000, zoomType = "xy")
+plotRchartsHighcharts$exporting(enabled = T)
+plotRchartsHighcharts 
+
+
+
     
     
     ## {title: MultiBar Chart}
@@ -177,6 +186,10 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
     #plotRchartsNVD3$chart(useInteractiveGuideline=TRUE)
     plotRchartsNVD3
+
+# plotRchartsNVD3 <- nPlot(value ~ month, group='gear_type', data = current.df, type = 'multiChart')
+
+
     
     ## Dataset in HTML
     Datatable <- dTable(
@@ -188,19 +201,19 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
 
   ## Storage of files in a given repository (temporary or permanent)
   plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-  plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
+  plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear",filename, ".html", sep="")
   plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
   plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
   plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
   plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
   Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-  plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp",filename, "_table.html", sep="")    
+  plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear",filename, "_table.html", sep="")    
 
 
 
     #create the RDF metadata
-    rdf.filepath <- paste("/data/www/html/tmp/La_totale", ".rdf", sep="")
-    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".rdf", sep="")
+    rdf.filepath <- paste("/data/www/html/tmp/SpeciesByGear/La_totale", ".rdf", sep="")
+    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear",filename, ".rdf", sep="")
     buildRdf(store=store, rdf_file_path=rdf.filepath,
              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
              titles=c(c("en", "IRD Tuna Atlas: indicator #2 - catches by species and by gear type"), 

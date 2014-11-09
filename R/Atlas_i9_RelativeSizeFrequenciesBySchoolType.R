@@ -106,7 +106,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
     }
     
     #build the plot
-    plot.result <- ggplot(mapping=aes(fill=school, order=school)) +
+    resultPlot <- ggplot(mapping=aes(fill=school, order=school)) +
       geom_rect(data=valuesSum, mapping=aes(xmin = sizeClassLowerBound, xmax = sizeClassUpperBound, ymin = 0, ymax = relative), colour="grey25") +
       scale_fill_manual(name="School type", values=my.colors) +
       xlab("Size (in cm)") + ylab("Relative contribution (in %)") + 
@@ -114,7 +114,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
       theme(legend.position="bottom")
     
     if (length(lims) == 4) {
-      plot.result <- plot.result + scale_x_continuous(limits=c(lims[1], lims[2])) + scale_y_continuous(limits=c(lims[3], lims[4]))
+      resultPlot <- resultPlot + scale_x_continuous(limits=c(lims[1], lims[2])) + scale_y_continuous(limits=c(lims[3], lims[4]))
     }
     
     #draw the plot

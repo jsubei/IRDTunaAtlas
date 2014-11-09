@@ -19,8 +19,8 @@
 #                         valueAttributeName="value")
 ##################################################################
 library(rCharts)
+# source("/home/tomcat7/temp/IRDTunaAtlas.R")
 source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
-
 Atlas_i2_SpeciesByGear_julien <- function(df, 
                                    yearAttributeName="year", 
                                    speciesAttributeName="species",
@@ -154,10 +154,11 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
     #draw the plot
     
     #tempfile.base <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), as.character(min(aggData$year)), as.character(max(aggData$year)), "_", sep="_"), tmpdir="")
-    filename <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
-    tempfile.base <- paste("/data/www/html/tmp/SpeciesByGear",filename, sep="")
+#filename <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
+    filename <- paste("I2", gsub(" ", "_", species.label), sep="_")
+    tempfile.base <- paste("/data/www/html/tmp/SpeciesByGear/",filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
-    plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear",filename, ".png", sep="")
+    plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/",filename, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
 
     ## AJOUT Julien RChart
@@ -167,11 +168,12 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
 #     plotRchartsHighcharts  <- hPlot(value ~ year, group = 'gear_type', data = aggData, type = c("column","line","scatter", "bubble"), radius = 6, size='value')
 #     plotRchartsHighcharts$plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
 
-plotRchartsHighcharts  <- hPlot(value ~ year, data = aggData, type = 'column', group = 'gear_type', radius = 6, title = "Catches per month per fishing gear")
+plotRchartsHighcharts  <- hPlot(value ~ year, data = aggData, type = 'column', group = 'gear_type', radius = 6, title = "Catches per month per fishing gear",width = "100%")
 plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
 plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
 plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, margin = 20)
-plotRchartsHighcharts$chart(height = 1000, zoomType = "xy")
+# plotRchartsHighcharts$chart(width = 800,height = 400, zoomType = "xy")
+plotRchartsHighcharts$chart(zoomType = "xy")
 plotRchartsHighcharts$exporting(enabled = T)
 plotRchartsHighcharts 
 
@@ -180,10 +182,13 @@ plotRchartsHighcharts
     
     
     ## {title: MultiBar Chart}
-    plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart')
-    plotRchartsNVD3$chart(color = c('brown', 'blue', '#594c26', 'green'))
+# plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart', width = 800, height = 400)
+plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart', width = "100%")
+#     plotRchartsNVD3$chart(width = 800, height = 400, color = c('brown', 'blue', '#594c26', 'green'), useInteractiveGuideline=TRUE)
     plotRchartsNVD3$xAxis(axisLabel = 'Year')
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
+# plotRchartsNVD3$chart(width = 800, height = 400, useInteractiveGuideline=TRUE)
+
     #plotRchartsNVD3$chart(useInteractiveGuideline=TRUE)
     plotRchartsNVD3
 
@@ -201,19 +206,22 @@ plotRchartsHighcharts
 
   ## Storage of files in a given repository (temporary or permanent)
   plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-  plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear",filename, ".html", sep="")
-  plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
   plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+  plot.URLRchartsHighcharts <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/", filename, ".html", sep="")
+
+  plot.filepathtmlNVD3 <- paste(tempfile.base, "NVD3.html", sep="")
   plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
-  plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
+  plot.URLRchartsNVD3 <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/", filename, "_NVD3.html", sep="")
+
+  plot.filepathtmltable <- paste(tempfile.base, "table.html", sep="_")
   Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-  plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear",filename, "_table.html", sep="")    
+  plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/",filename, "_table.html", sep="")    
 
 
 
     #create the RDF metadata
     rdf.filepath <- paste("/data/www/html/tmp/SpeciesByGear/La_totale", ".rdf", sep="")
-    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear",filename, ".rdf", sep="")
+    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/",filename, ".rdf", sep="")
     buildRdf(store=store, rdf_file_path=rdf.filepath,
              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
              titles=c(c("en", "IRD Tuna Atlas: indicator #2 - catches by species and by gear type"), 
@@ -227,7 +235,7 @@ plotRchartsHighcharts
              #subjects=c(as.character(species.current), as.character(gear_type.current)),
              processes="http://www.ecoscope.org/ontologies/resources/processI2",
              #data_input=url,
-             data_output_identifier=c(plot.filepath,plot.filepathtmltable,plot.filepathtml,plot.filepathtmlNVD3),
+             data_output_identifier=c(plot.URLpng,plot.URLRchartsHighcharts,plot.URLRchartsNVD3,plot.URLhtmlTable),
              start=as.character(min(aggData$year)),
              end=as.character(max(aggData$year)),
              #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
@@ -240,8 +248,6 @@ plotRchartsHighcharts
     tableau <- data.frame(stringsAsFactors=FALSE)
     ligne <- data.frame(TYPE="URI", URL=URI,  stringsAsFactors=FALSE)
     tableau <- rbind(tableau,ligne)
-    ligne <- data.frame(TYPE="Plot", URL=plot.URLhtml,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau, ligne)
     ligne <- data.frame(TYPE="DataTable", URL=plot.URLhtmlTable,  stringsAsFactors=FALSE)
     tableau <- rbind(tableau, ligne)
     ligne <- data.frame(TYPE="Image", URL=plot.URLpng,  stringsAsFactors=FALSE)

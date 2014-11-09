@@ -212,10 +212,10 @@ for (i in 1:12) {
 
       #draw the plot
 #     tempfile.base <- tempfile(pattern=paste("I3_", gsub(" ", "_", species.label), "_", as.character(year.current), "_", sep=""))
-      filename <- tempfile(pattern=paste("I3", gsub(" ", "_", species.label), "_", as.character(year.current), "_", sep=""),tmpdir="")
-      tempfile.base <- paste("/data/www/html/tmp/SpeciesByYearByMonthByGear",filename, sep="")
+      filename <- paste("I3", gsub(" ", "_", species.label),as.character(year.current), sep="_")
+      tempfile.base <- paste("/data/www/html/tmp/SpeciesByYearByMonthByGear/",filename, sep="")
       plot.filepath <- paste(tempfile.base, ".png", sep="")
-      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+      ggsave(filename=plot.filepath, plot=resultPlot,  width=20, unit="cm", dpi=300)
       plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear",filename, ".png", sep="")
 
       
@@ -228,21 +228,10 @@ plotRchartsHighcharts  <- hPlot(value ~ month, data = current.df, type = 'column
       plotRchartsHighcharts$plotOptions(column = list(stacking = "normal",dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
 #       plotRchartsHighcharts$xAxis(title = list(text = "Months"),labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
 #       plotRchartsHighcharts$yAxis(title = list(text = "Catches"), tickInterval = 2)
-      plotRchartsHighcharts$chart(height = 1000, zoomType = "xy")
+      plotRchartsHighcharts$chart(width = 800,height = 400, zoomType = "xy")
       plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, margin = 20)
       plotRchartsHighcharts$exporting(enabled = T)
 #       plotRchartsHighcharts$chart("#339900", "#FF9900")
-
-
-#       intervalWidths <- list()
-#   for (month in 1:12) {
-#     #         intervalWidths[[month]] <- c(mean_prev_5_years + stddev_prev_5_years, mean_prev_5_years - stddev_prev_5_years)
-#         intervalWidths[[month]] <- c(dfPrev5Years$mean_prev_5_years + dfPrev5Years$mean_prev_5_years, dfPrev5Years$dfPrev5Years$mean_prev_5_years - dfPrev5Years$dfPrev5Years$mean_prev_5_years)
-#         
-#       }
-# errobar <- c(mean_prev_5_years + stddev_prev_5_years, mean_prev_5_years - stddev_prev_5_years)
-# 
-# c(dfPrev5Years$mean_prev_5_years + dfPrev5Years$mean_prev_5_years, dfPrev5Years$dfPrev5Years$mean_prev_5_years - dfPrev5Years$dfPrev5Years$mean_prev_5_years)
 
 # test de superposition
 h <- Highcharts$new()
@@ -255,10 +244,10 @@ h$yAxis(list(title = list(text = 'Catches')), list(title = list(text = 'mean_pre
 # h$series(name = 'Catches', type = 'column', color = '#4572A7', data = current.df$value, group = 'gear_type')
 h$series(name = 'mean_prev_5_years', type = 'spline', color = '#89A54E', data = dfPrev5Years$mean_prev_5_years)
 #pour rCharts une liste de tableaux alors que Tableaux de Tableaux pour HighCharts
-h$series(name = 'stddev_prev_5_years', type = 'errorbar', color = '#AA4643',  whiskerLength = "40%", lineWidth = "2", data = intervalWidths)
+h$series(name = 'stddev_prev_5_years', type = 'errorbar', color = '#0d0c0c',  whiskerLength = "40%", lineWidth = "3", data = intervalWidths)
 
 # h$series(name = 'stddev_prev_5_years', type = 'errorbar', color = '#AA4643', data = toJSONArray2(intervalWidths$errobar))
-h$chart(height = 1000, zoomType = "xy")
+h$chart(width = 800,height = 400, zoomType = "xy")
 h$plotOptions(column = list(stacking = "normal",dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
 h$exporting(enabled = T)
 
@@ -291,8 +280,9 @@ h$exporting(enabled = T)
 # ))
 
 # plotRchartsNVD3 <- nPlot(value | mean_prev_5_years ~ month, group='gear_type', data = current.df, type = 'line')
-plotRchartsNVD3 <- nPlot(value ~ month, group='gear_type', data = current.df, type = 'multiBarChart')
+plotRchartsNVD3 <- nPlot(value ~ month, group='gear_type', data = current.df, type = 'multiBarChart',width = 800,height = 400)
 # plotRchartsNVD3$chart(color = c('brown', 'blue', '#594c26', 'green'))
+# plotRchartsNVD3$chart( useInteractiveGuideline=TRUE)
 plotRchartsNVD3$xAxis(axisLabel = 'Months and Years')
 plotRchartsNVD3$yAxis(axisLabel = 'Catches')
 plotRchartsNVD3
@@ -346,18 +336,22 @@ plotRchartsNVD3
       ## Storage of files in a given repository (temporary or permanent)
       plot.filepathtml <- paste(tempfile.base, ".html", sep="")
 plot.filepathtmlbis <- paste(tempfile.base, "_bis.html", sep="")
-plot.filepathtmlbis <- paste(tempfile.base, "_bingo.html", sep="")
-plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear",filename, ".html", sep="")
-      plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+plot.filepathtmlter <- paste(tempfile.base, "_bingo.html", sep="")
+plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/",filename, ".html", sep="")
+plot.URLhtmlbis <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/",filename, "_bis.html", sep="")
+plot.URLhtmlter <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/",filename, "_bingo.html", sep="")
+plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
 p1$save(plot.filepathtmlbis,standalone=TRUE) 
-h$save(plot.filepathtmlbis,standalone=TRUE) 
+h$save(plot.filepathtmlter,standalone=TRUE) 
 ## Storage of files in a given repository (temporary or permanent)
       plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
       plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
+      plot.URLRchartsNVD3 <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/",filename, "_NVD3.html", sep="")
+
       #Datatable
       plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
       Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-      plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear",filename, "_table.html", sep="")    
+      plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/",filename, "_table.html", sep="")    
 
       #create the RDF metadata
       rdf.filepath <- paste("/data/www/html/tmp/SpeciesByYearByMonthByGear/La_totale", ".rdf", sep="")
@@ -372,7 +366,7 @@ h$save(plot.filepathtmlbis,standalone=TRUE)
                subjects=c(as.character(species.current), as.character(unique(current.df$gear_type))),
                #processes="&localfile;/processI3",
                processes="http://www.ecoscope.org/ontologies/resources/processI3",
-               data_output_identifier=c(plot.filepath,plot.filepathtmltable,plot.filepathtmlNVD3),
+               data_output_identifier=c(plot.URLpng,plot.URLhtml,plot.URLhtmlbis,plot.URLhtmlter,plot.URLRchartsNVD3,plot.URLhtmlTable),
 #                data_output_identifier=c(plot.filepath),
                start=as.character(year.current),
                end=as.character(year.current),

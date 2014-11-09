@@ -1,4 +1,4 @@
-#Atlas_i1_SpeciesByOcean_julien.R
+# Atlas_i1_SpeciesByOcean_julien.R
 #Tuna Atlas - IRD / MR EME
 #
 #This indicator produce a graph of annual catches by ocean for each species present in the input data. An associated RDF file is also produced.
@@ -32,15 +32,19 @@
 #                                   valueAttributeName="value")
 ##################################################################
 library(rCharts)
-# source("/home/tomcat7/temp/IRDTunaAtlas.R")
+library(jsonlite)
+# library(rjson)
+# library(dplyr)
+
+#source("/home/tomcat7/temp/IRDTunaAtlas.R")
 source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i1_SpeciesByOcean_julien <- function(df, 
-                                    yearAttributeName="year", 
-                                    oceanAttributeName="ocean", 
-                                    speciesAttributeName="species",
-                                    valueAttributeName="value",
-                                    withSparql=TRUE)
+                                           yearAttributeName="year", 
+                                           oceanAttributeName="ocean", 
+                                           speciesAttributeName="species",
+                                           valueAttributeName="value",
+                                           withSparql=TRUE)
 {
   if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -49,7 +53,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   if (missing(df)) {
     stop("Input data frame not specified")
   }
-
+  
   #check for input attributes
   if(sum(names(df) == yearAttributeName) == 0) {
     stop("Cannot found year attribute")
@@ -79,7 +83,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
                   FUN=sum)
   #rename columns
   names(df) <- c("year", "ocean", "species", "value")
-    
+  
   #define the result df  
   result.df <- c()
   
@@ -92,8 +96,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   my.colors <- brewer.pal(length(levels(df$ocean)), "Set1")
   names(my.colors) <- levels(df$ocean)
   
-  #List to store URLs of the set of files generated for each species
-  liste <- list()
+
   store = new.rdf(ontology=FALSE)
   add.prefix(store,
              prefix="resources_def",
@@ -105,10 +108,33 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
              prefix="dct",
              namespace="http://purl.org/dc/terms/")
   
+  
+  
+#   tableauResult <- data.frame(result=character())
+tableauResults <- data.frame(type="plot||download||map||..",
+           description="Rapport d'exécution du traitement i1",
+           stringsAsFactors=FALSE)   
+
+# tableauResult$results <- data.frame(titre=character(),
+tableauResult <- data.frame(titre=character(),
+                        Description=character(),
+                        uri=character(),
+                        start=character(),
+                        Metadata=character(),
+                        image=character(),                  
+                        radarPlots=character(),
+                        dataTable=character(),
+                        download=character(),
+                        stringsAsFactors=FALSE)   
+
+
+listeResult <- list()
+
+
   #TODO : mcforeach ?
   for (species.current in unique(df$species)) {
     current.df <- df[df$species == species.current,]
-      
+    
     #aggregate values by years and ocean
     aggData <- aggregate(value ~ ocean + year, data=current.df, sum)
     
@@ -137,20 +163,19 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     
     #build the plot
     resultPlot <- ggplot(aggData, aes(x=year, y=value, group=ocean)) + 
-    geom_area(aes(fill=ocean), position="stack") + 
-    geom_line(position="stack", color="grey20") + 
-    scale_fill_manual(name="Ocean", values=my.colors) +
-    xlab("Year") + ylab("Catches in thousand tons") + 
-    ggtitle(paste(species.label, "catches by Ocean")) +
-    theme(legend.position="bottom")
+      geom_area(aes(fill=ocean), position="stack") + 
+      geom_line(position="stack", color="grey20") + 
+      scale_fill_manual(name="Ocean", values=my.colors) +
+      xlab("Year") + ylab("Catches in thousand tons") + 
+      ggtitle(paste(species.label, "catches by Ocean")) +
+      theme(legend.position="bottom")
     
     #draw the plot
     #tempfile.base <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""),tmpdir="/data/www/html/tmp/SpeciesByOcean")
-    filename <- tempfile(pattern=paste("I1_", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
-    #filename <- paste("I1_", gsub(" ", "_", species.label), "_", sep="")
-    tempfile.base <- paste("/data/www/html/tmp/SpeciesByOcean",filename, sep="")
+    filename <- paste("I1", gsub(" ", "_", species.label), sep="_")
+    tempfile.base <- paste("/data/www/html/tmp/SpeciesByOcean/",filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
-    plot.URLpng <- paste("http://mdst-macroes.ird.fr/SpeciesByOcean",filename, ".png", sep="")
+    plot.URLpng <- paste("http://mdst-macroes.ird.fr/SpeciesByOcean/",filename, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
     ## AJOUT Julien RChart NVD3
@@ -160,16 +185,20 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     #plotRchartsNVD3$addControls("group", value = "ocean", values = names(aggData$ocean[1:3]))
     plotRchartsNVD3$xAxis(axisLabel = 'Year')
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
-    plotRchartsNVD3$chart(useInteractiveGuideline=TRUE)
+    plotRchartsNVD3$chart(width = 800,height = 400, useInteractiveGuideline=TRUE)
     
-    plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
+    plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line',width = 800,height = 400)
+    plotRchartsNVD3bis$xAxis(axisLabel = 'Year')
+    plotRchartsNVD3bis$yAxis(axisLabel = 'Catches')
+
+    
     #plotRchartsNVD3$addFilters("East Pacific O.", "Atlantic O.")
     #plotRchartsNVD3$addControls("group", value = "ocean", values = names(aggData$ocean[1:3]))
-
-  
+    
+    
     ## AJOUT Julien RChart Highcharts
-    plotRchartsHighcharts <- hPlot(value ~ year, data = aggData, type = c("line","scatter", "bubble"), title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
-    plotRchartsHighcharts$chart(zoomType = "xy")
+    plotRchartsHighcharts <- hPlot(value ~ year, data = aggData, type = c("line","scatter", "bubble"), title = "Captures par espÃ¨ce et par ocÃ©an", subtitle = "species.label", size = "value", group = "ocean")
+    plotRchartsHighcharts$chart(width = 800, height = 400, zoomType = "xy")
     plotRchartsHighcharts$yAxis(title = list(text = "Captures"))
     plotRchartsHighcharts$exporting(enabled = T)
     #plotRchartsHighcharts$addFilters("East Pacific O.", "Atlantic O.")
@@ -184,8 +213,9 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     plotRchartsRickshaw$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")#, colors = 'steelblue', , subtitle = species.label
     #plotRchartsRickshaw$xAxis(type = 'Time')
     plotRchartsRickshaw$yAxis(orientation = 'right')
-    #plotRchartsRickshaw$legend("De la bonne grosse légende")
-    #plotRchartsRickshaw$set(width = 1080, height = 480, legend = TRUE)
+    #plotRchartsRickshaw$legend("De la bonne grosse lÃ©gende")
+#     plotRchartsRickshaw$set(width = 1080, height = 480, legend = TRUE)
+    plotRchartsRickshaw$set(width = 800, height = 400, legend = TRUE)
     #Rickshaw.Graph.JSONP
     #plotRchartsRickshaw$chart(zoomType = "xy")
     #plot.filepathtml <- paste(tempfile.base, ".html", sep="")
@@ -205,73 +235,120 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
     Datatable
     
     plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-    plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean",filename, ".html", sep="")
-    plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
-    plot.filepathtmlNVD3bis <- paste(tempfile.base, "_NVD3bis.html", sep="")
-    plot.filepathtmlRickshaw <- paste(tempfile.base, "_Rickshaw.html", sep="")
     plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
-    plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
-    plotRchartsNVD3bis$save(plot.filepathtmlNVD3bis,standalone=TRUE) 
-    plotRchartsRickshaw$save(plot.filepathtmlRickshaw,standalone=TRUE) 
-    plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
-    Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-    plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean",filename, "_table.html", sep="")    
-      
+    plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/",filename, ".html", sep="")
     
-    #create the RDF metadata
-    rdf.filepath <- paste("/data/www/html/tmp/SpeciesByOcean/La_totale", ".rdf", sep="")
-    #rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
-    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean",filename, ".rdf", sep="")
-    buildRdf(store=store, rdf_file_path=rdf.filepath,
-              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
-              #rdf_subject="http://ecoscope.org/indicatorI1", 
-              titles=c("IRD Tuna Atlas: indicator #1 - catches by species and by ocean", 
-                       "IRD Atlas thonier : indicateur #1 - captures par espèces et par océan"),
-              descriptions=c(paste(species.label, "catches by ocean"), 
-                       paste("Captures de", species.label, "par océan")),
-              subjects=c(as.character(species.current)),
-              processes="http://www.ecoscope.org/ontologies/resources/processI1",
-              data_output_identifier=c(plot.filepath,plot.filepathtmltable,plot.filepathtml,plot.filepathtmlNVD3,plot.filepathtmlNVD3bis),
-              start=as.character(min(aggData$year)),
-              end=as.character(max(aggData$year)),
-             #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-              withSparql)
-      
-    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
+    plot.filepathtmlNVD3 <- paste(tempfile.base, "NVD3.html", sep="_")
+    plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
+    plot.URLhtmlNVD3 <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/",filename, "_NVD3.html", sep="")
+    
+    plot.filepathtmlNVD3bis <- paste(tempfile.base, "NVD3bis.html", sep="_")
+    plotRchartsNVD3bis$save(plot.filepathtmlNVD3bis,standalone=TRUE)
+    plot.URLhtmlNVD3bis <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/",filename, "_NVD3bis.html", sep="")
+    
+    plot.filepathtmlRickshaw <- paste(tempfile.base, "Rickshaw.html", sep="_")
+    plotRchartsRickshaw$save(plot.filepathtmlRickshaw,standalone=TRUE)
+    plot.URLhtmlRickshaw <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/",filename, "_Rickshaw.html", sep="")
+    
+    
+    plot.filepathtmltable <- paste(tempfile.base, "table.html", sep="_")
+    Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+    plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/",filename, "_table.html", sep="")    
+    
+    #Collect the URIs of related Topics from Ecoscope SPARQL endpoint
     URI <- FAO2URIFromEcoscope(as.character(species.current))
     
-    #     for (j in 1:5) {
-    #       tableau <- data.frame(stringsAsFactors=FALSE)
-    #       for (i in 1:10) {
-    #         ligne <- data.frame(nom=paste0("Toto", i), valzeu=rnorm(1),  stringsAsFactors=FALSE)
-    #         tableau <- rbind(tableau, ligne)
-    #       }
-    #       liste <- c(liste, tableau)
-    #     }
     
+    #Write the RDF metadata describing the current indicator in the RDF model of the whole execution: used by Ecoscope and Tuna Atlas
+    rdf.filepath <- paste("/data/www/html/tmp/SpeciesByOcean/La_totale", ".rdf", sep="")
+    #rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
+    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/",filename, ".rdf", sep="")
+    buildRdf(store=store,
+             rdf_file_path=rdf.filepath,
+             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
+             #rdf_subject="http://ecoscope.org/indicatorI1", 
+             titles=c("IRD Tuna Atlas: indicator #1 - catches by species and by ocean", 
+                      "IRD Atlas thonier : indicateur #1 - captures par espèces et par océan"),
+             descriptions=c(paste(species.label, "catches by ocean"), 
+                            paste("Captures de", species.label, "par ocÃ©an")),
+             subjects=c(as.character(species.current)),
+             processes="http://www.ecoscope.org/ontologies/resources/processI1",
+             data_output_identifier=c(plot.URLpng,plot.URLhtml,plot.URLhtmlNVD3,plot.URLhtmlNVD3bis,plot.URLhtmlRickshaw,plot.URLhtmlTable),
+             start=as.character(min(aggData$year)),
+             end=as.character(max(aggData$year)),
+             #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
     
-    tableau <- data.frame(stringsAsFactors=FALSE)
-    ligne <- data.frame(TYPE="URI", URL=URI,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau,ligne)
-    ligne <- data.frame(TYPE="Plot", URL=plot.URLhtml,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau, ligne)
-    ligne <- data.frame(TYPE="DataTable", URL=plot.URLhtmlTable,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau, ligne)
-    ligne <- data.frame(TYPE="Image", URL=plot.URLpng,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau, ligne)    
-    ligne <- data.frame(TYPE="Metadata", URL=rdf.URL,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau, ligne)
-    liste <- c(liste, tableau) 
-    
+    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
+
+    #Write the Json metadata used by the SIP
+
+ligneTableauResult <- data.frame(titre=paste("Espèce:",species.label, sep=" "),
+                Description=paste("IRD Tuna Atlas: indicator #1 - catches of species",species.label,"by ocean", sep=" "),
+#                 uri=list(typeURI="Species",URI=URI),
+                uri=URI,
+                start=as.character(min(aggData$year)),
+                Metadata=rdf.URL,
+                image=plot.URLpng,
+#                 rCharts=c(titre="en fait y a pas besoin de cet attribut",type="lines",fileURL=data.frame(plot.URLhtml,plot.URLhtmlNVD3,plot.URLhtmlNVD3bis,plot.URLhtmlRickshaw)),
+#                 rCharts2=data.frame(titre="en fait y a pas besoin de cet attribut",type="pies",fileURL1=plot.URLhtmlNVD3bis,fileURL1=plot.URLhtmlRickshaw),
+# rCharts3=c(titre="en fait y a pas besoin de cet attribut",type="radarPlots",fileURL=plot.URLhtml,fileURL=plot.URLhtmlNVD3),
+              radarPlots="cet attribut doit fusionner avec rcharts",
+                dataTable=plot.URLhtmlTable,
+                download="URL du CSV ou autre format"
+    )
+
+
+# #ligneTableauResult$rCharts3 <- list(
+#   data.frame(titre="en fait y a pas besoin de cet attribut",fileURL1=plot.URLhtml,fileURL2=plot.URLhtmlNVD3,fileURL3=plot.URLhtmlNVD3bis,fileURL4=plot.URLhtmlRickshaw)
+# )
+# cat(listeResult)
+# liste <- c(liste, lignetableauResult) 
+
+# # julien
+#tableauResult$results <- rbind(tableauResult, ligneTableauResult)
+tableauResult <- rbind(tableauResult,ligneTableauResult)
+
+# listeResult <- c(listeResult,liste2)
+# column<-toJSON(liste2, pretty=TRUE)
+
   }
-  
-  library(rjson)
-  liste<-toJSON(liste)
-  #return(result.df)
-  return(liste)
-  
-  
+
+#   Cette liste va comprendre un tableau à une dimension avec autant de cellules que d'indicateurs produits par le traitements'.
+# Les informations sur chaque traitements seront stockées dans une liste. tableauResult sera donc un tableau de list
+# julien<-c(description="Rapport d'exécution du traitement i1",result=tableauResult)
+
+# listeResult <- list(tableauResult)
+# liste <- c(liste, results=listeResult) 
+#List to store URLs of the set of files generated for each species
+# tableauResult <- data.frame(listeResult)
+
+# tableauResult<-toJSON(liste, pretty=TRUE)
+
+liste <- data.frame(type="plot||download||map||..",
+           description="Rapport d'exécution du traitement i1",
+           processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/toto_wps.R",
+           results=tableauResult)
+           #            results=c(title="voila",listeResult)
+ 
+#  liste$results <- tableauResult
+# liste <- list(liste,
+#               results=tableauResult
+# ) 
+
+
+julien<-toJSON(liste, pretty=TRUE)
+
+#liste<-toJSON(liste, pretty=TRUE)
+# liste<-to_json(liste)
+# remettre en R pour remettre en Json aprÃƒÂ¨s
+# liste <- as.data.frame(fromJSON(liste))
+# liste<-toJSON(liste)
+# liste<- gsub("\\", "", liste, fixed=TRUE)
+
+return(julien)
+
+
   
 }
-

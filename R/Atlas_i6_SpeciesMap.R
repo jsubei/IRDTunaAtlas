@@ -22,6 +22,13 @@
 #                        speciesAttributeName="species",
 #                        valueAttributeName="value")
 ##################################################################
+library(rCharts)
+library(jsonlite)
+library(rgdal)
+
+
+# source("/home/tomcat7/temp/IRDTunaAtlas.R")
+ source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i6_SpeciesMap <- function(df,
                                 geomIdAttributeName="geom_id",
@@ -67,12 +74,48 @@ Atlas_i6_SpeciesMap <- function(df,
   names(df)[which(names(df) == yearAttributeName)] <- "year"  
   names(df)[which(names(df) == speciesAttributeName)] <- "species"
   names(df)[which(names(df) == valueAttributeName)] <- "value"
-
-
-  plotFct <- function(subDf, species.label, lims) {
+  
+  
+  
+  #define the resulr df  
+  result.df <- c()
+  
+  
+  #List to store URLs of the set of files generated for each species
+  liste <- list()
+  store = new.rdf(ontology=FALSE)
+  add.prefix(store,
+             prefix="resources_def",
+             namespace="http://www.ecoscope.org/ontologies/resources_def/")
+  add.prefix(store,
+             prefix="ical",
+             namespace="http://www.w3.org/2002/12/cal/ical/")
+  add.prefix(store,
+             prefix="dct",
+             namespace="http://purl.org/dc/terms/")
+  
+  
+  # tableauResult$results <- data.frame(titre=character(),
+  tableauResult <- data.frame(stringsAsFactors=FALSE)   
+  
+  #   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/cdn/"
+  #   repository<-"/data/www/html/tmp/SpeciesMap/cdn/"
+  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/"
+  repository<-"/data/www/html/tmp/SpeciesMap/"  
+  
+  listeResult <- list()
+  
+  #convert values from tons to thousand tons
+  df$value <- df$value / 1000
+  
+  
+  
+  
+  
+  plotFct <- function(subDf, species.label, species.current, tableauResult, store, lims) {
     #aggregate values by 5° CWP square
     aggData <- aggregate(value ~ geom_id, data=subDf, sum)      
-
+    
     #create a spatial df object from
     aggSp <- SpatialPolygons(species.df[match(aggData$geom_id, species.df$geom_id),]@polygons, proj4string=CRS("+init=epsg:4326"))
     aggSpdf <- SpatialPolygonsDataFrame(Sr=aggSp, data=aggData, match.ID=FALSE)
@@ -96,89 +139,317 @@ Atlas_i6_SpeciesMap <- function(df,
     resultPlot <- ggplot() +
       geom_polygon(data=aggSpdf.df, mapping=aes(x = long, y = lat, fill=value, group=group)) +
       scale_fill_continuous(low="yellow", high="blue", na.value="grey25", name="Catches in k. tons", limits=lims, 
-                          guide=guide_colourbar(direction="horizontal", 
-                                             title.position="top",
-                                             label.position="bottom",
-                                              barwidth=20)) +
+                            guide=guide_colourbar(direction="horizontal", 
+                                                  title.position="top",
+                                                  label.position="bottom",
+                                                  barwidth=20)) +
       geom_path(data=world.df, mapping=aes(x=long, y=lat, group=group), colour="grey25") +
       coord_equal() +
       theme(legend.position="bottom", axis.title.x=element_blank(), axis.title.y=element_blank()) +
       labs(title=my.title)
     
     #draw the plot
-    tempfile.base <- tempfile(pattern=paste("I6_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "_to_", as.character(max(subDf$year)), "_", sep=""))
+    filename <- paste("I6_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "_to_", as.character(max(subDf$year)), "_", sep="")
+    tempfile.base <- paste(repository,filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
-    ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+    plot.URLpng <- paste(URL,filename, ".png", sep="")
+    
+    ggsave(filename=plot.filepath, plot=resultPlot, width=20, unit="cm", dpi=300)
+    
+    ## Dataset in HTML
+    Datatable <- dTable(
+      aggSpdf.df,
+      sPaginationType= "full_numbers"
+    )
+    
+    
+    #Datatable
+    plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
+    Datatable$save(plot.filepathtmltable,cdn=TRUE)       
+    #     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+    plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
+    
+    
+    
+    
+    ################################################################################################
+    
+    #     json2 = toJSON(aggSpdf.df, pretty=TRUE)
+    
+    #     regions2=RJSONIO::fromJSON(json2)
+    #    
+    
+    
+    json = '{"type":"FeatureCollection","features":[
+{"type":"Feature",
+    "properties":{"region_id":1, "region_name":"Australian Alps"},
+    "geometry":{"type":"Polygon","coordinates":[[[141.13037109375,-38.788345355085625],[141.13037109375,-36.65079252503469],[144.38232421875,-36.65079252503469],[144.38232421875,-38.788345355085625],[141.13037109375,-38.788345355085625]]]}},
+{"type":"Feature",
+    "properties":{"region_id":4, "region_name":"Shark Bay"},
+    "geometry":{"type":"Polygon","coordinates":[[[143.10791015625,-37.75334401310656],[143.10791015625,-34.95799531086791],[146.25,-34.95799531086791],[146.25,-37.75334401310656],[143.10791015625,-37.75334401310656]]]}}
+    ]}'
+    regions=RJSONIO::fromJSON(json)
+    lmap <- Leaflet$new()
+    lmap$tileLayer(provide='Stamen.TonerLite')
+    lmap$setView(c(-37, 145), zoom = 1)
+    lmap$geoJson(
+      regions, 
+      style = "#! function(feature) {
+      var rgn2col = {1:'red',2:'blue',4:'green'};     
+      return {
+      color: rgn2col[feature.properties['region_id']],
+      strokeWidth: '1px',
+      strokeOpacity: 0.5,
+      fillOpacity: 0.2
+      }; } !#",
+      onEachFeature = "#! function (feature, layer) {
+      
+      // info rollover
+      if (document.getElementsByClassName('info leaflet-control').length == 0 ){
+      info = L.control({position: 'topright'});  // NOTE: made global b/c not ideal place to put this function
+      info.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'info');
+      this.update();
+      return this._div;
+      };
+      info.update = function (props) {
+      this._div.innerHTML = '<h4>Field Name</h4>' +  (props ?
+      props['region_id'] + ': <b> + props[fld] + </b>'
+      : 'Hover over a region');
+      };
+      info.addTo(map);
+      };
+      
+      // mouse events
+      layer.on({
+      
+      // mouseover to highlightFeature
+      mouseover: function (e) {
+      var layer = e.target;
+      layer.setStyle({
+      strokeWidth: '3px',
+      strokeOpacity: 0.7,
+      fillOpacity: 0.5
+      });
+      if (!L.Browser.ie && !L.Browser.opera) {
+      layer.bringToFront();
+      }
+      info.update(layer.feature.properties);
+      },
+      
+      // mouseout to resetHighlight
+      mouseout: function (e) {
+      geojsonLayer.resetStyle(e.target);
+      info.update();
+      },
+      
+      // click to zoom
+      click: function (e) {
+      var layer = e.target;        
+      if ( feature.geometry.type === 'MultiPolygon' ) {        
+      // for multipolygons get true extent
+      var bounds = layer.getBounds(); // get the bounds for the first polygon that makes up the multipolygon
+      // loop through coordinates array, skip first element as the bounds var represents the bounds for that element
+      for ( var i = 1, il = feature.geometry.coordinates[0].length; i < il; i++ ) {
+      var ring = feature.geometry.coordinates[0][i];
+      var latLngs = ring.map(function(pair) {
+      return new L.LatLng(pair[1], pair[0]);
+      });
+      var nextBounds = new L.LatLngBounds(latLngs);
+      bounds.extend(nextBounds);
+      }
+      map.fitBounds(bounds);
+      } else {
+      // otherwise use native target bounds
+      map.fitBounds(e.target.getBounds());
+      }
+      }
+      });
+      } !#")
+    legend_vec = c('Red'='Blood', 'Green'='Nature', 'Yellow'='Sun')
+    lmap$legend(position = 'bottomright', 
+                colors   =  names(legend_vec), 
+                labels   =  as.vector(legend_vec))
+    
+    
+    
+    
+    #Datatable
+    plot.filepathtmlMap <- paste(tempfile.base, "_maptoto.html", sep="")
+    lmap$save(plot.filepathtmlMap,standalone=TRUE)       
+    #     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+    plot.URLhtmlMap <- paste(URL,filename, "_map_toto.html", sep="")    
+    
+    
+    
+    
+    #alternative json
+    # jojo<- "jijo"
+    # return(jojo)  
+    # return(json2)  
+    
+    # #Write geojson
+    # #dataMap is a dataframe with coordinates on cols 11 (LATITUDE) and 12 (LONGITUDE)
+    # #Transfor coordinates to numeric
+    # dataMap$LATITUDE <- as.numeric(dataMap$LATITUDE)
+    # dataMap$LONGITUDE <- as.numeric(dataMap$LONGITUDE)
+    # dataMap.SP <- SpatialPointsDataFrame(dataMap[,c(12,11)],dataMap[,-c(12,11)])
+    # str(dataMap.SP) # Now is class SpatialPointsDataFrame
+    # 
+    # #Write as geojson
+    # writeOGR(dataMap.SP, 'dataMap.geojson','dataMap', driver='GeoJSON') 
+    # 
+    # 
+    # # http://recology.info/2013/06/geojson/
+    # togeojson(file, "~/github/sac/rgeojson/acer_spicatum.geojson")
+    
+    
+    ################################################################################################
+    
+    titles=c(paste(species.label, ":  Map of catches"), 
+             paste("Carte des captures de", species.label))
+    
+    
+    descriptions=c(c("en", paste("IRD Tuna Atlas: indicator #6 -  Map of catches for species ",species.label, sep=" ")),
+                   c("fr", paste("IRD Atlas Thonier: indicator #6 - Carte des captures de pour l'espèce:",species.label, sep=" ")))
+    
+    subjects=c(as.character(species.current))
+    #     rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep="")               
+    URI <- FAO2URIFromEcoscope(as.character(species.current))
+    tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
+    
+    
+    #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+    spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
+    temporal_extent_begin=as.character(min(subDf$year))
+    temporal_extent_end=as.character(max(subDf$year))
+    
     
     #create the RDF metadata
-    rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
-             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
-             titles=c("IRD Tuna Atlas: indicator #6 - Map of catches", 
-                      "IRD Atlas thonier : indicateur #6 - Carte des captures"),
-             descriptions=c(paste(species.label, "catches map"), 
-                            paste("Carte des captures de", species.label)),
-             subjects=c(as.character(species.current)),
-             #subjects=c(species.label),
-             processes="http://www.ecoscope.org/ontologies/resources/processI4",
-             data_output_identifier=plot.filepath,  
-             start=as.character(min(subDf$year)),
-             end=as.character(max(subDf$year)),
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-             withSparql)
+    rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
+    rdf.URL <- paste(URL,filename, ".rdf", sep="")
     
-    return(c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
-  }
+    
+    
+    download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.csv", stringsAsFactors=FALSE)
+    ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.shp")
+    download <- rbind(download, ligne)
+    ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.nc....")
+    download <- rbind(download, ligne)
+    
+    data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="image",year=temporal_extent_begin, fileURL=plot.filepath, stringsAsFactors=FALSE)
+    ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="map",year=temporal_extent_begin, fileURL=plot.URLhtmlMap)
+    data_output_identifiers <- rbind(data_output_identifiers, ligne)
+    ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin, fileURL=plot.URLhtmlTable)
+    data_output_identifiers <- rbind(data_output_identifiers, ligne)
+    
+    
+    
+    tableauResult <- buildRdf(store=store,
+                              tableauResult = tableauResult,
+                              RDFMetadata=rdf.URL,
+                              rdf_file_path=rdf.filepath,
+                              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
+                              titles=titles,
+                              descriptions=descriptions,
+                              subjects=subjects,
+                              tabURIs=tabURIs,
+                              processes="http://www.ecoscope.org/ontologies/resources/processI6",
+                              image=plot.URLpng,
+                              data_output_identifiers=data_output_identifiers,
+                              download=download,
+                              start=temporal_extent_begin,
+                              end=temporal_extent_end,
+                              spatial=spatial_extent,
+                              withSparql)
+    
+    #     return(c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
+    return(tableauResult)  
+    
+    }
   
-  #define the resulr df  
-  result.df <- c()
   
-  #convert values from tons to thousand tons
-  df$value <- df$value / 1000
+  
+  
   
   #fisrt subset by species
   for (species.current in unique(df$species)) {
     
-    if (withSparql) {      
-      #get species scientific name from ecoscope sparql
-      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-      if (length(sparqlResult) > 0) {
-        species.label <- sparqlResult[1,"scientific_name"]
-        species.URI <- sparqlResult[1,"uri"]
-      } else {
-        species.label <- species.current
-        species.URI <- species.current
-      } 
-    } else {
-      species.label <- species.current
-      species.URI <- species.current
-    }
+#         if (withSparql) {      
+#           #get species scientific name from ecoscope sparql
+#           sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+#           
+#           if (length(sparqlResult) > 0) {
+#             species.label <- sparqlResult[1,"scientific_name"]
+#             species.URI <- sparqlResult[1,"uri"]
+#           } else {
+#             species.label <- species.current
+#             species.URI <- species.current
+#           } 
+#         } else {
+    species.label <- species.current
+    species.URI <- species.current
+#         }
     
     species.df <- df[df$species == species.current,]
     
     #plot for all the period
-    result.plot.df <- plotFct(species.df, species.label)
-    result.df <- rbind(result.df, result.plot.df)
+    #     result.plot.df <- plotFct(species.df, species.label)
+    #     result.df <- rbind(result.df, result.plot.df)
+    one <- plotFct(species.df, species.label, species.current, tableauResult, store)
+    # one <- "fuck me"
+    listeResult <- c(listeResult, one)
+        tableauResults <- rbind(tableauResults,lignestableauResult)
     
-    #for each year
-    if (length(unique(species.df$year)) > 1)
-    {
-      for(year.current in unique(species.df$year)) {
-        result.plot.df <- plotFct(species.df[species.df$year==year.current,], species.label)
-        result.df <- rbind(result.df, result.plot.df)
-      }
-        
-      #for each decade
-      species.df$decade <- species.df$year - (species.df$year %% 10)
-      if (length(unique(species.df$decade)) > 1)
-      {
-        for(decade.current in unique(species.df$decade)) {
-         result.plot.df <- plotFct(species.df[species.df$decade==decade.current,], species.label)
-         result.df <- rbind(result.df, result.plot.df)
-        }
-      }
-    }
+#         #for each year
+#         if (length(unique(species.df$year)) > 1)
+#         {
+#           for(year.current in unique(species.df$year)) {
+#     #         result.plot.df <- plotFct(species.df[species.df$year==year.current,], species.label)
+#     #         result.df <- rbind(result.df, result.plot.df)
+#             two <- plotFct(species.df[species.df$year==year.current,], species.label, species.current, tableauResult, store)
+#             listeResult <- c(listeResult, two)
+#             
+#     #         tableauResults <- rbind(tableauResults,lignestableauResult)
+#           }
+#             
+#           #for each decade
+#           species.df$decade <- species.df$year - (species.df$year %% 10)
+#           if (length(unique(species.df$decade)) > 1)
+#           {
+#             for(decade.current in unique(species.df$decade)) {
+#     #          result.plot.df <- plotFct(species.df[species.df$decade==decade.current,], species.label)
+#     #          result.df <- rbind(result.df, result.plot.df)
+#               three <- plotFct(species.df[species.df$decade==decade.current,], species.label, species.current, tableauResult, store)
+#               listeResult <- c(listeResult, three)
+#               
+#     #          tableauResults <- rbind(tableauResults,lignestableauResult)
+#             }
+#           }
+#     
+#     
+#   }
+  #   }
+  
+  
+  
   }
+  
 
-  return(result.df)
+
+
+  liste <-data.frame(type="map",
+                     description="Rapport d'exécution du traitement i6",
+                     processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i6_SpeciesMap.R")
+  liste <- list(liste,
+                results=one
+  ) 
+  names(liste)[1]<-paste("Metadata")
+  julien<-toJSON(liste, pretty=TRUE)
+  
+return(julien)
+cat(julien)
+
 }
+
+

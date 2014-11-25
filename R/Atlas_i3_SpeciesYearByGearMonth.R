@@ -200,6 +200,8 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
       result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
       
     }
+
+
   }
   
   return(result.df)

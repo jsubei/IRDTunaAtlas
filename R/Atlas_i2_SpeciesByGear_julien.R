@@ -19,7 +19,9 @@
 #                         valueAttributeName="value")
 ##################################################################
 library(rCharts)
-# source("/home/tomcat7/temp/IRDTunaAtlas.R")
+library(jsonlite)
+
+#  source("/home/tomcat7/temp/IRDTunaAtlas.R")
 source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 Atlas_i2_SpeciesByGear_julien <- function(df, 
                                    yearAttributeName="year", 
@@ -93,8 +95,14 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
              namespace="http://purl.org/dc/terms/")
   
   
+  # tableauResult$results <- data.frame(titre=character(),
+  tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
-  
+  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByGear/cdn/"
+  repository<-"/data/www/html/tmp/SpeciesByGear/cdn/"
+# URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByGear/"
+# repository<-"/data/www/html/tmp/SpeciesByGear/"
+
   #TODO : mcforeach ?
   for (species.current in unique(df$species)) {
     current.df <- df[df$species == species.current,]
@@ -156,9 +164,9 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
     #tempfile.base <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), as.character(min(aggData$year)), as.character(max(aggData$year)), "_", sep="_"), tmpdir="")
 #filename <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
     filename <- paste("I2", gsub(" ", "_", species.label), sep="_")
-    tempfile.base <- paste("/data/www/html/tmp/SpeciesByGear/",filename, sep="")
+    tempfile.base <- paste(repository,filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
-    plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/",filename, ".png", sep="")
+    plot.URLpng <- paste(URL,filename, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
 
     ## AJOUT Julien RChart
@@ -182,8 +190,8 @@ plotRchartsHighcharts
     
     
     ## {title: MultiBar Chart}
-# plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart', width = 800, height = 400)
-plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart', width = "100%")
+plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart', width = 800, height = 400)
+# plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart', width = "100%")
 #     plotRchartsNVD3$chart(width = 800, height = 400, color = c('brown', 'blue', '#594c26', 'green'), useInteractiveGuideline=TRUE)
     plotRchartsNVD3$xAxis(axisLabel = 'Year')
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
@@ -206,61 +214,126 @@ plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type
 
   ## Storage of files in a given repository (temporary or permanent)
   plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-  plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
-  plot.URLRchartsHighcharts <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/", filename, ".html", sep="")
+#   plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+  plotRchartsHighcharts$save(plot.filepathtml,cdn=TRUE)
+  plot.URLRchartsHighcharts <- paste(URL, filename, ".html", sep="")
 
   plot.filepathtmlNVD3 <- paste(tempfile.base, "NVD3.html", sep="")
-  plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
-  plot.URLRchartsNVD3 <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/", filename, "_NVD3.html", sep="")
+#   plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
+  plotRchartsNVD3$save(plot.filepathtmlNVD3,cdn=TRUE)
+  plot.URLRchartsNVD3 <- paste(URL, filename, "_NVD3.html", sep="")
 
   plot.filepathtmltable <- paste(tempfile.base, "table.html", sep="_")
-  Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-  plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/",filename, "_table.html", sep="")    
+#   Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+  Datatable$save(plot.filepathtmltable,cdn=TRUE)     
+  plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
 
 
 
-    #create the RDF metadata
-    rdf.filepath <- paste("/data/www/html/tmp/SpeciesByGear/La_totale", ".rdf", sep="")
-    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp/SpeciesByGear/",filename, ".rdf", sep="")
-    buildRdf(store=store, rdf_file_path=rdf.filepath,
-             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
-             titles=c(c("en", "IRD Tuna Atlas: indicator #2 - catches by species and by gear type"), 
-                      "IRD Atlas thonier : indicateur #2 - captures par espèces et par type d'engin"),
-             descriptions=c(paste(species.label, "catches by gear type"), 
-                            paste("Captures de", species.label, "par type d'engin")),
-             # EVENTUELLEMENT AJOUTER D'AUTRES SUJETS COMME LA ZONE
-             #subjects=c(as.character(species.current), as.character(gear_type.current), as.character(unique(current.df$gear_type))),
-             subjects=c(as.character(species.current), as.character(unique(current.df$gear_type))),
-             #subjects=c(as.character(species.current)),
-             #subjects=c(as.character(species.current), as.character(gear_type.current)),
-             processes="http://www.ecoscope.org/ontologies/resources/processI2",
-             #data_input=url,
-             data_output_identifier=c(plot.URLpng,plot.URLRchartsHighcharts,plot.URLRchartsNVD3,plot.URLhtmlTable),
-             start=as.character(min(aggData$year)),
-             end=as.character(max(aggData$year)),
-             #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-             withSparql)
-    
-    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
 
-    URI <- FAO2URIFromEcoscope(as.character(species.current))
-    tableau <- data.frame(stringsAsFactors=FALSE)
-    ligne <- data.frame(TYPE="URI", URL=URI,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau,ligne)
-    ligne <- data.frame(TYPE="DataTable", URL=plot.URLhtmlTable,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau, ligne)
-    ligne <- data.frame(TYPE="Image", URL=plot.URLpng,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau, ligne)    
-    ligne <- data.frame(TYPE="Metadata", URL=rdf.URL,  stringsAsFactors=FALSE)
-    tableau <- rbind(tableau, ligne)
-    liste <- c(liste, tableau) 
+
+
+
+
+################################################################################################
+
+
+# ligne <- data.frame(TYPE="URI", URL=URI,  stringsAsFactors=FALSE)
+
+
+################################################################################################
+
+
+
+#Metadata elements (in addition to OGC WPS metadata) to describe the current indicator which will be used by other applications (Ecoscope and Tuna Atlas Websites)
+
+
+titles=c(paste(species.label, "catches by gear type"), 
+               paste("Captures de", species.label, "par type d'engin"))
+
+
+descriptions=c(c("en",paste("IRD Tuna Atlas: indicator #2 - catches for",species.label, "species: catches by species and by gear type", sep=" ")),
+         c("fr",paste("IRD Atlas Thonier: indicator #2 - Captures par type d'engins de pêche pour l'espèce",species.label, sep=" ")))
+         
+
+subjects=c(as.character(species.current), as.character(unique(current.df$gear_type)))
+
+#Collect the URIs of related Topics from Ecoscope SPARQL endpoint
+URI <- FAO2URIFromEcoscope(as.character(species.current))
+tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
+
+# for (gear_type.current in unique(df$gear_type)) {
+
+# URIGear <- FAO2URIFromEcoscope(as.character(unique(current.df$gear_type)))
+# ligne<- c(x="gear",y=URIGear)
+# tabURIs<- rbind(tabURIs,ligne)
+
+# }
+# EVENTUELLEMENT AJOUTER D'AUTRES SUJETS COMME LA ZONE
+#subjects=c(as.character(species.current), as.character(gear_type.current), as.character(unique(current.df$gear_type))),
+#subjects=c(as.character(species.current)),
+#subjects=c(as.character(species.current), as.character(gear_type.current)),
+#data_input=url,
+
+#TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
+temporal_extent_begin=as.character(min(aggData$year))
+temporal_extent_end=as.character(max(aggData$year))
+
+
+rdf.filepath <- paste(repository, ".rdf", sep="")
+#rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
+rdf.URL <- paste(URL,filename, ".rdf", sep="")
+# il faudrait ajouter un attribut qui précise le type de visualisation: carte, chart...
+data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="image",year=temporal_extent_begin, fileURL=plot.URLpng, stringsAsFactors=FALSE)
+ligne <- c(titre="2 en fait y a pas besoin de cet attribut",type="stackedArea", year=temporal_extent_begin, fileURL=plot.URLRchartsHighcharts)
+data_output_identifiers <- rbind(data_output_identifiers, ligne)
+ligne <- c(titre="3 en fait y a pas besoin de cet attribut",type="map|lines|pies|radarPlots",year=temporal_extent_begin, fileURL=plot.URLRchartsNVD3)
+data_output_identifiers <- rbind(data_output_identifiers, ligne)
+ligne <- c(titre="6 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin, fileURL=plot.URLhtmlTable)
+data_output_identifiers <- rbind(data_output_identifiers, ligne)
+
+# ligneTableauResult$uri=list(data.frame(typeURI="Species",URI=URI))
+
+download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.csv", stringsAsFactors=FALSE)
+ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.shp")
+download <- rbind(download, ligne)
+ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.nc....")
+download <- rbind(download, ligne)
+
+
+#Write the RDF metadata describing the current indicator in the RDF model of the whole execution: used by Ecoscope and Tuna Atlas
+#Write the Json metadata used by the SIP
+# tableauResult$results <- data.frame(titre=character(),
+
+
+tableauResult <- buildRdf(store=store,
+                          tableauResult = tableauResult,
+                          RDFMetadata=rdf.URL,
+                          rdf_file_path=rdf.filepath,
+                          rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
+                          #rdf_subject="http://ecoscope.org/indicatorI1", 
+                          titles=titles,
+                          descriptions=descriptions,
+                          subjects=subjects,
+                          tabURIs=tabURIs,
+                          processes="http://www.ecoscope.org/ontologies/resources/processI2",
+                          image=plot.URLpng,
+                          data_output_identifiers=data_output_identifiers,
+                          download=download,
+                          start=temporal_extent_begin,
+                          end=temporal_extent_end,
+                          spatial=spatial_extent,
+                          withSparql)
+
+result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
+
+#################################################################################################
 
   }
 
-library(rjson)
-liste<-toJSON(liste)
-#return(result.df)
-return(liste)
+julien<-buildJson(type="bar Chart", description="Rapport d'exécution du traitement i2",processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/Atlas_i2_SpeciesByOcean_HighCharts.R",results=tableauResult)
+
+return(julien)
 
 }

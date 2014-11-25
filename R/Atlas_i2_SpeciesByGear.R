@@ -19,6 +19,7 @@
 #                         valueAttributeName="value")
 ##################################################################
 library(rCharts)
+source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i2_SpeciesByGear <- function(df, 
                                    yearAttributeName="year", 
@@ -138,8 +139,12 @@ Atlas_i2_SpeciesByGear <- function(df,
 
     #draw the plot
     
-    tempfile.base <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), as.character(min(aggData$year)), as.character(max(aggData$year)), "_", sep="_"), tmpdir="")
-#     plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")
+#     tempfile.base <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), as.character(min(aggData$year)), as.character(max(aggData$year)), "_", sep="_"), tmpdir="")
+    tempfile.base <- paste("/data/www/html/tmp",filename, sep="")
+    filename <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
+
+
+    #plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")
     plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
 
@@ -149,25 +154,34 @@ Atlas_i2_SpeciesByGear <- function(df,
 #p8 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarHorizontalChart')
 #p8$chart(showControls = F)
 #p8  <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart')
-p8  <- hPlot(value ~ year, group = 'gear_type', data = aggData, type = 'column', radius = 6)
-p8 $plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
-p8 $xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
-p8 
-    
+plotRchartsHighcharts  <- hPlot(value ~ year, group = 'gear_type', data = aggData, type = 'column', radius = 6)
+plotRchartsHighcharts$plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
+plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
+plotRchartsHighcharts 
 
-plot.filepathtml <- paste(tempdir(), tempfile.base, ".html", sep="")
-p8$save(plot.filepathtml) 
-#p8$save(paste("titi.html", sep="")) 
-p8
 
-dt <- dTable(
+## {title: MultiBar Chart}
+plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'column')
+plotRchartsNVD3$chart(color = c('brown', 'blue', '#594c26', 'green'))
+plotRchartsNVD3
+
+plotRchartsHighcharts
+
+Datatable <- dTable(
   aggData,
   sPaginationType= "full_numbers"
 )
-plot.filepathtmltable <- paste(tempdir(),tempfile.base, "_table.html", sep="")
-dt$save(plot.filepathtmltable) 
 
-dt
+Datatable
+
+plot.filepathtml <- paste(tempfile.base, ".html", sep="")
+plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
+plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
+plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
+plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
+Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp",filename, "_table.html", sep="")    
 
 
 

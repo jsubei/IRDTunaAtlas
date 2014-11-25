@@ -19,7 +19,6 @@
 #                         speciesAttributeName="species", 
 #                         valueAttributeName="value")
 ##################################################################
-library(rCharts)
 
 Atlas_i1_SpeciesByOcean <- function(df, 
                                     yearAttributeName="year", 
@@ -35,7 +34,7 @@ Atlas_i1_SpeciesByOcean <- function(df,
   if (missing(df)) {
     stop("Input data frame not specified")
   }
-
+  
   #check for input attributes
   if(sum(names(df) == yearAttributeName) == 0) {
     stop("Cannot found year attribute")
@@ -65,7 +64,7 @@ Atlas_i1_SpeciesByOcean <- function(df,
                   FUN=sum)
   #rename columns
   names(df) <- c("year", "ocean", "species", "value")
-    
+  
   #define the result df  
   result.df <- c()
   
@@ -122,67 +121,21 @@ Atlas_i1_SpeciesByOcean <- function(df,
     plot.filepath <- paste(tempfile.base, ".png", sep="")
     ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
     
-    ## AJOUT Julien RChart
-    #p8 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line')
-
-    ## AJOUT Julien RChart
-    
-    p8 <- hPlot(value ~ year, data = aggData, type = "bubble", title = "Captures par espèce et par océan", subtitle = "species.label", size = "value", group = "ocean")
-    p8$chart(zoomType = "xy")
-    p8$yAxis(title = list(text = "Captures"))
-    
-  
-
-    ##p8 <- Rickshaw$new()
-    ##p8$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")#, colors = 'steelblue', , subtitle = species.label
-    ###p8$xAxis(type = 'Time')
-    ##p8$yAxis(orientation = 'right')
-    ##p8$set(width = 1080, height = 480)
-    #p8$chart(zoomType = "xy")
-    
-    
-    plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-
-    #p8$save(plot.filepathtml) 
-    #p8$save(plot.filepathtml,cdn=TRUE) 
-    #p8$save(plot.filepathtml,include_assets = TRUE,cdn=TRUE) 
-    
-    #{p8 results = "asis", comment = NA}
-    #p8$show('iframe', cdn = TRUE)
-    p8$save(plot.filepathtml,standalone=TRUE) 
-  
-    p8
-    
-        
-    
-    dt <- dTable(
-      aggData,
-      sPaginationType= "full_numbers"
-    )
-    plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
-    dt$save(plot.filepathtmltable,standalone=TRUE) 
-    
-    dt
-        
-    
     #create the RDF metadata
     rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
     buildRdf(rdf_file_path=rdf.filepath,
-              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
-              #rdf_subject="http://ecoscope.org/indicatorI1", 
-              titles=c("IRD Tuna Atlas: indicator #1 - catches by species and by ocean", 
-                       "IRD Atlas thonier : indicateur #1 - captures par espèces et par océan"),
-              descriptions=c(paste(species.label, "catches by ocean"), 
-                       paste("Captures de", species.label, "par océan")),
-              subjects=c(as.character(species.current)),
-              processes="http://www.ecoscope.org/ontologies/resources/processI1",
-              data_output_identifier=plot.filepath,
-              start=as.character(min(aggData$year)),
-              end=as.character(max(aggData$year)),
-             #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-              withSparql)
-      
+             rdf_subject="http://ecoscope.org/indicatorI1", 
+             titles=c("IRD Tuna Atlas: indicator #1 - catches by species and by ocean", 
+                      "IRD Atlas thonier : indicateur #1 - captures par espèces et par océan"),
+             descriptions=c(paste(species.label, "catches by ocean"), 
+                            paste("Captures de", species.label, "par océan")),
+             subjects=c(as.character(species.current)),
+             processes="&localfile;/processI1",
+             start=as.character(min(aggData$year)),
+             end=as.character(max(aggData$year)),
+             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+             withSparql)
+    
     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
   }
   return(result.df)

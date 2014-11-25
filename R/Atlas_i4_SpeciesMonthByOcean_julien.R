@@ -1,4 +1,4 @@
-# Atlas_i4_SpeciesMonthByOcean.R
+# Atlas_i4_SpeciesMonthByOcean_julien.R
 # Tuna Atlas - IRD / MR EME
 #
 # This indicator build a graph of monthly (seasonal) catches by ocean for a species. An associated RDF file is also produced.
@@ -164,10 +164,10 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
       
       #draw the plot
 #       tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.label), "_", as.character(decade.current), "_", sep=""))
-      filename <- paste("I4", gsub(" ", "_", species.label), sep="_")
+      filename <- paste("I4", gsub(" ", "_", species.label), decade.current,sep="_")
       tempfile.base <- paste(repository,filename, sep="")
       plot.filepath <- paste(tempfile.base, ".png", sep="")
-      ggsave(filename=plot.filepath, plot=resultPlot, dpi=300)
+      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
       plot.URLpng <- paste(URL,filename, ".png", sep="")
 
 
@@ -224,8 +224,8 @@ titles=c(paste(species.label, "IRD Tuna Atlas: indicator #4 - monthly catches by
 #                  c("fr",paste("Captures mensuelles de", species.label, "par océan et par année"))
 #                  
 
-descriptions=c(paste(species.label, "monthly catches by ocean and by year"),
-                 paste("Captures mensuelles de", species.label, "par océan et par année"))
+descriptions=c(c("en",paste(species.label, "monthly catches by ocean and by year")),
+               c("fr",paste("Captures mensuelles de", species.label, "par océan et par année")))
                  
 subjects=c(as.character(species.current),as.character(unique(current.df$ocean)))
 
@@ -311,10 +311,10 @@ tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
       
 
       #draw the plot
-      filename <- paste("I4", gsub(" ", "_", species.label), "_byDecade_", sep="")
+      filename <- paste("I4", gsub(" ", "_", species.label), "_byDecade_", decade.current, sep="")
       tempfile.base <- paste(repository,filename, sep="")
       plot.filepath <- paste(tempfile.base, ".png", sep="")
-      ggsave(filename=plot.filepath, plot=resultPlot, dpi=300)
+      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
       plot.URLpng <- paste(URL,filename, ".png", sep="")
       
       
@@ -377,7 +377,7 @@ titles=c(paste(species.label, "IRD Tuna Atlas: indicator #4 - monthly catches by
 
 # descriptions=c(c("en",paste(species.label, "monthly catches by ocean and by decade"),
 #                c("fr",paste("Captures mensuelles de", species.label, "par océan et par décénie"))
-descriptions=c(paste(species.label, "monthly catches by ocean and by decade"),
+descriptions=c(paste(species.label, "monthly catches by ocean and by decade")
                  ,paste("Captures mensuelles de", species.label, "par océan et par décénie"))
                  
 

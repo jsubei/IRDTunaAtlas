@@ -370,7 +370,32 @@ FAO2URIFromEcoscope <- function(FAOId) {
   return(NA)
 }
 
-buildRdf <- function(store,rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), processes=c(), data_output_identifiers=c(), start=NA, end=NA, spatial=NA, withSparql=TRUE) {
+
+buildJson <- function(type, description,processSourceCode,results)
+{
+  # Cette liste va comprendre un tableau à une dimension avec autant de cellules que d'indicateurs produits par le traitements'.
+  # Les informations sur chaque traitements seront stockées dans une liste. tableauResult sera donc un tableau de list
+  #List to store URLs of the set of files generated for each species
+  liste <-data.frame(type=type,
+                     description=description,
+                     processSourceCode=processSourceCode)
+  # colnames(liste)[which(names(liste) == "1")] <- "metadata")
+  #  liste$results <- tableauResult
+  liste <- list(liste,
+                results=results
+  ) 
+  names(liste)[1]<-paste("Metadata")
+  julien<-toJSON(liste, pretty=TRUE)
+  return(julien)
+  # liste<-to_json(liste)
+  # # cat(listeResult)
+  # remettre en R pour remettre en Json aprÃƒÂ¨s
+  # liste <- as.data.frame(fromJSON(liste))
+  # liste<-toJSON(liste)
+  # liste<- gsub("\\", "", liste, fixed=TRUE)
+  
+}
+buildRdf2 <- function(store, tableauResult, RDFMetadata, rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), tabURIs, processes=c(), image, data_output_identifiers, download, start=NA, end=NA, spatial=NA, withSparql=TRUE) {
   if (! require(rrdf)) {
     stop("Missing rrdf library")
   
@@ -408,12 +433,17 @@ buildRdf <- function(store,rdf_file_path, rdf_subject, titles=c(), descriptions=
   #           data=data_input)
   
   #has_data_input
-for (data_output_identifier.current in data_output_identifiers) {
-    add.data.triple(store,
-                  subject=rdf_subject,
-                  predicate="http://purl.org/dc/elements/1.1/identifier",
-                  data=data_output_identifier.current)
-}
+# for (data_output_identifier.current in data_output_identifiers) {  
+# #   for (i in dim(data_output_identifiers) {  
+# fuck <- data_output_identifiers$fileURL1
+# # fuck <- data_output_identifiers[,2]
+#     add.data.triple(store,
+#                   subject=rdf_subject,
+#                   predicate="http://purl.org/dc/elements/1.1/identifier",
+#                   data=fuck)
+#     
+# }
+
   
   #title
   for (title.current in titles) {
@@ -464,12 +494,17 @@ for (data_output_identifier.current in data_output_identifiers) {
                  subject=rdf_subject,
                  predicate="http://purl.org/dc/elements/1.1/subject",
                  object=URI)
+      ligne<- c(type="species",URI=URI)
+      tabURIs<- rbind(tabURIs,ligne)
+      
+      
     } else {
       add.data.triple(store,
                       subject=rdf_subject,
                       predicate="http://purl.org/dc/elements/1.1/subject",
                       data=subject.current)
     }
+
   }
   
   
@@ -482,8 +517,36 @@ for (data_output_identifier.current in data_output_identifiers) {
   }
   
   save.rdf(store=store, filename=rdf_file_path)
-}
 
+  
+#Write the Json metadata used by the SIP
+ligneTableauResult <- data.frame(titre=title.current,
+                                 Description=description.current,
+                                 RDFMetadata=RDFMetadata,
+                                 radarPlots="cet attribut doit fusionner avec rcharts",
+                                 image=image
+                                  
+)
+ligneTableauResult$spatio_temporal_extent=list(data.frame(temporal_extent_start=start,temporal_extent_end=end,spatial_extent=spatial))
+ligneTableauResult$uri=list(tabURIs)
+ligneTableauResult$download=list(download)
+ligneTableauResult$rCharts <- list(data_output_identifiers)
+
+tableauResult <- rbind(tableauResult,ligneTableauResult)
+return(tableauResult)
+}
+# tableauResult$results <- data.frame(titre=character(),
+# tableauResult <- data.frame(titre=character(),
+#                             Description=character(),
+#                             uri=character(),
+#                             start=character(),
+#                             Metadata=character(),
+#                             image=character(),                  
+#                             radarPlots=character(),
+#                             dataTable=character(),
+#                             download=character(),
+#                             stringsAsFactors=FALSE)   
+# 
 
 
 

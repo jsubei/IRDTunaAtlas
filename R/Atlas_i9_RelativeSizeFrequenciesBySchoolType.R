@@ -91,6 +91,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
   names(my.colors) <- levels(df$school)
   
   #plot fct
+    
   plotFct <- function(subDf, species.label, lims=c()) {
     #aggregate values by size class and school type
     valuesSum <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school, data=subDf, FUN=sum)

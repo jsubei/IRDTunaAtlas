@@ -27,8 +27,8 @@ library(jsonlite)
 library(rgdal)
 
 
-# source("/home/tomcat7/temp/IRDTunaAtlas.R")
- source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
+source("/home/tomcat7/temp/IRDTunaAtlas.R")
+#  source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i6_SpeciesMap <- function(df,
                                 geomIdAttributeName="geom_id",
@@ -75,11 +75,11 @@ Atlas_i6_SpeciesMap <- function(df,
   names(df)[which(names(df) == speciesAttributeName)] <- "species"
   names(df)[which(names(df) == valueAttributeName)] <- "value"
   
-  #   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/cdn/"
-  #   repository<-"/data/www/html/tmp/SpeciesMap/cdn/"
-  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/"
-  repository<-"/data/www/html/tmp/SpeciesMap/"  
-  
+    URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/cdn/"
+    repository<-"/data/www/html/tmp/SpeciesMap/cdn/"
+#   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/"
+#   repository<-"/data/www/html/tmp/SpeciesMap/"  
+#   
   #List to store URLs of the set of files generated for each species
   liste <- list()
   #define the resulr df  
@@ -307,7 +307,6 @@ Atlas_i6_SpeciesMap <- function(df,
     rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep="")               
     URI <- FAO2URIFromEcoscope(as.character(species.current))
     tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
-    processes="processes"
     
     #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
     spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
@@ -327,7 +326,7 @@ Atlas_i6_SpeciesMap <- function(df,
     ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.nc....")
     download <- rbind(download, ligne)
     
-    data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="image",year=temporal_extent_begin, fileURL=plot.filepath, stringsAsFactors=FALSE)
+    data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin, fileURL=plot.filepath, stringsAsFactors=FALSE)
     ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="map",year=temporal_extent_begin, fileURL=plot.URLhtmlMap)
     data_output_identifiers <- rbind(data_output_identifiers, ligne)
     ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin, fileURL=plot.URLhtmlTable)
@@ -389,7 +388,7 @@ one <-list(tableauResult = tableauResult,
     one <- plotFct(species.df, species.label, species.current, tableauResult, store)
   #     buildRdf <- function(store, tableauResult, RDFMetadata, rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), tabURIs, processes=c(), image, data_output_identifiers, download, start=NA, end=NA, spatial=NA, withSparql=TRUE) {
       
-    tableauResult <- buildRdf2(store,
+    tableauResult <- buildRdf(store,
                       one$tableauResult,
                       one$RDFMetadata,
                       one$rdf_file_path,
@@ -412,7 +411,7 @@ one <-list(tableauResult = tableauResult,
         {
           for(year.current in unique(species.df$year)) {
             one <- plotFct(species.df[species.df$year==year.current,], species.label, species.current, tableauResult, store)
-            tableauResult <- buildRdf2(store,
+            tableauResult <- buildRdf(store,
                                        one$tableauResult,
                                        one$RDFMetadata,
                                        one$rdf_file_path,
@@ -439,7 +438,7 @@ one <-list(tableauResult = tableauResult,
             for(decade.current in unique(species.df$decade)) {
 
               one <- plotFct(species.df[species.df$decade==decade.current,], species.label, species.current, tableauResult, store)
-              tableauResult <- buildRdf2(store,
+              tableauResult <- buildRdf(store,
                                          one$tableauResult,
                                          one$RDFMetadata,
                                          one$rdf_file_path,
@@ -467,6 +466,8 @@ one <-list(tableauResult = tableauResult,
 
 # Packing the description of results in Json file storing all metadata (same as RDF)  
 julien<-buildJson(type="map", description="Rapport d'exécution du traitement i6",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i6_SpeciesMap.R",results=tableauResult)
+fileJulien=paste(repository,"WebProcessingService.json", sep="")
+cat(julien, file=fileJulien)
 return(julien)
 
 

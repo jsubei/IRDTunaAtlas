@@ -23,6 +23,9 @@
 #                        fishCountAttributeName="fish_count")
 ##################################################################
 library(rCharts)
+library(jsonlite)
+
+# source("/home/tomcat7/temp/IRDTunaAtlas.R")
 source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien <- function(df,
                                                          yearAttributeName="year",
@@ -80,6 +83,18 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien <- function(df,
              prefix="dct",
              namespace="http://purl.org/dc/terms/")
   
+  #define the result df
+  result.df <- c()
+
+  
+  
+  # tableauResult$results <- data.frame(titre=character(),
+  tableauResult <- data.frame(stringsAsFactors=FALSE)   
+  
+    URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/cdn/"
+    repository<-"/data/www/html/tmp/RelativeSizeFrequenciesBySchoolType/cdn/"
+#   URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/"
+#   repository<-"/data/www/html/tmp/RelativeSizeFrequenciesBySchoolType/"
   
   
   
@@ -101,10 +116,6 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien <- function(df,
   
   
   
-  
-  
-  
-  
   #test if usual school codes are used
   if (length(intersect(levels(df$school), c("IND", "BO", "BL"))) == length(levels(df$school))) {
     df$school <- factor(df$school, levels=c("IND", "BO", "BL"), labels=c("Undefined school", "Log school", "Free school"))
@@ -115,7 +126,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien <- function(df,
   names(my.colors) <- levels(df$school)
   
   #plot fct
-  plotFct <- function(subDf, species.label, lims=c()) {
+  plotFct <- function(subDf, species.label, species.current, tableauResult, store, lims=c()) {
     #aggregate values by size class and school type
     valuesSum <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school, data=subDf, FUN=sum)
     valuesSum$relative <- (valuesSum$fishCount / sum(valuesSum$fishCount)) * 100
@@ -132,7 +143,7 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien <- function(df,
     #build the plot
 #     resultPlot <- ggplot(aggData, aes(x=year, y=value, fill=gear_type, order=gear_type)) + 
   
-      plot.result <- ggplot(mapping=aes(fill=school, order=school)) +
+      resultPlot <- ggplot(mapping=aes(fill=school, order=school)) +
       geom_rect(data=valuesSum, mapping=aes(xmin = sizeClassLowerBound, xmax = sizeClassUpperBound, ymin = 0, ymax = relative), colour="grey25") +
       scale_fill_manual(name="School type", values=my.colors) +
       xlab("Size (in cm)") + ylab("Relative contribution (in %)") + 
@@ -140,16 +151,20 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien <- function(df,
       theme(legend.position="bottom")
     
     if (length(lims) == 4) {
-      plot.result <- plot.result + scale_x_continuous(limits=c(lims[1], lims[2])) + scale_y_continuous(limits=c(lims[3], lims[4]))
+      resultPlot <- resultPlot + scale_x_continuous(limits=c(lims[1], lims[2])) + scale_y_continuous(limits=c(lims[3], lims[4]))
     }
     
 
     #draw the plot
-    filename <- tempfile(pattern=paste("I9_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""),tmpdir="")
-    tempfile.base <- paste("/data/www/html/tmp",filename, sep="")
+    filename <- paste("I9_", gsub(" ", "_", species.label),"_",as.character(min(subDf$year)), "-", as.character(max(subDf$year)), sep="")
+    tempfile.base <- paste(repository,filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
-    plot.URLpng <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".png", sep="")
-    ggsave(filename=plot.filepath, plot=plot.result, dpi=100)
+    plot.URLpng <- paste(URL,filename, ".png", sep="")
+    ggsave(filename=plot.filepath, plot=resultPlot, width=20, unit="cm", dpi=300)
+
+
+
+
     
     ## AJOUT Julien RChart
     #p8 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarHorizontalChart')
@@ -189,37 +204,101 @@ plot.filepathtml <- paste(tempfile.base, ".html", sep="")
 plot.filepathtmlbis <- paste(tempfile.base, "bis.html", sep="")
 plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
 #     plot.filepathtmlNVD3 <- paste(tempfile.base, "_NVD3.html", sep="")
-plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
-plotRchartsHighchartsbis$save(plot.filepathtmlbis,standalone=TRUE) 
+# plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+plotRchartsHighcharts$save(plot.filepathtml,cdn=TRUE) 
+# plotRchartsHighchartsbis$save(plot.filepathtmlbis,standalone=TRUE) 
+plotRchartsHighchartsbis$save(plot.filepathtmlbis,cdn=TRUE) 
 #     plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
     plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
-    Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-    plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp",filename, "_table.html", sep="")    
+# Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+Datatable$save(plot.filepathtmltable,cdn=TRUE)     
+plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp",filename, "_table.html", sep="")    
 
-    
-    #create the RDF metadata
-    rdf.filepath <- paste("/data/www/html/tmp/La_totale", ".rdf", sep="")
-    rdf.URL <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".rdf", sep="")
-    buildRdf(store,rdf.filepath,
-             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
-             titles=c("IRD Tuna Atlas: indicator #9 - Graph relative contribution of size frequencies in catches for a species by school type", 
-                      "IRD Atlas thonier : indicateur #9 - Graphique des contributions des classes de tailles aux captures par type de banc"),
-             descriptions=c(paste(species.label, "size frequencies contribution catches plot"), 
-                            paste("Contributions des classes de tailles aux captures de", species.label)),
-             subjects=c(as.character(species.current)),
-             processes="http://www.ecoscope.org/ontologies/resources/processI9",
-             data_output_identifier=plot.filepath,
-             start=as.character(min(subDf$year)),
-             end=as.character(max(subDf$year)),
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-             withSparql)
-    
-    return(c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
+
+#Datatable
+plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
+plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
+# Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+      Datatable$save(plot.filepathtmltable,cdn=TRUE)       
+
+
+################################################################################################
+
+
+# ligne <- data.frame(TYPE="URI", URL=URI,  stringsAsFactors=FALSE)
+
+
+################################################################################################
+
+
+#Metadata elements (in addition to OGC WPS metadata) to describe the current indicator which will be used by other applications (Ecoscope and Tuna Atlas Websites)
+
+titles=c(paste(species.label, ": relative contribution of size frequencies in catches for a species by school type"), 
+         paste("Captures de", species.label, ": contributions des classes de tailles par type de banc"))
+
+
+descriptions=c(c("en", paste("IRD Tuna Atlas: indicator #9 - Size frequencies contribution to catches for species ",species.label, "by school type", as.character(min(subDf$year)), as.character(max(subDf$year)), sep="-")),
+               c("fr", paste("IRD Atlas Thonier: indicator #9 - Contributions des classes de tailles aux captures de l'espèce:",species.label, "par type de banc", as.character(min(subDf$year)), as.character(max(subDf$year)), sep="-")))
+
+
+subjects=c(as.character(species.current))
+#Collect the URIs of related Topics from Ecoscope SPARQL endpoint
+URI <- FAO2URIFromEcoscope(as.character(species.current))
+tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
+rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep="")               
+
+
+#TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
+temporal_extent_begin=as.character(min(subDf$year))
+temporal_extent_end=as.character(max(subDf$year))
+
+#create the RDF metadata
+rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
+rdf.URL <- paste(URL,filename, ".rdf", sep="")
+
+
+download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.csv", stringsAsFactors=FALSE)
+ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.shp")
+download <- rbind(download, ligne)
+ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.nc....")
+download <- rbind(download, ligne)
+
+data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="image",year=temporal_extent_begin, fileURL=plot.filepath, stringsAsFactors=FALSE)
+ligne <- c(titre="2 en fait y a pas besoin de cet attribut",type="bar", year=temporal_extent_begin, fileURL=plot.filepathtml)
+data_output_identifiers <- rbind(data_output_identifiers, ligne)
+ligne <- c(titre="3 en fait y a pas besoin de cet attribut",type="bar",year=temporal_extent_begin, fileURL=plot.filepathtmlbis)
+data_output_identifiers <- rbind(data_output_identifiers, ligne)
+ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin, fileURL=plot.URLhtmlTable)
+data_output_identifiers <- rbind(data_output_identifiers, ligne)
+
+
+
+
+one <-list(tableauResult = tableauResult,
+           RDFMetadata=rdf.URL,
+           rdf_file_path=rdf.filepath,
+           rdf_subject=rdf_subject, 
+           titles=titles,
+           descriptions=descriptions,
+           subjects=subjects,
+           tabURIs=tabURIs,
+           processes="http://www.ecoscope.org/ontologies/resources/processI9",
+           image=plot.URLpng,
+           data_output_identifiers=data_output_identifiers,
+           download=download,
+           start=temporal_extent_begin,
+           end=temporal_extent_end,
+           spatial=spatial_extent,
+           withSparql=withSparql)
+
+return(one)  
+
   }
   
-  #define the resulr df  
-  result.df <- c()
-  
+
+
+
   for (species.current in unique(df$species)) {    
     
     if (withSparql) {      
@@ -241,9 +320,25 @@ plotRchartsHighchartsbis$save(plot.filepathtmlbis,standalone=TRUE)
     species.df <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school + year, data=df[df$species == species.current,], FUN=sum)
     
     #plot for all the period
-    result.plot.df <- plotFct(species.df, species.label)
-    result.df <- rbind(result.df, result.plot.df)
-  
+    one <- plotFct(species.df, species.label, species.current, tableauResult, store)
+    tableauResult <- buildRdf(store,
+                               one$tableauResult,
+                               one$RDFMetadata,
+                               one$rdf_file_path,
+                               one$rdf_subject, 
+                               one$titles,
+                               one$descriptions,
+                               one$subjects,
+                               one$tabURIs,
+                               one$processes,
+                               one$image,
+                               one$data_output_identifiers,
+                               one$download,
+                               one$start,
+                               one$end,
+                               one$spatial,
+                               one$withSparql)  
+    
     years <- unique(species.df$year)
     if (length(years) > 1)
     {      
@@ -251,8 +346,24 @@ plotRchartsHighchartsbis$save(plot.filepathtmlbis,standalone=TRUE)
       sizeClass.range <- range(species.df$sizeClassLowerBound, species.df$sizeClassUpperBound)
       #for each year
       for(year.current in years) {
-        result.plot.df <- plotFct(species.df[species.df$year==year.current,], species.label, lims=c(sizeClass.range[1], sizeClass.range[2], 0, contrib.max))
-        result.df <- rbind(result.df, result.plot.df)
+        one <- plotFct(species.df[species.df$year==year.current,], species.label, species.current, tableauResult, store,lims=c(sizeClass.range[1], sizeClass.range[2], 0, contrib.max))
+        tableauResult <- buildRdf(store,
+                                   one$tableauResult,
+                                   one$RDFMetadata,
+                                   one$rdf_file_path,
+                                   one$rdf_subject, 
+                                   one$titles,
+                                   one$descriptions,
+                                   one$subjects,
+                                   one$tabURIs,
+                                   one$processes,
+                                   one$image,
+                                   one$data_output_identifiers,
+                                   one$download,
+                                   one$start,
+                                   one$end,
+                                   one$spatial,
+                                   one$withSparql)
       }
       
       #for each decade
@@ -263,13 +374,35 @@ plotRchartsHighchartsbis$save(plot.filepathtmlbis,standalone=TRUE)
         species.decade.df <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school + decade, data=species.df, FUN=sum)
         contrib.max <- max(unlist(lapply(decades, FUN=function(x) {max((species.decade.df[species.decade.df$decade == x,]$fishCount / sum(species.decade.df[species.decade.df$decade == x,]$fishCount)) * 100)})))
         for(decade.current in decades) {
-          result.plot.df <- plotFct(species.df[species.df$decade==decade.current,], species.label, lims=c(sizeClass.range[1], sizeClass.range[2], 0, contrib.max))
-          result.df <- rbind(result.df, result.plot.df)
+          one <- plotFct(species.df[species.df$decade==decade.current,], species.label, species.current, tableauResult, store,lims=c(sizeClass.range[1], sizeClass.range[2], 0, contrib.max))
+          tableauResult <- buildRdf(store,
+                                     one$tableauResult,
+                                     one$RDFMetadata,
+                                     one$rdf_file_path,
+                                     one$rdf_subject, 
+                                     one$titles,
+                                     one$descriptions,
+                                     one$subjects,
+                                     one$tabURIs,
+                                     one$processes,
+                                     one$image,
+                                     one$data_output_identifiers,
+                                     one$download,
+                                     one$start,
+                                     one$end,
+                                     one$spatial,
+                                     one$withSparql)
         }
       }
     }
   }
-  return(result.df)
+
+julien<-buildJson(type="Bar Chart", description="Rapport d'exécution du traitement i9", processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/scripts/Atlas_i9XXX.R",results=tableauResult)
+
+return(julien)
+
+
+
 }
 
 

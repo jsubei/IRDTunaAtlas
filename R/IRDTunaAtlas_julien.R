@@ -371,14 +371,15 @@ FAO2URIFromEcoscope <- function(FAOId) {
 }
 
 
-buildJson <- function(type, description,processSourceCode,results)
+buildJson <- function(type, description,processSourceCode, RDFMetadata, results)
 {
   # Cette liste va comprendre un tableau à une dimension avec autant de cellules que d'indicateurs produits par le traitements'.
   # Les informations sur chaque traitements seront stockées dans une liste. tableauResult sera donc un tableau de list
   #List to store URLs of the set of files generated for each species
   liste <-data.frame(type=type,
                      description=description,
-                     processSourceCode=processSourceCode)
+                     processSourceCode=processSourceCode,
+                     RDFMetadata=RDFMetadata)
   # colnames(liste)[which(names(liste) == "1")] <- "metadata")
   #  liste$results <- tableauResult
   liste <- list(liste,
@@ -395,12 +396,12 @@ buildJson <- function(type, description,processSourceCode,results)
   # liste<- gsub("\\", "", liste, fixed=TRUE)
   
 }
-buildRdf2 <- function(store, tableauResult, RDFMetadata, rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), tabURIs, processes=c(), image, data_output_identifiers, download, start=NA, end=NA, spatial=NA, withSparql=TRUE) {
+buildRdf <- function(store, tableauResult, RDFMetadata, rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), tabURIs, processes=c(), image, data_output_identifiers, download, start=NA, end=NA, spatial=NA, withSparql=TRUE) {
   if (! require(rrdf)) {
     stop("Missing rrdf library")
   
   }
-  
+#   rdf_subject<-"http://www.ecoscope.org/ontologies/resources/indicators_time_series"               
   #store = new.rdf(ontology=FALSE)
   
 #   add.prefix(store,
@@ -435,12 +436,12 @@ buildRdf2 <- function(store, tableauResult, RDFMetadata, rdf_file_path, rdf_subj
   #has_data_input
 # for (data_output_identifier.current in data_output_identifiers) {  
 # #   for (i in dim(data_output_identifiers) {  
-# fuck <- data_output_identifiers$fileURL1
-# # fuck <- data_output_identifiers[,2]
+# julien <- data_output_identifiers$fileURL1
+# # julien <- data_output_identifiers[,2]
 #     add.data.triple(store,
 #                   subject=rdf_subject,
 #                   predicate="http://purl.org/dc/elements/1.1/identifier",
-#                   data=fuck)
+#                   data=julien)
 #     
 # }
 
@@ -516,7 +517,7 @@ buildRdf2 <- function(store, tableauResult, RDFMetadata, rdf_file_path, rdf_subj
                     data=spatial)
   }
   
-  save.rdf(store=store, filename=rdf_file_path)
+  save.rdf(store=store, filename=rdf.filepath)
 
   
 #Write the Json metadata used by the SIP

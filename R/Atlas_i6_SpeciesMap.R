@@ -27,8 +27,8 @@ library(jsonlite)
 library(rgdal)
 
 
-source("/home/tomcat7/temp/IRDTunaAtlas.R")
-#  source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
+# source("/home/tomcat7/temp/IRDTunaAtlas.R")
+source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i6_SpeciesMap <- function(df,
                                 geomIdAttributeName="geom_id",

@@ -36,8 +36,8 @@ library(jsonlite)
 # library(rjson)
 # library(dplyr)
 
-# source("/home/tomcat7/temp/IRDTunaAtlas.R")
-source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
+source("/home/tomcat7/temp/IRDTunaAtlas_OLD.R")
+# source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i1_SpeciesByOcean_julien <- function(df, 
                                            yearAttributeName="year", 
@@ -130,8 +130,8 @@ tableauResult <- data.frame(titre=character(),
 
 listeResult <- list()
 
-URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/cdn/"
-repository<-"/data/www/html/tmp/SpeciesByOcean/cdn/"
+URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/"
+repository<-"/data/www/html/tmp/SpeciesByOcean/default/"
 # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/"
 # repository<-"/data/www/html/tmp/SpeciesByOcean/"
 
@@ -191,10 +191,10 @@ repository<-"/data/www/html/tmp/SpeciesByOcean/cdn/"
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
     plotRchartsNVD3$chart(width = 800, height = 400, useInteractiveGuideline=TRUE)
     
-    plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'line', id = 'chart')
-    plotRchartsNVD3bis$xAxis(axisLabel = 'Year')
-    plotRchartsNVD3bis$yAxis(axisLabel = 'Catches')
-    plotRchartsNVD3$chart(width = 800, height = 400, useInteractiveGuideline=TRUE)
+    plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'lineChart')
+#     plotRchartsNVD3bis$xAxis(axisLabel = 'Year')
+#     plotRchartsNVD3bis$yAxis(axisLabel = 'Catches')
+#     plotRchartsNVD3bis$chart(width = 800, height = 400)
     
     
     #plotRchartsNVD3$addFilters("East Pacific O.", "Atlantic O.")
@@ -217,11 +217,6 @@ plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels 
     #plotRchartsHighcharts$addControls("y", value = "year", values = names(aggData$year[1:3]))
     #Display Plots
 #     plotRchartsHighcharts
-
-
-
-
-
     
     ## AJOUT Julien RChart Highcharts
     plotRchartsRickshaw <- Rickshaw$new()
@@ -232,8 +227,6 @@ plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels 
     plotRchartsRickshaw$set(width = 800, height = 400, legend = TRUE, slider = TRUE)
     #Rickshaw.Graph.JSONP
     #plotRchartsRickshaw$chart(zoomType = "xy") 
-
-
 
     #plotRchartsHighcharts$show('iframe', cdn = TRUE)
 
@@ -246,29 +239,29 @@ plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels 
     plot.filepathtml <- paste(tempfile.base, ".html", sep="")
     #{plotRchartsHighcharts results = "asis", comment = NA}
     #plotRchartsHighcharts$save(plot.filepathtml,include_assets = TRUE,cdn=TRUE)     
-#     plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
-    plotRchartsHighcharts$save(plot.filepathtml,chartId="julien", cdn=TRUE) 
+    plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+#     plotRchartsHighcharts$save(plot.filepathtml,chartId="julien", cdn=TRUE) 
     plot.URLhtml <- paste(URL,filename, ".html", sep="")
     
     plot.filepathtmlNVD3 <- paste(tempfile.base, "NVD3.html", sep="_")
-#     plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE)
-    plotRchartsNVD3$save(plot.filepathtmlNVD3,chartId="julien", cdn=TRUE) 
+    plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE)
+#     plotRchartsNVD3$save(plot.filepathtmlNVD3,chartId="julien", cdn=TRUE) 
     plot.URLhtmlNVD3 <- paste(URL,filename, "_NVD3.html", sep="")
     
     plot.filepathtmlNVD3bis <- paste(tempfile.base, "NVD3bis.html", sep="_")
-#     plotRchartsNVD3bis$save(plot.filepathtmlNVD3bis,standalone=TRUE)
-    plotRchartsNVD3bis$save(plot.filepathtmlNVD3bis,chartId="julien", cdn=TRUE)
+    plotRchartsNVD3bis$save(plot.filepathtmlNVD3bis,standalone=TRUE)
+#     plotRchartsNVD3bis$save(plot.filepathtmlNVD3bis,chartId="julien", cdn=TRUE)
     plot.URLhtmlNVD3bis <- paste(URL,filename, "_NVD3bis.html", sep="")
     
     plot.filepathtmlRickshaw <- paste(tempfile.base, "Rickshaw.html", sep="_")
-#     plotRchartsRickshaw$save(plot.filepathtmlRickshaw,standalone=TRUE)
-    plotRchartsRickshaw$save(plot.filepathtmlRickshaw,chartId="julien", cdn=TRUE)
+    plotRchartsRickshaw$save(plot.filepathtmlRickshaw,standalone=TRUE)
+#     plotRchartsRickshaw$save(plot.filepathtmlRickshaw,chartId="julien", cdn=TRUE)
     plot.URLhtmlRickshaw <- paste(URL,filename, "_Rickshaw.html", sep="")
     
     
     plot.filepathtmltable <- paste(tempfile.base, "table.html", sep="_")
-#     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-    Datatable$save(plot.filepathtmltable,chartId="julien", cdn=TRUE)     
+    Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+#     Datatable$save(plot.filepathtmltable,chartId="julien", cdn=TRUE)     
     plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
     
 # #     Display Plots
@@ -293,7 +286,6 @@ plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels 
     temporal_extent_end=as.character(max(aggData$year))
     
     rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
-    #rdf.filepath <- paste(tempfile.base, ".rdf", sep="")
     rdf.URL <- paste(URL,filename, ".rdf", sep="")
 # il faudrait ajouter un attribut qui précise le type de visualisation: carte, chart...
 
@@ -335,12 +327,15 @@ tableauResult <- buildRdf(store=store, tableauResult = tableauResult,
              spatial=spatial_extent,
              withSparql)
 
-result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
+# result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
 
   }
 
 
-julien<-buildJson(type="plot||download||map||..", description="Rapport d'exécution du traitement i1",processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/toto_wps.R",results=tableauResult)
+julien<-buildJson(type="plot||download||map||..",
+                  description="Rapport d'exécution du traitement i1",
+                  processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/toto_wps.R",
+                  results=tableauResult)
 
 
 return(julien)

@@ -52,10 +52,10 @@ enRichment <- function(data, opendapUrl, varName,
       }
     }    
   }
-
+  
   #id of rows
   data.df.id <- 1:length(x)
-    
+  
   #open the netCDF
   if (verbose) {
     cat("Opening the netCDF\n")
@@ -243,7 +243,7 @@ enRichment <- function(data, opendapUrl, varName,
     } else {
       window.expand <- expand.grid(window.seq, window.seq)
     }
-        
+    
     indices.df.window <- indices.df[0,]
     #BOUCLE ! tres lent, a modifier, ne prend pas an compte si il n'y a pas de dim temps
     for (i in 1:nrow(indices.df)) {
@@ -256,7 +256,7 @@ enRichment <- function(data, opendapUrl, varName,
   #on ne va pas demander 2 fois la même cellule !
   unique.id <- rep(x=NA, times=nrow(indices.df))
   indices.df.unique <- na.omit(unique(indices.df))
-
+  
   if (verbose) {
     cat("lon range", max(indices.df.unique$lon) - min(indices.df.unique$lon), "\n")
     cat("lat range", max(indices.df.unique$lat) - min(indices.df.unique$lat), "\n")
@@ -269,7 +269,7 @@ enRichment <- function(data, opendapUrl, varName,
   for (i in 1:nrow(indices.df.unique)) {
     unique.id[which(apply(mapply(indices.df, indices.df.unique[i,], FUN="=="), MARGIN=1, FUN=all))] <- i
   }
-    
+  
   ####
   #compute a cluster of distance for netCDF index
   ds <- dbscan(indices.df.unique, eps=20, MinPts=2)
@@ -289,7 +289,7 @@ enRichment <- function(data, opendapUrl, varName,
   
   for (current.cluster in unique(indices.df.unique$cluster)) {
     current.indices.df <- indices.df.unique[indices.df.unique$cluster == current.cluster,]
-#print(paste("clust", current.cluster))
+    #print(paste("clust", current.cluster))
     if (current.cluster == 0) {
       count.array <- rep(1, length(netcdf.var$dim))
       #points not in a cluster
@@ -305,13 +305,13 @@ enRichment <- function(data, opendapUrl, varName,
         
         #build the result DF
         current.fetch.df <- data.frame(lon=current.indices.df$lon[i],
-                                 lat=current.indices.df$lat[i],
-                                 value=value,
-                                 id=current.indices.df$id[i])
+                                       lat=current.indices.df$lat[i],
+                                       value=value,
+                                       id=current.indices.df$id[i])
         if (withTime) {
           current.fetch.df <- cbind(current.fetch.df, time=current.indices.df$time[i])
         }
-  
+        
         fetch.df <- rbind(fetch.df, current.fetch.df)
         
         if (verbose) {
@@ -330,8 +330,8 @@ enRichment <- function(data, opendapUrl, varName,
         count.array[time.dim.index] <- max(current.indices.df$time) - min(current.indices.df$time) + 1
       }
       
-#print(paste("start.array", paste(start.array, collapse = " ")))
-#print(paste("count.array", paste(count.array, collapse = " ")))
+      #print(paste("start.array", paste(start.array, collapse = " ")))
+      #print(paste("count.array", paste(count.array, collapse = " ")))
       #read data from netCDF
       values <- get.var.ncdf(nc=nc, varid=netcdf.var$name, start=start.array, count=count.array)
       
@@ -346,9 +346,9 @@ enRichment <- function(data, opendapUrl, varName,
         
         #build the result DF
         current.fetch.df <- data.frame(lon=current.indices.df$lon[i],
-                                 lat=current.indices.df$lat[i],
-                                 value=values.array[matrix(indices.array,1)],
-                                 id=current.indices.df$id[i])
+                                       lat=current.indices.df$lat[i],
+                                       value=values.array[matrix(indices.array,1)],
+                                       id=current.indices.df$id[i])
         if (withTime) {
           current.fetch.df <- cbind(current.fetch.df, time=current.indices.df$time[i])
         }
@@ -400,7 +400,7 @@ enRichment <- function(data, opendapUrl, varName,
   if (withTime) {
     names(result.df)[4] <- paste(varName,"_time", sep="")
   }
-
+  
   if (inherits(data, what="data.frame"))  {
     data <- cbind(data, result.df)    
   } else {
@@ -410,4 +410,3 @@ enRichment <- function(data, opendapUrl, varName,
   }
   return(data)
 }
-

@@ -471,6 +471,8 @@ buildRdf <- function(store,rdf_file_path, rdf_subject, titles=c(), descriptions=
     }
   }
   
+
+
   
   
   if (! is.na(spatial)) {

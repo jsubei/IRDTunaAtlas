@@ -10,6 +10,8 @@ import(rgeos)
 import(maps)
 import(mapplots)
 import(ncdf)
+import(rgdal)
+import(jsonlite)
 import(sp)
 import(fpc)
 

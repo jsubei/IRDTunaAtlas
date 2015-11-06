@@ -22,7 +22,7 @@
 # library(jsonlite)
 
 #  source("/home/tomcat7/temp/IRDTunaAtlas.R")
-source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
+# source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 Atlas_i2_SpeciesByGear_julien <- function(df, 
                                    yearAttributeName="year", 
                                    speciesAttributeName="species",

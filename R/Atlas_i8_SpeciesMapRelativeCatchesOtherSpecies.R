@@ -28,7 +28,7 @@
 # library(rgdal)
 
 # source("/home/tomcat7/temp/IRDTunaAtlas.R")
-source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
+# source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 
 Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,

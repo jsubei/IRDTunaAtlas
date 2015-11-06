@@ -19,7 +19,7 @@
 #                         valueAttributeName="value")
 ##################################################################
 # library(rCharts)
-source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
+# source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i2_SpeciesByGear <- function(df, 
                                    yearAttributeName="year", 

@@ -22,8 +22,8 @@
 #                                    meanPrev5YearsAttributeName="mean_prev_5_years",
 #                                    stddevPrev5YearsAttributeName="stddev_prev_5_years")
 ##################################################################
-library(rCharts)
-library(jsonlite)
+# library(rCharts)
+# library(jsonlite)
 
 #  source("/home/tomcat7/temp/IRDTunaAtlas.R")
 source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")

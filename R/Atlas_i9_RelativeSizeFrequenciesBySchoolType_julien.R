@@ -22,8 +22,8 @@
 #                        sizeClassUpperBoundAttributeName="class_up",
 #                        fishCountAttributeName="fish_count")
 ##################################################################
-library(rCharts)
-library(jsonlite)
+# library(rCharts)
+# library(jsonlite)
 
 # source("/home/tomcat7/temp/IRDTunaAtlas.R")
 source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")

@@ -306,23 +306,23 @@ convertToDate <- function(input) {
 }
 
 getSpeciesFromEcoscope <- function(speciesFAOName) {
-  if (! require(rrdf)) {
-    stop("Missing rrdf library")
-  }
-  
-  if (missing(speciesFAOName) || is.na(speciesFAOName) || nchar(speciesFAOName) == 0) {
-    stop("Missing speciesFAOName parameter")
-  }
-  
-  sparqlResult <- sparql.remote("http://ecoscopebc.mpl.ird.fr/joseki/ecoscope", 
-                                paste("PREFIX ecosystems_def: <http://www.ecoscope.org/ontologies/ecosystems_def/> ", 
-                                      "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ", 
-                                      "SELECT * WHERE { ?uri ecosystems_def:faoId '", 
-                                      speciesFAOName, 
-                                      "' .?uri skos:prefLabel ?scientific_name}", 
-                                      sep="")
-  )
-  return(sparqlResult)
+#   if (! require(rrdf)) {
+#     stop("Missing rrdf library")
+#   }
+#   
+#   if (missing(speciesFAOName) || is.na(speciesFAOName) || nchar(speciesFAOName) == 0) {
+#     stop("Missing speciesFAOName parameter")
+#   }
+#   
+#   sparqlResult <- sparql.remote("http://ecoscopebc.mpl.ird.fr/joseki/ecoscope", 
+#                                 paste("PREFIX ecosystems_def: <http://www.ecoscope.org/ontologies/ecosystems_def/> ", 
+#                                       "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ", 
+#                                       "SELECT * WHERE { ?uri ecosystems_def:faoId '", 
+#                                       speciesFAOName, 
+#                                       "' .?uri skos:prefLabel ?scientific_name}", 
+#                                       sep="")
+                                sparqlResult <- 2
+                                return(sparqlResult)
 }
 
 
@@ -351,21 +351,21 @@ getSpeciesFromEcoscope <- function(speciesFAOName) {
 
 
 FAO2URIFromEcoscope <- function(FAOId) {
-  if (! require(rrdf)) {
-    stop("Missing rrdf library")
-  }
-  
-  if (missing(FAOId) || is.na(FAOId) || nchar(FAOId) == 0) {
-    stop("Missing FAOId parameter")
-  }
-  
-  sparqlResult <- sparql.remote("http://ecoscopebc.mpl.ird.fr/joseki/ecoscope", 
-                                paste("PREFIX ecosystems_def: <http://www.ecoscope.org/ontologies/ecosystems_def/> ", 
-                                      "SELECT * WHERE { ?uri ecosystems_def:faoId '", FAOId, "'}", sep="")
-  )
-  if (length(sparqlResult) > 0) {
-    return(as.character(sparqlResult[1, "uri"]))
-  } 
+#   if (! require(rrdf)) {
+#     stop("Missing rrdf library")
+#   }
+#   
+#   if (missing(FAOId) || is.na(FAOId) || nchar(FAOId) == 0) {
+#     stop("Missing FAOId parameter")
+#   }
+#   
+#   sparqlResult <- sparql.remote("http://ecoscopebc.mpl.ird.fr/joseki/ecoscope", 
+#                                 paste("PREFIX ecosystems_def: <http://www.ecoscope.org/ontologies/ecosystems_def/> ", 
+#                                       "SELECT * WHERE { ?uri ecosystems_def:faoId '", FAOId, "'}", sep="")
+#   )
+#   if (length(sparqlResult) > 0) {
+#     return(as.character(sparqlResult[1, "uri"]))
+#   } 
   
   return(NA)
 }
@@ -397,143 +397,144 @@ buildJson <- function(type, description,processSourceCode, RDFMetadata, results)
   
 }
 buildRdf <- function(store, tableauResult, RDFMetadata, rdf_file_path, rdf_subject, titles=c(), descriptions=c(), subjects=c(), tabURIs, processes=c(), image, data_output_identifiers, download, start=NA, end=NA, spatial=NA, withSparql=TRUE) {
-  if (! require(rrdf)) {
-    stop("Missing rrdf library")
-  
-  }
-#   rdf_subject<-"http://www.ecoscope.org/ontologies/resources/indicators_time_series"               
-  #store = new.rdf(ontology=FALSE)
-  
-#   add.prefix(store,
-#              prefix="resources_def",
-#              namespace="http://www.ecoscope.org/ontologies/resources_def/")
+#   if (! require(rrdf)) {
+#     stop("Missing rrdf library")
 #   
-#   add.prefix(store,
-#              prefix="ical",
-#              namespace="http://www.w3.org/2002/12/cal/ical/")
+#   }
+# #   rdf_subject<-"http://www.ecoscope.org/ontologies/resources/indicators_time_series"               
+#   #store = new.rdf(ontology=FALSE)
 #   
-#   add.prefix(store,
-#              prefix="dct",
-#              namespace="http://purl.org/dc/terms/")
+# #   add.prefix(store,
+# #              prefix="resources_def",
+# #              namespace="http://www.ecoscope.org/ontologies/resources_def/")
+# #   
+# #   add.prefix(store,
+# #              prefix="ical",
+# #              namespace="http://www.w3.org/2002/12/cal/ical/")
+# #   
+# #   add.prefix(store,
+# #              prefix="dct",
+# #              namespace="http://purl.org/dc/terms/")
+# #   
+#   #type
+#   add.triple(store,
+#              subject=rdf_subject,
+#              predicate="http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+#              object="http://www.ecoscope.org/ontologies/resources_def/indicator")
+#   #process
+#   add.triple(store,
+#              subject=rdf_subject,
+#              predicate="http://www.ecoscope.org/ontologies/resources_def/usesProcess",
+#              object=processes)
 #   
-  #type
-  add.triple(store,
-             subject=rdf_subject,
-             predicate="http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-             object="http://www.ecoscope.org/ontologies/resources_def/indicator")
-  #process
-  add.triple(store,
-             subject=rdf_subject,
-             predicate="http://www.ecoscope.org/ontologies/resources_def/usesProcess",
-             object=processes)
-  
-  #has_data_input
-  #add.data.triple(store,
-  #            subject=rdf_subject,
-  #           predicate="http://www.ecoscope.org/ontologies/resources_def/has_data_input",
-  #           data=data_input)
-  
-  #has_data_input
-# for (data_output_identifier.current in data_output_identifiers) {  
-# #   for (i in dim(data_output_identifiers) {  
-# julien <- data_output_identifiers$fileURL1
-# # julien <- data_output_identifiers[,2]
+#   #has_data_input
+#   #add.data.triple(store,
+#   #            subject=rdf_subject,
+#   #           predicate="http://www.ecoscope.org/ontologies/resources_def/has_data_input",
+#   #           data=data_input)
+#   
+#   #has_data_input
+# # for (data_output_identifier.current in data_output_identifiers) {  
+# # #   for (i in dim(data_output_identifiers) {  
+# # julien <- data_output_identifiers$fileURL1
+# # # julien <- data_output_identifiers[,2]
+# #     add.data.triple(store,
+# #                   subject=rdf_subject,
+# #                   predicate="http://purl.org/dc/elements/1.1/identifier",
+# #                   data=julien)
+# #     
+# # }
+# 
+#   
+#   #title
+#   for (title.current in titles) {
+#     if (length(title.current) == 2) {
+#       #here we know the language attribute
+#       add.data.triple(store,
+#                       subject=rdf_subject,
+#                       predicate="http://purl.org/dc/elements/1.1/title",
+#                       lang=title.current[1],
+#                       data=title.current[2])
+#     } else {
+#       #here we dont know 
+#       add.data.triple(store,
+#                       subject=rdf_subject,
+#                       predicate="http://purl.org/dc/elements/1.1/title",
+#                       data=title.current)
+#     }
+#   }
+#   #description
+#   for (description.current in descriptions) {
 #     add.data.triple(store,
-#                   subject=rdf_subject,
-#                   predicate="http://purl.org/dc/elements/1.1/identifier",
-#                   data=julien)
-#     
-# }
-
-  
-  #title
-  for (title.current in titles) {
-    if (length(title.current) == 2) {
-      #here we know the language attribute
-      add.data.triple(store,
-                      subject=rdf_subject,
-                      predicate="http://purl.org/dc/elements/1.1/title",
-                      lang=title.current[1],
-                      data=title.current[2])
-    } else {
-      #here we dont know 
-      add.data.triple(store,
-                      subject=rdf_subject,
-                      predicate="http://purl.org/dc/elements/1.1/title",
-                      data=title.current)
-    }
-  }
-  #description
-  for (description.current in descriptions) {
-    add.data.triple(store,
-                    subject=rdf_subject,
-                    predicate="http://purl.org/dc/elements/1.1/description",
-                    data=description.current)
-  }
-  
-  if (! is.na(start)) {
-    add.data.triple(store,
-                    subject=rdf_subject,
-                    predicate="http://www.w3.org/2002/12/cal/ical/dtstart",
-                    data=start)
-  }
-  
-  if (! is.na(end)) {
-    add.data.triple(store,
-                    subject=rdf_subject,
-                    predicate="http://www.w3.org/2002/12/cal/ical/dtend",
-                    data=end)
-  }
-  
-  for (subject.current in subjects) {
-    URI <- NA
-    if (withSparql) {
-      URI <- FAO2URIFromEcoscope(subject.current)
-    }
-    if (! is.na(URI)) {
-      add.triple(store,
-                 subject=rdf_subject,
-                 predicate="http://purl.org/dc/elements/1.1/subject",
-                 object=URI)
-      ligne<- c(type="species",URI=URI)
-      tabURIs<- rbind(tabURIs,ligne)
-      
-      
-    } else {
-      add.data.triple(store,
-                      subject=rdf_subject,
-                      predicate="http://purl.org/dc/elements/1.1/subject",
-                      data=subject.current)
-    }
-
-  }
-  
-  
-  
-  if (! is.na(spatial)) {
-    add.data.triple(store,
-                    subject=rdf_subject,
-                    predicate="http://purl.org/dc/terms/spatial",
-                    data=spatial)
-  }
-  
-  save.rdf(store=store, filename=rdf.filepath)
-
-  
-#Write the Json metadata used by the SIP
-ligneTableauResult <- data.frame(titre=title.current,
-                                 Description=description.current,
-                                 RDFMetadata=RDFMetadata,
-                                 radarPlots="cet attribut doit fusionner avec rcharts",
-                                 image=image
-                                  
-)
-ligneTableauResult$spatio_temporal_extent=list(data.frame(temporal_extent_start=start,temporal_extent_end=end,spatial_extent=spatial))
-ligneTableauResult$uri=list(tabURIs)
-ligneTableauResult$download=list(download)
-ligneTableauResult$rCharts <- list(data_output_identifiers)
-
-tableauResult <- rbind(tableauResult,ligneTableauResult)
+#                     subject=rdf_subject,
+#                     predicate="http://purl.org/dc/elements/1.1/description",
+#                     data=description.current)
+#   }
+#   
+#   if (! is.na(start)) {
+#     add.data.triple(store,
+#                     subject=rdf_subject,
+#                     predicate="http://www.w3.org/2002/12/cal/ical/dtstart",
+#                     data=start)
+#   }
+#   
+#   if (! is.na(end)) {
+#     add.data.triple(store,
+#                     subject=rdf_subject,
+#                     predicate="http://www.w3.org/2002/12/cal/ical/dtend",
+#                     data=end)
+#   }
+#   
+#   for (subject.current in subjects) {
+#     URI <- NA
+#     if (withSparql) {
+#       URI <- FAO2URIFromEcoscope(subject.current)
+#     }
+#     if (! is.na(URI)) {
+#       add.triple(store,
+#                  subject=rdf_subject,
+#                  predicate="http://purl.org/dc/elements/1.1/subject",
+#                  object=URI)
+#       ligne<- c(type="species",URI=URI)
+#       tabURIs<- rbind(tabURIs,ligne)
+#       
+#       
+#     } else {
+#       add.data.triple(store,
+#                       subject=rdf_subject,
+#                       predicate="http://purl.org/dc/elements/1.1/subject",
+#                       data=subject.current)
+#     }
+# 
+#   }
+#   
+#   
+#   
+#   if (! is.na(spatial)) {
+#     add.data.triple(store,
+#                     subject=rdf_subject,
+#                     predicate="http://purl.org/dc/terms/spatial",
+#                     data=spatial)
+#   }
+#   
+#   save.rdf(store=store, filename=rdf.filepath)
+# 
+#   
+# #Write the Json metadata used by the SIP
+# ligneTableauResult <- data.frame(titre=title.current,
+#                                  Description=description.current,
+#                                  RDFMetadata=RDFMetadata,
+#                                  radarPlots="cet attribut doit fusionner avec rcharts",
+#                                  image=image
+#                                   
+# )
+# ligneTableauResult$spatio_temporal_extent=list(data.frame(temporal_extent_start=start,temporal_extent_end=end,spatial_extent=spatial))
+# ligneTableauResult$uri=list(tabURIs)
+# ligneTableauResult$download=list(download)
+# ligneTableauResult$rCharts <- list(data_output_identifiers)
+# 
+# tableauResult <- rbind(tableauResult,ligneTableauResult)
+tableauResult <- 2
 return(tableauResult)
 }
 # tableauResult$results <- data.frame(titre=character(),

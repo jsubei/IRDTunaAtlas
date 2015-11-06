@@ -22,9 +22,9 @@
 #                        speciesAttributeName="species",
 #                        valueAttributeName="value")
 ##################################################################
-library(rCharts)
-library(jsonlite)
-library(rgdal)
+# library(rCharts)
+# library(jsonlite)
+# library(rgdal)
 
 # source("/home/tomcat7/temp/IRDTunaAtlas.R")
 source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")

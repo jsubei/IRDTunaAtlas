@@ -21,10 +21,10 @@
 #                        yearAttributeName="year",
 #                        speciesAttributeName="species",
 #                        valueAttributeName="value")
-##################################################################
-library(rCharts)
-library(jsonlite)
-library(rgdal)
+# ##################################################################
+# library(rCharts)
+# library(jsonlite)
+# library(rgdal)
 
 
 # source("/home/tomcat7/temp/IRDTunaAtlas.R")

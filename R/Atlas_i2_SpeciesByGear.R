@@ -18,7 +18,7 @@
 #                         speciesAttributeName="species", 
 #                         valueAttributeName="value")
 ##################################################################
-library(rCharts)
+# library(rCharts)
 source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
 Atlas_i2_SpeciesByGear <- function(df, 

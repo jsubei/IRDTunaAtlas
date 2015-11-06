@@ -31,8 +31,10 @@
 #                                   speciesAttributeName="species",
 #                                   valueAttributeName="value")
 ##################################################################
-library(rCharts)
-library(jsonlite)
+# a decommenter (rCharts)
+# library(rCharts)
+# library(jsonlite)
+
 # library(rjson)
 # library(dplyr)
 
@@ -96,18 +98,18 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   my.colors <- brewer.pal(length(levels(df$ocean)), "Set1")
   names(my.colors) <- levels(df$ocean)
   
-
-  store = new.rdf(ontology=FALSE)
-  add.prefix(store,
-             prefix="resources_def",
-             namespace="http://www.ecoscope.org/ontologies/resources_def/")
-  add.prefix(store,
-             prefix="ical",
-             namespace="http://www.w3.org/2002/12/cal/ical/")
-  add.prefix(store,
-             prefix="dct",
-             namespace="http://purl.org/dc/terms/")
-  
+# 
+#   store = new.rdf(ontology=FALSE)
+#   add.prefix(store,
+#              prefix="resources_def",
+#              namespace="http://www.ecoscope.org/ontologies/resources_def/")
+#   add.prefix(store,
+#              prefix="ical",
+#              namespace="http://www.w3.org/2002/12/cal/ical/")
+#   add.prefix(store,
+#              prefix="dct",
+#              namespace="http://purl.org/dc/terms/")
+#   
   
   
 #   tableauResult <- data.frame(result=character())
@@ -130,8 +132,10 @@ tableauResult <- data.frame(titre=character(),
 
 listeResult <- list()
 
+# URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/"
+# repository<-"/data/www/html/tmp/SpeciesByOcean/default/"
 URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/"
-repository<-"/data/www/html/tmp/SpeciesByOcean/default/"
+repository<-"/tmp"
 # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/"
 # repository<-"/data/www/html/tmp/SpeciesByOcean/"
 
@@ -267,68 +271,68 @@ plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels 
 # #     Display Plots
 # Datatable
 
-
-    #Metadata elements (in addition to OGC WPS metadata) to describe the current indicator which will be used by other applications (Ecoscope and Tuna Atlas Websites)
-    titles=c(paste("IRD Tuna Atlas: indicator #1 - catches for",species.label, "species by ocean", sep=" "),
-             paste("IRD Atlas thonier : indicateur #1 - captures par océan pour l'espèce ",species.label, sep=" "))
-    titre=paste("Espèce:",species.label, sep=" ")
-    descriptions=c(paste(species.label, "catches by ocean"),
-                   paste("Captures de", species.label, "par océan"))
-    Description=paste("IRD Tuna Atlas: indicator #1 - catches of species",species.label,"by ocean", sep=" ")
-    subjects=c(as.character(species.current))
-    #Collect the URIs of related Topics from Ecoscope SPARQL endpoint
-    URI <- FAO2URIFromEcoscope(as.character(species.current))
-    tabURIs<- data.frame(type="speciesJulien",URI=URI,stringsAsFactors=FALSE)
-
-    #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-    spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
-    temporal_extent_begin=as.character(min(aggData$year))
-    temporal_extent_end=as.character(max(aggData$year))
-    
-    rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
-    rdf.URL <- paste(URL,filename, ".rdf", sep="")
-# il faudrait ajouter un attribut qui précise le type de visualisation: carte, chart...
-
-data_output_identifiers=data.frame(titre="2 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin, fileURL=plot.URLhtml,stringsAsFactors=FALSE)
-ligne <- c(titre="3 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin,fileURL=plot.URLhtmlNVD3)
-data_output_identifiers <- rbind(data_output_identifiers, ligne)
-ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin,fileURL=plot.URLhtmlNVD3bis)
-data_output_identifiers <- rbind(data_output_identifiers, ligne)
-ligne <- c(titre="5 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin,fileURL=plot.URLhtmlRickshaw)
-data_output_identifiers <- rbind(data_output_identifiers, ligne)
-ligne <- c(titre="6 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin,fileURL=plot.URLhtmlTable)
-data_output_identifiers <- rbind(data_output_identifiers, ligne)
-# map|lines|pies|radarPlots
-# ligneTableauResult$uri=list(data.frame(typeURI="Species",URI=URI))
-
-download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/XXX.csv", stringsAsFactors=FALSE)
-ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/XXX.shp")
-download <- rbind(download, ligne)
-ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/XXX.nc....")
-download <- rbind(download, ligne)
-
-#Write the RDF metadata describing the current indicator in the RDF model of the whole execution: used by Ecoscope and Tuna Atlas
-#Write the Json metadata used by the SIP
-tableauResult <- buildRdf(store=store, tableauResult = tableauResult,
-             RDFMetadata=rdf.URL,
-             rdf_file_path=rdf.filepath,
-             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
-             #rdf_subject="http://ecoscope.org/indicatorI1", 
-             titles=titles,
-             descriptions=descriptions,
-             subjects=subjects,
-             tabURIs=tabURIs,             
-             processes="http://www.ecoscope.org/ontologies/resources/processI1",
-             image=plot.URLpng,
-             data_output_identifiers=data_output_identifiers,
-             download=download,
-             start=temporal_extent_begin,
-             end=temporal_extent_end,
-             spatial=spatial_extent,
-             withSparql)
-
-# result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
-
+# 
+#     #Metadata elements (in addition to OGC WPS metadata) to describe the current indicator which will be used by other applications (Ecoscope and Tuna Atlas Websites)
+#     titles=c(paste("IRD Tuna Atlas: indicator #1 - catches for",species.label, "species by ocean", sep=" "),
+#              paste("IRD Atlas thonier : indicateur #1 - captures par océan pour l'espèce ",species.label, sep=" "))
+#     titre=paste("Espèce:",species.label, sep=" ")
+#     descriptions=c(paste(species.label, "catches by ocean"),
+#                    paste("Captures de", species.label, "par océan"))
+#     Description=paste("IRD Tuna Atlas: indicator #1 - catches of species",species.label,"by ocean", sep=" ")
+#     subjects=c(as.character(species.current))
+#     #Collect the URIs of related Topics from Ecoscope SPARQL endpoint
+#     URI <- FAO2URIFromEcoscope(as.character(species.current))
+#     tabURIs<- data.frame(type="speciesJulien",URI=URI,stringsAsFactors=FALSE)
+# 
+#     #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+#     spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
+#     temporal_extent_begin=as.character(min(aggData$year))
+#     temporal_extent_end=as.character(max(aggData$year))
+#     
+#     rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
+#     rdf.URL <- paste(URL,filename, ".rdf", sep="")
+# # il faudrait ajouter un attribut qui précise le type de visualisation: carte, chart...
+# 
+# data_output_identifiers=data.frame(titre="2 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin, fileURL=plot.URLhtml,stringsAsFactors=FALSE)
+# ligne <- c(titre="3 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin,fileURL=plot.URLhtmlNVD3)
+# data_output_identifiers <- rbind(data_output_identifiers, ligne)
+# ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin,fileURL=plot.URLhtmlNVD3bis)
+# data_output_identifiers <- rbind(data_output_identifiers, ligne)
+# ligne <- c(titre="5 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin,fileURL=plot.URLhtmlRickshaw)
+# data_output_identifiers <- rbind(data_output_identifiers, ligne)
+# ligne <- c(titre="6 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin,fileURL=plot.URLhtmlTable)
+# data_output_identifiers <- rbind(data_output_identifiers, ligne)
+# # map|lines|pies|radarPlots
+# # ligneTableauResult$uri=list(data.frame(typeURI="Species",URI=URI))
+# 
+# download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/XXX.csv", stringsAsFactors=FALSE)
+# ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/XXX.shp")
+# download <- rbind(download, ligne)
+# ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/XXX.nc....")
+# download <- rbind(download, ligne)
+# 
+# #Write the RDF metadata describing the current indicator in the RDF model of the whole execution: used by Ecoscope and Tuna Atlas
+# #Write the Json metadata used by the SIP
+# # tableauResult <- buildRdf(store=store, tableauResult = tableauResult,
+#              RDFMetadata=rdf.URL,
+#              rdf_file_path=rdf.filepath,
+#              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
+#              #rdf_subject="http://ecoscope.org/indicatorI1", 
+#              titles=titles,
+#              descriptions=descriptions,
+#              subjects=subjects,
+#              tabURIs=tabURIs,             
+#              processes="http://www.ecoscope.org/ontologies/resources/processI1",
+#              image=plot.URLpng,
+#              data_output_identifiers=data_output_identifiers,
+#              download=download,
+#              start=temporal_extent_begin,
+#              end=temporal_extent_end,
+#              spatial=spatial_extent,
+#              withSparql)
+# 
+# # result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
+# 
   }
 
 

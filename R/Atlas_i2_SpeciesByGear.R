@@ -138,10 +138,10 @@ Atlas_i2_SpeciesByGear <- function(df,
       theme(legend.position="bottom")
 
     #draw the plot
-    
+filename <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
+
 #     tempfile.base <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), as.character(min(aggData$year)), as.character(max(aggData$year)), "_", sep="_"), tmpdir="")
     tempfile.base <- paste("/data/www/html/tmp",filename, sep="")
-    filename <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), "_", sep=""),tmpdir="")
 
 
     #plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")

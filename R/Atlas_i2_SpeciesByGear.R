@@ -91,20 +91,23 @@ Atlas_i2_SpeciesByGear <- function(df,
     #order factors levels by value
     aggData$gear_type <- factor(aggData$gear_type, levels=rev(levels(reorder(aggData$gear_type, aggData$value))))
       
-    if (withSparql) {      
-      #get species scientific name from ecoscope sparql
-      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-      if (length(sparqlResult) > 0) {
-        species.label <- sparqlResult[1,"scientific_name"]
-        species.URI <- sparqlResult[1,"uri"]
-      } else {
-        species.label <- species.current
-        species.URI <- species.current
-      } 
-    } else {
-      species.label <- species.current
-      species.URI <- species.current
-    }
+#     if (withSparql) {      
+#       #get species scientific name from ecoscope sparql
+#       sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+#       if (length(sparqlResult) > 0) {
+#         species.label <- sparqlResult[1,"scientific_name"]
+#         species.URI <- sparqlResult[1,"uri"]
+#       } else {
+#         species.label <- species.current
+#         species.URI <- species.current
+#       } 
+#     } else {
+#       species.label <- species.current
+#       species.URI <- species.current
+#     }
+#     
+    species.label <- species.current
+    species.URI <- species.current
     
     #TODO : mcforeach ?
 #     for (gear_type.current in unique(df$gear_type)) {
@@ -145,34 +148,38 @@ filename <- tempfile(pattern=paste("I2", gsub(" ", "_", species.label), "_", sep
 
 
     #plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")
-    plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")
-    ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+# plot.filepath <- paste(tempdir(), tempfile.base, ".png", sep="")
+plot.filepath <- paste(tempfile.base, ".png", sep="")
+ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
 
 
 ## AJOUT Julien RChart
 
-#p8 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarHorizontalChart')
-#p8$chart(showControls = F)
-#p8  <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart')
+## Plot HighCharts
 plotRchartsHighcharts  <- hPlot(value ~ year, group = 'gear_type', data = aggData, type = 'column', radius = 6)
 plotRchartsHighcharts$plotOptions(column = list(dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
 plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
 plotRchartsHighcharts 
 
 
-## {title: MultiBar Chart}
+## ## Plot D3JS {title: MultiBar Chart}
 plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'column')
 plotRchartsNVD3$chart(color = c('brown', 'blue', '#594c26', 'green'))
 plotRchartsNVD3
 
-plotRchartsHighcharts
+# D3JS <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarHorizontalChart')
+D3JS  <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart')
+# D3JS$chart(showControls = F)
+D3JS
 
+## Données sous forme de tableau html
 Datatable <- dTable(
   aggData,
   sPaginationType= "full_numbers"
 )
-
 Datatable
+
+
 
 plot.filepathtml <- paste(tempfile.base, ".html", sep="")
 plot.URLhtml <- paste("http://mdst-macroes.ird.fr/tmp",filename, ".html", sep="")
@@ -182,33 +189,36 @@ plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE)
 plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
 Datatable$save(plot.filepathtmltable,standalone=TRUE)     
 plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp",filename, "_table.html", sep="")    
+plot.filepathtmlD3JS <- paste(tempfile.base, "_D3JS.html", sep="")
+D3JS$save(plot.filepathtmlD3JS,standalone=TRUE) 
 
 
+#     #create the RDF metadata
+#     rdf.filepath <- paste(tempdir(), tempfile.base, ".rdf", sep="")
+#     buildRdf(rdf_file_path=rdf.filepath,
+#              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
+#              titles=c(c("en", "IRD Tuna Atlas: indicator #2 - catches by species and by gear type"), 
+#                       "IRD Atlas thonier : indicateur #2 - captures par espèces et par type d'engin"),
+#              descriptions=c(paste(species.label, "catches by gear type"), 
+#                             paste("Captures de", species.label, "par type d'engin")),
+#              # EVENTUELLEMENT AJOUTER D'AUTRES SUJETS COMME LA ZONE
+#              #subjects=c(as.character(species.current), as.character(gear_type.current), as.character(unique(current.df$gear_type))),
+#              subjects=c(as.character(species.current), as.character(unique(current.df$gear_type))),
+#              #subjects=c(as.character(species.current)),
+#              #subjects=c(as.character(species.current), as.character(gear_type.current)),
+#              processes="http://www.ecoscope.org/ontologies/resources/processI2",
+#              #data_input=url,
+#              data_output_identifier=plot.filepath,
+#              start=as.character(min(aggData$year)),
+#              end=as.character(max(aggData$year)),
+#              #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+#              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+#              withSparql)
+#     
+#     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
 
-    #create the RDF metadata
-    rdf.filepath <- paste(tempdir(), tempfile.base, ".rdf", sep="")
-    buildRdf(rdf_file_path=rdf.filepath,
-             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
-             titles=c(c("en", "IRD Tuna Atlas: indicator #2 - catches by species and by gear type"), 
-                      "IRD Atlas thonier : indicateur #2 - captures par espèces et par type d'engin"),
-             descriptions=c(paste(species.label, "catches by gear type"), 
-                            paste("Captures de", species.label, "par type d'engin")),
-             # EVENTUELLEMENT AJOUTER D'AUTRES SUJETS COMME LA ZONE
-             #subjects=c(as.character(species.current), as.character(gear_type.current), as.character(unique(current.df$gear_type))),
-             subjects=c(as.character(species.current), as.character(unique(current.df$gear_type))),
-             #subjects=c(as.character(species.current)),
-             #subjects=c(as.character(species.current), as.character(gear_type.current)),
-             processes="http://www.ecoscope.org/ontologies/resources/processI2",
-             #data_input=url,
-             data_output_identifier=plot.filepath,
-             start=as.character(min(aggData$year)),
-             end=as.character(max(aggData$year)),
-             #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-             withSparql)
-    
-    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
   }
 
-  return(result.df)
+#   return(result.df)
+
 }

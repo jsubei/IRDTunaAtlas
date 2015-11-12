@@ -135,7 +135,7 @@ listeResult <- list()
 # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/"
 # repository<-"/data/www/html/tmp/SpeciesByOcean/default/"
 URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/"
-repository<-"/tmp"
+repository<-"/tmp/"
 # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/"
 # repository<-"/data/www/html/tmp/SpeciesByOcean/"
 
@@ -154,20 +154,22 @@ repository<-"/tmp"
     #convert values from tons to thousand tons
     aggData$value <- aggData$value / 1000
     
-    if (withSparql) {      
-      #get species scientific name from ecoscope sparql
-      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-      if (length(sparqlResult) > 0) {
-        species.label <- sparqlResult[1,"scientific_name"]
-        species.URI <- sparqlResult[1,"uri"]
-      } else {
-        species.label <- species.current
-        species.URI <- species.current
-      } 
-    } else {
-      species.label <- species.current
-      species.URI <- species.current
-    }
+#     if (withSparql) {      
+#       #get species scientific name from ecoscope sparql
+#       sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+#       if (length(sparqlResult) > 0) {
+#         species.label <- sparqlResult[1,"scientific_name"]
+#         species.URI <- sparqlResult[1,"uri"]
+#       } else {
+#         species.label <- species.current
+#         species.URI <- species.current
+#       } 
+#     } else {
+#       species.label <- species.current
+#       species.URI <- species.current
+#     }
+    species.label <- species.current
+    species.URI <- species.current
     
     #build the plot
     resultPlot <- ggplot(aggData, aes(x=year, y=value, group=ocean)) + 
@@ -207,13 +209,13 @@ repository<-"/tmp"
     
     ## AJOUT Julien RChart Highcharts
     plotRchartsHighcharts <- hPlot(value ~ year, data = aggData, type = c("line","scatter", "bubble"), group = "ocean", title = "Captures par espÃ¨ce et par ocÃ©an", subtitle = "species.label", size = "value", width = "100%")
-#     plotRchartsHighcharts$chart(width = 800, height = 400, zoomType = "xy")
-plotRchartsHighcharts$chart(zoomType = "xy")
+    #     plotRchartsHighcharts$chart(width = 800, height = 400, zoomType = "xy")
+    plotRchartsHighcharts$chart(zoomType = "xy")
     plotRchartsHighcharts$yAxis(title = list(text = "Captures"))
     plotRchartsHighcharts$exporting(enabled = T)
-plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, margin = 20)
-plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
-plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
+    plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, margin = 20)
+    plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
+    plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
 
 #plotRchartsHighcharts$addFilters("East Pacific O.", "Atlantic O.")
     #plotRchartsHighcharts$addControls("x", value = "value", values = names(aggData$ocean))
@@ -336,13 +338,13 @@ plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels 
   }
 
 
-julien<-buildJson(type="plot||download||map||..",
-                  description="Rapport d'exécution du traitement i1",
-                  processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/toto_wps.R",
-                  results=tableauResult)
+# julien<-buildJson(type="plot||download||map||..",
+#                   description="Rapport d'exécution du traitement i1",
+#                   processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/toto_wps.R",
+#                   results=tableauResult)
 
 
-return(julien)
+# return(julien)
 
 
   

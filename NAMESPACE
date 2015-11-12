@@ -28,6 +28,12 @@ export(
   Atlas_i9_RelativeSizeFrequenciesBySchoolType,
   Atlas_i10_RelativeSizeFrequenciesByDecade,
   Atlas_i11_CatchesByCountry,
+  Atlas_i1_SpeciesByOcean_julien,
+  Atlas_i2_SpeciesByGear_julien,
+  Atlas_i3_SpeciesYearByGearMonth_julien,
+  Atlas_i4_SpeciesMonthByOcean_julien,
+  Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien,
+  Atlas_i10_RelativeSizeFrequenciesByDecade,
   enRichment,
   readData,
   evaluateAndRenameAttributesNames

@@ -14,7 +14,7 @@ import(rgdal)
 import(jsonlite)
 import(sp)
 import(fpc)
-
+ 
 
 export(
   WFS2GMLFile,

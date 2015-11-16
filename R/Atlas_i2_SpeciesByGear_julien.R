@@ -83,16 +83,17 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
   
   #List to store URLs of the set of files generated for each species
   liste <- list()
-  store = new.rdf(ontology=FALSE)
-  add.prefix(store,
-             prefix="resources_def",
-             namespace="http://www.ecoscope.org/ontologies/resources_def/")
-  add.prefix(store,
-             prefix="ical",
-             namespace="http://www.w3.org/2002/12/cal/ical/")
-  add.prefix(store,
-             prefix="dct",
-             namespace="http://purl.org/dc/terms/")
+  #Julien comment rrdf
+#   store = new.rdf(ontology=FALSE)
+#   add.prefix(store,
+#              prefix="resources_def",
+#              namespace="http://www.ecoscope.org/ontologies/resources_def/")
+#   add.prefix(store,
+#              prefix="ical",
+#              namespace="http://www.w3.org/2002/12/cal/ical/")
+#   add.prefix(store,
+#              prefix="dct",
+#              namespace="http://purl.org/dc/terms/")
   
   
   # tableauResult$results <- data.frame(titre=character(),
@@ -115,22 +116,24 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
     
     #order factors levels by value
     aggData$gear_type <- factor(aggData$gear_type, levels=rev(levels(reorder(aggData$gear_type, aggData$value))))
-      
-    if (withSparql) {      
-      #get species scientific name from ecoscope sparql
-      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-      if (length(sparqlResult) > 0) {
-        species.label <- sparqlResult[1,"scientific_name"]
-        species.URI <- sparqlResult[1,"uri"]
-      } else {
-        species.label <- species.current
-        species.URI <- species.current
-      } 
-    } else {
-      species.label <- species.current
-      species.URI <- species.current
-    }
-    
+    #Julien comment rrdf
+#     
+#     if (withSparql) {      
+#       #get species scientific name from ecoscope sparql
+#       sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+#       if (length(sparqlResult) > 0) {
+#         species.label <- sparqlResult[1,"scientific_name"]
+#         species.URI <- sparqlResult[1,"uri"]
+#       } else {
+#         species.label <- species.current
+#         species.URI <- species.current
+#       } 
+#     } else {
+#       species.label <- species.current
+#       species.URI <- species.current
+#     }
+    species.label <- species.current
+    species.URI <- species.current
     #TODO : mcforeach ?
 #     for (gear_type.current in unique(df$gear_type)) {
 #       current.df <- df[df$gear_type == gear_type.current,]
@@ -148,8 +151,6 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
 #       }    
 
         
-    
-    
     #build the plot
     resultPlot <- ggplot(aggData, aes(x=year, y=value, fill=gear_type, order=gear_type)) + 
     geom_bar(stat="identity", width=0.8) + 
@@ -185,9 +186,6 @@ plotRchartsHighcharts$chart(zoomType = "xy")
 plotRchartsHighcharts$exporting(enabled = T)
 plotRchartsHighcharts 
 
-
-
-    
     
     ## {title: MultiBar Chart}
 plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarChart', width = 800, height = 400)
@@ -201,9 +199,7 @@ plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type
     plotRchartsNVD3
 
 # plotRchartsNVD3 <- nPlot(value ~ month, group='gear_type', data = current.df, type = 'multiChart')
-
-
-    
+  
     ## Dataset in HTML
     Datatable <- dTable(
       aggData,
@@ -227,12 +223,6 @@ plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type
 #   Datatable$save(plot.filepathtmltable,standalone=TRUE)     
   Datatable$save(plot.filepathtmltable,cdn=TRUE)     
   plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
-
-
-
-
-
-
 
 
 ################################################################################################
@@ -259,8 +249,8 @@ descriptions=c(c("en",paste("IRD Tuna Atlas: indicator #2 - catches for",species
 subjects=c(as.character(species.current), as.character(unique(current.df$gear_type)))
 
 #Collect the URIs of related Topics from Ecoscope SPARQL endpoint
-URI <- FAO2URIFromEcoscope(as.character(species.current))
-tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
+# URI <- FAO2URIFromEcoscope(as.character(species.current))
+# tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
 
 # for (gear_type.current in unique(df$gear_type)) {
 
@@ -307,32 +297,33 @@ download <- rbind(download, ligne)
 # tableauResult$results <- data.frame(titre=character(),
 
 
-tableauResult <- buildRdf(store=store,
-                          tableauResult = tableauResult,
-                          RDFMetadata=rdf.URL,
-                          rdf_file_path=rdf.filepath,
-                          rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
-                          #rdf_subject="http://ecoscope.org/indicatorI1", 
-                          titles=titles,
-                          descriptions=descriptions,
-                          subjects=subjects,
-                          tabURIs=tabURIs,
-                          processes="http://www.ecoscope.org/ontologies/resources/processI2",
-                          image=plot.URLpng,
-                          data_output_identifiers=data_output_identifiers,
-                          download=download,
-                          start=temporal_extent_begin,
-                          end=temporal_extent_end,
-                          spatial=spatial_extent,
-                          withSparql)
+# tableauResult <- buildRdf(store=store,
+#                           tableauResult = tableauResult,
+#                           RDFMetadata=rdf.URL,
+#                           rdf_file_path=rdf.filepath,
+#                           rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""), 
+#                           #rdf_subject="http://ecoscope.org/indicatorI1", 
+#                           titles=titles,
+#                           descriptions=descriptions,
+#                           subjects=subjects,
+#                           tabURIs=tabURIs,
+#                           processes="http://www.ecoscope.org/ontologies/resources/processI2",
+#                           image=plot.URLpng,
+#                           data_output_identifiers=data_output_identifiers,
+#                           download=download,
+#                           start=temporal_extent_begin,
+#                           end=temporal_extent_end,
+#                           spatial=spatial_extent,
+#                           withSparql)
 
-result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
+# result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf.filepath))
 
 #################################################################################################
 
   }
+julien <- 'toto'
 
-julien<-buildJson(type="bar Chart", description="Rapport d'exécution du traitement i2",processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/Atlas_i2_SpeciesByOcean_HighCharts.R",results=tableauResult)
+# julien<-buildJson(type="bar Chart", description="Rapport d'exécution du traitement i2",processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/Atlas_i2_SpeciesByOcean_HighCharts.R",results=tableauResult)
 
 return(julien)
 

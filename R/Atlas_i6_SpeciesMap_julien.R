@@ -89,16 +89,16 @@ Atlas_i6_SpeciesMap <- function(df,
   listeResult <- list()
   
   #RDF schema to store the descriptions of results
-  store = new.rdf(ontology=FALSE)
-  add.prefix(store,
-             prefix="resources_def",
-             namespace="http://www.ecoscope.org/ontologies/resources_def/")
-  add.prefix(store,
-             prefix="ical",
-             namespace="http://www.w3.org/2002/12/cal/ical/")
-  add.prefix(store,
-             prefix="dct",
-             namespace="http://purl.org/dc/terms/")
+#   store = new.rdf(ontology=FALSE)
+#   add.prefix(store,
+#              prefix="resources_def",
+#              namespace="http://www.ecoscope.org/ontologies/resources_def/")
+#   add.prefix(store,
+#              prefix="ical",
+#              namespace="http://www.w3.org/2002/12/cal/ical/")
+#   add.prefix(store,
+#              prefix="dct",
+#              namespace="http://purl.org/dc/terms/")
   
   
   #convert values from tons to thousand tons
@@ -295,61 +295,62 @@ Atlas_i6_SpeciesMap <- function(df,
     
     ################################################################################################
     
-    
-    titles=c(paste(species.label, ":  Map of catches"), 
-             paste("Carte des captures de", species.label))
-    
-    
-    descriptions=c(c("en", paste("IRD Tuna Atlas: indicator #6 -  Map of catches for species ",species.label, sep=" ")),
-                   c("fr", paste("IRD Atlas Thonier: indicator #6 - Carte des captures de pour l'espèce:",species.label, sep=" ")))
-    
-    subjects=c(as.character(species.current))
-    rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep="")               
-    URI <- FAO2URIFromEcoscope(as.character(species.current))
-    tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
-    processes="processes"
-    
-    #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-    spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
-    temporal_extent_begin=as.character(min(subDf$year))
-    temporal_extent_end=as.character(max(subDf$year))
-    
-    
-    #create the RDF metadata
-    rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
-    rdf.URL <- paste(URL,filename, ".rdf", sep="")
-    
-    
-    
-    download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.csv", stringsAsFactors=FALSE)
-    ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.shp")
-    download <- rbind(download, ligne)
-    ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.nc....")
-    download <- rbind(download, ligne)
-    
-    data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="image",year=temporal_extent_begin, fileURL=plot.filepath, stringsAsFactors=FALSE)
-    ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="map",year=temporal_extent_begin, fileURL=plot.URLhtmlMap)
-    data_output_identifiers <- rbind(data_output_identifiers, ligne)
-    ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin, fileURL=plot.URLhtmlTable)
-    data_output_identifiers <- rbind(data_output_identifiers, ligne)
-    
-    one <-list(tableauResult = tableauResult,
-               RDFMetadata=rdf.URL,
-               rdf_file_path=rdf.filepath,
-               rdf_subject=rdf_subject, 
-               titles=titles,
-               descriptions=descriptions,
-               subjects=subjects,
-               tabURIs=tabURIs,
-               processes="http://www.ecoscope.org/ontologies/resources/processI6",
-               image=plot.URLpng,
-               data_output_identifiers=data_output_identifiers,
-               download=download,
-               start=temporal_extent_begin,
-               end=temporal_extent_end,
-               spatial=spatial_extent,
-               withSparql=withSparql)
-    
+#     
+#     titles=c(paste(species.label, ":  Map of catches"), 
+#              paste("Carte des captures de", species.label))
+#     
+#     
+#     descriptions=c(c("en", paste("IRD Tuna Atlas: indicator #6 -  Map of catches for species ",species.label, sep=" ")),
+#                    c("fr", paste("IRD Atlas Thonier: indicator #6 - Carte des captures de pour l'espèce:",species.label, sep=" ")))
+#     
+#     subjects=c(as.character(species.current))
+#     rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep="")               
+#     URI <- FAO2URIFromEcoscope(as.character(species.current))
+#     tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)
+#     processes="processes"
+#     
+#     #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+#     spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
+#     temporal_extent_begin=as.character(min(subDf$year))
+#     temporal_extent_end=as.character(max(subDf$year))
+#     
+#     
+#     #create the RDF metadata
+#     rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
+#     rdf.URL <- paste(URL,filename, ".rdf", sep="")
+#     
+#     
+#     
+#     download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.csv", stringsAsFactors=FALSE)
+#     ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.shp")
+#     download <- rbind(download, ligne)
+#     ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.nc....")
+#     download <- rbind(download, ligne)
+#     
+#     data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="image",year=temporal_extent_begin, fileURL=plot.filepath, stringsAsFactors=FALSE)
+#     ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="map",year=temporal_extent_begin, fileURL=plot.URLhtmlMap)
+#     data_output_identifiers <- rbind(data_output_identifiers, ligne)
+#     ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin, fileURL=plot.URLhtmlTable)
+#     data_output_identifiers <- rbind(data_output_identifiers, ligne)
+#     
+#     one <-list(tableauResult = tableauResult,
+#                RDFMetadata=rdf.URL,
+#                rdf_file_path=rdf.filepath,
+#                rdf_subject=rdf_subject, 
+#                titles=titles,
+#                descriptions=descriptions,
+#                subjects=subjects,
+#                tabURIs=tabURIs,
+#                processes="http://www.ecoscope.org/ontologies/resources/processI6",
+#                image=plot.URLpng,
+#                data_output_identifiers=data_output_identifiers,
+#                download=download,
+#                start=temporal_extent_begin,
+#                end=temporal_extent_end,
+#                spatial=spatial_extent,
+#                withSparql=withSparql)
+    one <-'toto'
+
     return(one)  
     
     }

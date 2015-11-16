@@ -23,6 +23,7 @@ export(
   Atlas_i3_SpeciesYearByGearMonth,
   Atlas_i4_SpeciesMonthByOcean,
   Atlas_i6_SpeciesMap,
+  Atlas_i6_SpeciesMap_julien,
   Atlas_i7_SpeciesMapRelativeCatches,
   Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies,
   Atlas_i9_RelativeSizeFrequenciesBySchoolType,

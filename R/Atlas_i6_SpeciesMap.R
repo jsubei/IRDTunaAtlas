@@ -413,7 +413,7 @@ one <- 'toto'
         if (length(unique(species.df$year)) > 1)
         {
           for(year.current in unique(species.df$year)) {
-#             one <- plotFct(species.df[species.df$year==year.current,], species.label, species.current, tableauResult, store)
+            one <- plotFct(species.df[species.df$year==year.current,], species.label, species.current, tableauResult, store)
 #             tableauResult <- buildRdf(store,
 #                                        one$tableauResult,
 #                                        one$RDFMetadata,

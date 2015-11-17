@@ -210,18 +210,18 @@ plotRchartsNVD3 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type
 
   ## Storage of files in a given repository (temporary or permanent)
   plot.filepathtml <- paste(tempfile.base, ".html", sep="")
-#   plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
-  plotRchartsHighcharts$save(plot.filepathtml,cdn=TRUE)
+  plotRchartsHighcharts$save(plot.filepathtml,standalone=TRUE) 
+#   plotRchartsHighcharts$save(plot.filepathtml,cdn=TRUE)
   plot.URLRchartsHighcharts <- paste(URL, filename, ".html", sep="")
 
   plot.filepathtmlNVD3 <- paste(tempfile.base, "NVD3.html", sep="")
-#   plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
-  plotRchartsNVD3$save(plot.filepathtmlNVD3,cdn=TRUE)
+  plotRchartsNVD3$save(plot.filepathtmlNVD3,standalone=TRUE) 
+#   plotRchartsNVD3$save(plot.filepathtmlNVD3,cdn=TRUE)
   plot.URLRchartsNVD3 <- paste(URL, filename, "_NVD3.html", sep="")
 
   plot.filepathtmltable <- paste(tempfile.base, "table.html", sep="_")
-#   Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-  Datatable$save(plot.filepathtmltable,cdn=TRUE)     
+  Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+#   Datatable$save(plot.filepathtmltable,cdn=TRUE)     
   plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
 
 

@@ -28,7 +28,8 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
                                                       sizeClassLowerBoundAttributeName="class_low",
                                                       sizeClassUpperBoundAttributeName="class_up",
                                                       fishCountAttributeName="fish_count",
-                                                      withSparql=TRUE)
+                                                      withSparql=TRUE) 
+
 {  
   if (! require(ggplot2) | ! require(RColorBrewer)) {
     stop("Missing library")
@@ -97,27 +98,29 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
     the.mean <- sum((LowerBound + (UpperBound - LowerBound) / 2) * Obs) / sum(Obs)
     return(c(mean=the.mean, median=the.median))
   }
-  
+  URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesByDecade/"
+  repository<-"/data/www/html/tmp/RelativeSizeFrequenciesByDecade/" 
   #define the resulr df  
   result.df <- c()
   
   for (species.current in unique(df$species)) {
     
-    if (withSparql) {      
-      #get species scientific name from ecoscope sparql
-      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-      if (length(sparqlResult) > 0) {
-        species.label <- sparqlResult[1,"scientific_name"]
-        species.URI <- sparqlResult[1,"uri"]
-      } else {
-        species.label <- species.current
-        species.URI <- species.current
-      } 
-    } else {
-      species.label <- species.current
-      species.URI <- species.current
-    }
-    
+#     if (withSparql) {      
+#       #get species scientific name from ecoscope sparql
+#       sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+#       if (length(sparqlResult) > 0) {
+#         species.label <- sparqlResult[1,"scientific_name"]
+#         species.URI <- sparqlResult[1,"uri"]
+#       } else {
+#         species.label <- species.current
+#         species.URI <- species.current
+#       } 
+#     } else {
+#       species.label <- species.current
+#       species.URI <- species.current
+#     }
+    species.label <- species.current
+    species.URI <- species.current
     species.df <- df[df$species == species.current,]
     
     species.df.year.min <- min(species.df$year)
@@ -147,27 +150,31 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
       labs(x="Size class (in cm). With mean (solid grey line) and median (dashed)", y="Relative contribution", title=paste(species.label, "size frequencies contribution"), fill=NA)
     
     #draw the plot
-    tempfile.base <- tempfile(pattern=paste("I10_", gsub(" ", "_", species.label), "_", as.character(species.df.year.min), "-", as.character(species.df.year.max), "_", sep=""))
+    #draw the plot
+    filename <- paste("I10_", gsub(" ", "_", species.label), "_",  as.character(species.df.year.min), "-", as.character(species.df.year.max), "_", sep="")
+    tempfile.base <- paste(repository,filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
+    plot.URLpng <- paste(URL,filename, ".png", sep="")
     ggsave(filename=plot.filepath, plot=plot.result, dpi=100)
     
     #create the RDF metadata
-    rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
-             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
-             titles=c("IRD Tuna Atlas: indicator #10 - Graph relative contribution of size frequencies over decades", 
-                      "IRD Atlas thonier : indicateur #10 - Graphique des contributions des classes de tailles par décades"),
-             descriptions=c(paste(species.label, "size frequencies contribution catches plot"), 
-                            paste("Contributions des classes de tailles aux captures de", species.label)),
-             subjects=c(as.character(species.current)),
-             processes="http://www.ecoscope.org/ontologies/resources/processI10",
-             data_output_identifier=plot.filepath,
-             start=as.character(species.df.year.min),
-             end=as.character(species.df.year.max),
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-             withSparql)
-    
-    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
+#     rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
+#     buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+#              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
+#              titles=c("IRD Tuna Atlas: indicator #10 - Graph relative contribution of size frequencies over decades", 
+#                       "IRD Atlas thonier : indicateur #10 - Graphique des contributions des classes de tailles par décades"),
+#              descriptions=c(paste(species.label, "size frequencies contribution catches plot"), 
+#                             paste("Contributions des classes de tailles aux captures de", species.label)),
+#              subjects=c(as.character(species.current)),
+#              processes="http://www.ecoscope.org/ontologies/resources/processI10",
+#              data_output_identifier=plot.filepath,
+#              start=as.character(species.df.year.min),
+#              end=as.character(species.df.year.max),
+#              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+#              withSparql)
+#     
+#     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
+    result.df <- 'toto'
   }
   return(result.df)  
 }

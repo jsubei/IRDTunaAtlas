@@ -110,24 +110,28 @@ Atlas_i11_CatchesByCountry <- function(df,
 
   #define the result df  
   result.df <- c()
+    URL<-"http://mdst-macroes.ird.fr/tmp/CatchesByCountry/"
+    repository<-"/data/www/html/tmp/CatchesByCountry/"
   
   for (species.current in unique(df$species)) {
+#     
+#     if (withSparql) {      
+#       #get species scientific name from ecoscope sparql
+#       sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+#       if (length(sparqlResult) > 0) {
+#         species.label <- sparqlResult[1,"scientific_name"]
+#         species.URI <- sparqlResult[1,"uri"]
+#       } else {
+#         species.label <- species.current
+#         species.URI <- species.current
+#       } 
+#     } else {
+#       species.label <- species.current
+#       species.URI <- species.current
+#     }
     
-    if (withSparql) {      
-      #get species scientific name from ecoscope sparql
-      sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-      if (length(sparqlResult) > 0) {
-        species.label <- sparqlResult[1,"scientific_name"]
-        species.URI <- sparqlResult[1,"uri"]
-      } else {
-        species.label <- species.current
-        species.URI <- species.current
-      } 
-    } else {
-      species.label <- species.current
-      species.URI <- species.current
-    }
-    
+    species.label <- species.current
+    species.URI <- species.current
     species.df <- df[df$species == species.current,]
   
     #compute sum per country
@@ -173,10 +177,15 @@ Atlas_i11_CatchesByCountry <- function(df,
       }
     }
     
-    tempfile.base <- tempfile(pattern=paste("I11_", gsub(" ", "_", species.label), sep=""))
+    filename <- paste("I11_", gsub(" ", "_", species.label), sep="")
+    tempfile.base <- paste(repository,filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
+    plot.URLpng <- paste(URL,filename, ".png", sep="")
+#     
+#     tempfile.base <- tempfile(pattern=paste("I11_", gsub(" ", "_", species.label), sep=""))
+#     plot.filepath <- paste(tempfile.base, ".png", sep="")
   
-    png(plot.filepath, width=sizeX, height=sizeY)
+png(plot.filepath, width=sizeX, height=sizeY)
 
     #base map  
     basemap(xlim=bb[1,], ylim=bb[2,], main=paste(species.label, "catches per country"), xlab=NA, ylab=NA, bg=NA)
@@ -211,19 +220,20 @@ Atlas_i11_CatchesByCountry <- function(df,
     
     #create the RDF metadata
     rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
-    buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
-             rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
-             titles=c("IRD Tuna Atlas: indicator #11 - Map of catches", 
-                      "IRD Atlas thonier : indicateur #11 - Carte des captures"),
-             descriptions=c(paste(species.label, "catches map"), 
-                            paste("Carte des captures de", species.label)),
-             subjects=c(as.character(species.current)),
-             processes="http://www.ecoscope.org/ontologies/resources/processI11",
-             data_output_identifier=plot.filepath,
-             spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
-             withSparql)
+#     buildRdf(rdf_file_path=paste(tempfile.base, ".rdf", sep=""),
+#              rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep=""),               
+#              titles=c("IRD Tuna Atlas: indicator #11 - Map of catches", 
+#                       "IRD Atlas thonier : indicateur #11 - Carte des captures"),
+#              descriptions=c(paste(species.label, "catches map"), 
+#                             paste("Carte des captures de", species.label)),
+#              subjects=c(as.character(species.current)),
+#              processes="http://www.ecoscope.org/ontologies/resources/processI11",
+#              data_output_identifier=plot.filepath,
+#              spatial="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))",
+#              withSparql)
     
-    result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
+#     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
+    result.df <- 'toto'
   }
   
   return(result.df)

@@ -75,10 +75,10 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
   # tableauResult$results <- data.frame(titre=character(),
   tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
-    URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/cdn/"
-    repository<-"/data/www/html/tmp/SpeciesMapRelativeCatches/cdn/"
-#   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/"
-#   repository<-"/data/www/html/tmp/SpeciesMapRelativeCatches/"
+#     URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/cdn/"
+#     repository<-"/data/www/html/tmp/SpeciesMapRelativeCatches/cdn/"
+  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/"
+  repository<-"/data/www/html/tmp/SpeciesMapRelativeCatches/"
   
   
   plotFct <- function(subDf, species.label, species.current, tableauResult, store, lims) {
@@ -131,20 +131,12 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
       aggSpdf.df,
       sPaginationType= "full_numbers"
     )    
-    
-    plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
-    Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-    # Datatable$save(plot.filepathtmltable,cdn=TRUE)     
-    plot.URLhtmlTable <- paste("http://mdst-macroes.ird.fr/tmp",filename, "_table.html", sep="")    
-    
-    
     #Datatable
     plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
+    Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+    # Datatable$save(plot.filepathtmltable,cdn=TRUE)
     plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
-    #     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-    Datatable$save(plot.filepathtmltable,cdn=TRUE)       
-    
-    
+
     
     #     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien
     ################################################################################################

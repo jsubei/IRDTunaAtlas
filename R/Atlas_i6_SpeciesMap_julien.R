@@ -30,7 +30,7 @@
 # source("/home/tomcat7/temp/IRDTunaAtlas.R")
 #  source("/home/julien/SVNs/GIT/IRDTunaAtlas/R/IRDTunaAtlas_julien.R")
 
-Atlas_i6_SpeciesMap <- function(df,
+Atlas_i6_SpeciesMap_julien <- function(df,
                                 geomIdAttributeName="geom_id",
                                 yearAttributeName="year", 
                                 speciesAttributeName="species",                                         
@@ -157,8 +157,8 @@ Atlas_i6_SpeciesMap <- function(df,
     Datatable <- dTable(aggSpdf.df,sPaginationType= "full_numbers")
     #Datatable is stored in html file
     plot.filepathtmltable <- paste(tempfile.base, "_table.html", sep="")
-    Datatable$save(plot.filepathtmltable,cdn=TRUE)       
-    #     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+#     Datatable$save(plot.filepathtmltable,cdn=TRUE)       
+        Datatable$save(plot.filepathtmltable,standalone=TRUE)     
     plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
     
     
@@ -171,7 +171,7 @@ Atlas_i6_SpeciesMap <- function(df,
     #     regions2=RJSONIO::fromJSON(json2)
     #    
     
-#     
+    
 #     json = '{"type":"FeatureCollection","features":[
 # {"type":"Feature",
 #     "properties":{"region_id":1, "region_name":"Australian Alps"},
@@ -258,16 +258,16 @@ Atlas_i6_SpeciesMap <- function(df,
 #       }
 #       });
 #       } !#")
-    legend_vec = c('Red'='Blood', 'Green'='Nature', 'Yellow'='Sun')
-    lmap$legend(position = 'bottomright', 
-                colors   =  names(legend_vec), 
-                labels   =  as.vector(legend_vec))
-    
-    #Data displayed in a map are stored in html file
-    plot.filepathtmlMap <- paste(tempfile.base, "_maptoto.html", sep="")
-    lmap$save(plot.filepathtmlMap,standalone=TRUE)       
-    #     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
-    plot.URLhtmlMap <- paste(URL,filename, "_map_toto.html", sep="")    
+#     legend_vec = c('Red'='Blood', 'Green'='Nature', 'Yellow'='Sun')
+#     lmap$legend(position = 'bottomright', 
+#                 colors   =  names(legend_vec), 
+#                 labels   =  as.vector(legend_vec))
+#     
+#     #Data displayed in a map are stored in html file
+#     plot.filepathtmlMap <- paste(tempfile.base, "_maptoto.html", sep="")
+#     lmap$save(plot.filepathtmlMap,standalone=TRUE)       
+#     #     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
+#     plot.URLhtmlMap <- paste(URL,filename, "_map_toto.html", sep="")    
     
     
     

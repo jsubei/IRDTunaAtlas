@@ -23,7 +23,7 @@ ext_widgets : {rCharts: [libraries/nvd3]}
 * Créer un nouveau projet avec Git => clone 
 ---
 ## INDICATOR 1 version Julien
-```{r ichart, results = 'hide', tidy = F, message = F}
+```{r i1, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -40,7 +40,7 @@ result <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
 
 ---
 ## INDICATOR 2 version Julien
-```{r ichart, results = 'hide', tidy = F, message = F}
+```{r i2, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -54,29 +54,34 @@ result <- Atlas_i2_SpeciesByGear_julien(df=df,
 ```
 ---
 ## INDICATOR 2 version Julien: résultat
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_Rickshaw.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByGear/I2_Thunnus_albacaresNVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 ## INDICATOR 3 version Julien
-```{r ichart, results = 'hide', tidy = F, message = F}
+```{r i3, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
-       url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
-       layer="ns11:i1i2_mv", 
-       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',withSparql=FALSE)
-result <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
-                          oceanAttributeName="ocean",
-    	  speciesAttributeName="species",
-                          valueAttributeName="value")
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',
+               layer="ns11:i3_mv")
+#build the I3 indicator
+result <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df, 
+                                 yearAttributeName="year", 
+                                 monthAttributeName="month",
+                                 gearTypeAttributeName="gear_type", 
+                                 speciesAttributeName="species", 
+                                 valueAttributeName="value",
+                                 meanPrev5YearsAttributeName="mean_prev_5_years",
+                                 stddevPrev5YearsAttributeName="stddev_prev_5_years")
 ```
 
 ---
 ## INDICATOR 3 version Julien: résultat
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_Rickshaw.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/I3_Thunnus_obesus_2000_bingo.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 ## INDICATOR 4 version Julien
-```{r ichart, results = 'hide', tidy = F, message = F}
+```{r i4, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -99,7 +104,7 @@ result <- Atlas_i4_SpeciesMonthByOcean_julien(df=df,
 
 ---
 ## INDICATOR 6 version Julien
-```{r ichart, results = 'hide', tidy = F, message = F}
+```{r i6, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I6, with restriction on species="YFT" and year=2000
   df <- readData(connectionType="remote", dataType="WFS",
@@ -108,7 +113,7 @@ require(IRDTunaAtlas)
 		       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>',withSparql=FALSE)
 
 	#build the I6 indicator
-	results <- Atlas_i6_SpeciesMap(df=df, 
+	results <- Atlas_i6_SpeciesMap_julien(df=df, 
 		                      geomIdAttributeName="geom_id",
 		                      yearAttributeName="year", 
 		                      speciesAttributeName="species",                                         
@@ -117,11 +122,11 @@ require(IRDTunaAtlas)
 
 ---
 ## INDICATOR 6 version Julien: résultat
-<iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesMap/I6_Thunnus_albacares_2002_to_2002_.png' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 ## INDICATOR 7 version Julien
-```{r ichart, results = 'hide', tidy = F, message = F}
+```{r i7, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I7, with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
@@ -143,13 +148,13 @@ result <- Atlas_i7_SpeciesMapRelativeCatches(df=df,
 
 ---
 ## INDICATOR 8 version Julien
-```{r ichart, results = 'hide', tidy = F, message = F}
+```{r i8, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I8, with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i6i7i8_mv", 
-               ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>')
+               ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
 
 #build the I8 indicator with targeted species = "YFT"
 result <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df, 
@@ -162,11 +167,11 @@ result <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df,
 
 ---
 ## INDICATOR 8 version Julien: résultat
-<iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatchesOtherSpecies/I8_Thunnus_albacares_2000-2000_.png' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 ## INDICATOR 9 version Julien
-```{r ichart, results = 'hide', tidy = F, message = F}
+```{r i9, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -185,5 +190,50 @@ result <- Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien(df=df,
 
 ---
 ## INDICATOR 9 version Julien: résultat
-<iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+<iframe src = 'http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/I9__Thunnus_obesus_2005_-_2005bis.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+---
+## INDICATOR 10 version Julien
+```{r i10, results = 'hide', tidy = F, message = F}
+library(IRDTunaAtlas)
+#fetch data from IRD WFS for indicators I10, with restriction on species="YFT" and year >= 1980 and year <= 2005
+df <- readData(connectionType="remote", dataType="WFS",
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+               layer="ns11:i9i10_mv", 
+               ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2005</ogc:Literal></ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyIsGreaterThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>1980</ogc:Literal></ogc:PropertyIsGreaterThanOrEqualTo></ogc:And></ogc:Filter>')
 
+#build the I10 indicator
+result <- Atlas_i10_RelativeSizeFrequenciesByDecade(df=df, 
+                                                       temporalAgg=10,
+                                                       yearAttributeName="year", 
+                                                       speciesAttributeName="species", 
+                                                       sizeClassLowerBoundAttributeName="class_low",
+                                                       sizeClassUpperBoundAttributeName="class_up",
+                                                       fishCountAttributeName="fish_count")
+
+```
+
+---
+## INDICATOR 10 version Julien: résultat
+<iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+---
+## INDICATOR 11 version Julien
+```{r i11, results = 'hide', tidy = F, message = F}
+library(IRDTunaAtlas)
+
+#fetch data from IRD WFS for indicators I11 with restriction on species="YFT" and year=2000
+df <- readData(connectionType="remote", dataType="WFS",
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+               layer="ns11:i6i7i8_mv", 
+               ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
+
+#build the I11 indicator
+result <- Atlas_i11_CatchesByCountry(df=df, 
+                                     geomIdAttributeName="geom_id",
+                                     countryAttributeName="country", 
+                                     speciesAttributeName="species",                                         
+                                     valueAttributeName="value")
+```
+
+---
+## INDICATOR 11 version Julien: résultat
+<iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>

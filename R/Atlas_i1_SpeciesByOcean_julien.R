@@ -133,8 +133,8 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   listeResult <- list()
   # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/"
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/"
-  repository<-"/data/www/html/tmp/SpeciesByOcean/"
-  # repository<-"/data/www/html/tmp/SpeciesByOcean/default/"
+  repository<-"./outputs/www/html/tmp/SpeciesByOcean/default/"
+  # repository<-"/data/www/html/tmp/SpeciesByOcean/"
   
   #TODO : mcforeach ?
   for (species.current in unique(df$species)) {

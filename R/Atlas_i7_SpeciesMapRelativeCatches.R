@@ -323,7 +323,7 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
 # julien<-buildJson(type="map", description="Rapport d'exécution du traitement i7",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i7_SpeciesMapRelativeCatches.R",results=tableauResult)
 # fileJulien=paste(repository,"WebProcessingService.json", sep="")
 # cat(julien, file=fileJulien)
-julien<-'toto'
+julien<-resultPlot
 return(julien)
 
 

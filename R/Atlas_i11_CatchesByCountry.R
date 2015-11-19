@@ -233,7 +233,8 @@ png(plot.filepath, width=sizeX, height=sizeY)
 #              withSparql)
     
 #     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
-    result.df <- 'toto'
+    result.df <- png(plot.filepath, width=sizeX, height=sizeY)
+
   }
   
   return(result.df)

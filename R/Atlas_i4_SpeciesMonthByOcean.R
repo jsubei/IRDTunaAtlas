@@ -204,7 +204,7 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
     }
   }
   
-  return(result.df)
+  return(resultPlot)
 }
 
 

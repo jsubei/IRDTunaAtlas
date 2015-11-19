@@ -168,7 +168,7 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
     tempfile.base <- paste(repository,filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
     plot.URLpng <- paste(URL,filename, ".png", sep="")
-    ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+    ggsave(filename=plot.filepath, plot=resultPlot, dpi=300)
 
     ## AJOUT Julien RChart
     #p8 <- nPlot(value ~ year, group = 'gear_type', data = aggData, type = 'multiBarHorizontalChart')
@@ -325,6 +325,6 @@ julien <- 'toto'
 
 # julien<-buildJson(type="bar Chart", description="Rapport d'exécution du traitement i2",processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/Atlas_i2_SpeciesByOcean_HighCharts.R",results=tableauResult)
 
-return(julien)
+return(resultPlot)
 
 }

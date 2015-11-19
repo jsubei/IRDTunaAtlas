@@ -172,7 +172,7 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
     filename <- paste("I4", gsub(" ", "_", species.label), decade.current,sep="_")
     tempfile.base <- paste(repository,filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
-    ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+    ggsave(filename=plot.filepath, plot=resultPlot, dpi=300)
     plot.URLpng <- paste(URL,filename, ".png", sep="")
     
     
@@ -455,6 +455,6 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
 
 # julien<-buildJson(type="Pies Table", description="Rapport d'exécution du traitement i4",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/scripts/Atlas_i4_XXXX.R",results=tableauResult)
 julien<-'toto'
-return(julien)
+return(resultPlot)
 
 }

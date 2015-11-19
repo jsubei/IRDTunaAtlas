@@ -400,7 +400,7 @@ return(one)
   }
 
 # julien<-buildJson(type="Bar Chart", description="Rapport d'exécution du traitement i9", processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/scripts/Atlas_i9XXX.R",results=tableauResult)
-julien<-'toto'
+julien<-resultPlot
 
 return(julien)
 

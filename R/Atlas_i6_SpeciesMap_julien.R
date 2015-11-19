@@ -471,7 +471,7 @@ Atlas_i6_SpeciesMap_julien <- function(df,
   # Packing the description of results in Json file storing all metadata (same as RDF)  
 # julien<-buildJson(type="map", description="Rapport d'exécution du traitement i6",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i6_SpeciesMap.R",results=tableauResult)
 
-julien<-'juli'
+julien<-resultPlot
 return(julien)
   
   

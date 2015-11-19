@@ -482,6 +482,6 @@ plotRchartsNVD3
 # julien<-buildJson(type="multi Bar Chart", description="Rapport d'exécution du traitement i3", processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/scripts/Atlas_i3XXX.R",results=tableauResult)
 julien<-'toto'
 
-return(julien)
+return(resultPlot)
 
 }

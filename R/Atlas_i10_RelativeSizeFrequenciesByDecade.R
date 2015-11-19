@@ -155,7 +155,7 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
     tempfile.base <- paste(repository,filename, sep="")
     plot.filepath <- paste(tempfile.base, ".png", sep="")
     plot.URLpng <- paste(URL,filename, ".png", sep="")
-    ggsave(filename=plot.filepath, plot=plot.result, dpi=100)
+    ggsave(filename=plot.filepath, plot=plot.result, dpi=300)
     
     #create the RDF metadata
 #     rdf_file_path <- paste(tempfile.base, ".rdf", sep="")
@@ -174,7 +174,7 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
 #              withSparql)
 #     
 #     result.df <- rbind(result.df, c(plot.file.path=plot.filepath, rdf.file.path=rdf_file_path))
-    result.df <- 'toto'
+    result.df <- plot.result
   }
   return(result.df)  
 }

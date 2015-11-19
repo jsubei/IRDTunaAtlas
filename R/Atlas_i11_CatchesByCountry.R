@@ -110,8 +110,8 @@ Atlas_i11_CatchesByCountry <- function(df,
 
   #define the result df  
   result.df <- c()
-    URL<-"http://mdst-macroes.ird.fr/tmp/CatchesByCountry/"
-    repository<-"/data/www/html/tmp/CatchesByCountry/"
+    URL<-"http://mdst-macroes.ird.fr/tmp/CatchesByCountry/default/"
+    repository<-"./outputs/www/html/tmp/CatchesByCountry/default/"
   
   for (species.current in unique(df$species)) {
 #     

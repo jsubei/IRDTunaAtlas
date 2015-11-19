@@ -77,8 +77,8 @@ Atlas_i6_SpeciesMap_julien <- function(df,
   
   #   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/cdn/"
   #   repository<-"/data/www/html/tmp/SpeciesMap/cdn/"
-  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/"
-  repository<-"/data/www/html/tmp/SpeciesMap/"  
+  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/default/"
+  repository<-"./outputs/www/html/tmp/SpeciesMap/default/"  
   
   #List to store URLs of the set of files generated for each species
   liste <- list()
@@ -468,10 +468,8 @@ Atlas_i6_SpeciesMap_julien <- function(df,
   }
   
   
-  # Packing the description of results in Json file storing all metadata (same as RDF)  
+# Packing the description of results in Json file storing all metadata (same as RDF)  
 # julien<-buildJson(type="map", description="Rapport d'exécution du traitement i6",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i6_SpeciesMap.R",results=tableauResult)
-
-julien<-resultPlot
 return(julien)
   
   

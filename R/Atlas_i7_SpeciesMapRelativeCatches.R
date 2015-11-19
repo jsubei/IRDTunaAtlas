@@ -35,7 +35,7 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
                                                speciesAttributeName="species",                                         
                                                valueAttributeName="value")#,                                               withSparql=TRUE)
 {
-
+  
   #check inputs
   if (class(df) != "SpatialPolygonsDataFrame")
   {
@@ -75,10 +75,10 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
   # tableauResult$results <- data.frame(titre=character(),
   tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
-#     URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/cdn/"
-#     repository<-"/data/www/html/tmp/SpeciesMapRelativeCatches/cdn/"
-  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/"
-  repository<-"/data/www/html/tmp/SpeciesMapRelativeCatches/"
+  #     URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/cdn/"
+  #     repository<-"/data/www/html/tmp/SpeciesMapRelativeCatches/cdn/"
+  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/default/"
+  repository<-"./outputs/www/html/tmp/SpeciesMapRelativeCatches/default/"
   
   
   plotFct <- function(subDf, species.label, species.current, tableauResult, store, lims) {
@@ -136,7 +136,7 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
     Datatable$save(plot.filepathtmltable,standalone=TRUE)     
     # Datatable$save(plot.filepathtmltable,cdn=TRUE)
     plot.URLhtmlTable <- paste(URL,filename, "_table.html", sep="")    
-
+    
     
     #     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien
     ################################################################################################
@@ -147,59 +147,59 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
     
     ################################################################################################
     
-# 
-#     titles=c(paste(species.label, ":  Map of contribution of catches"), 
-#              paste("Carte des contribution aux captures", species.label))
-#     
-#     
-#     descriptions=c(c("en", paste("IRD Tuna Atlas: indicator #7 -  Map of contribution catches for species ",species.label, sep=" ")),
-#                    c("fr", paste("IRD Atlas Thonier: indicator #7 - Carte des contributions aux captures pour l'espèce:",species.label, sep=" ")))
-# 
-#     
-#     subjects=c(as.character(species.current))
-#     rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep="")               
-#     URI <- FAO2URIFromEcoscope(as.character(species.current))
-#     tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)    
-#     
-#     #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
-#     spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
-#     temporal_extent_begin=as.character(min(subDf$year))
-#     temporal_extent_end=as.character(max(subDf$year))
-#     
-#     #create the RDF metadata
-#     rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
-#     rdf.URL <- paste(URL,filename, ".rdf", sep="")
-#     
-#     download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.csv", stringsAsFactors=FALSE)
-#     ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.shp")
-#     download <- rbind(download, ligne)
-#     ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.nc....")
-#     download <- rbind(download, ligne)
-#     
-# #     data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="image",year=temporal_extent_begin, fileURL=plot.filepath, stringsAsFactors=FALSE)
-#     data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin, fileURL=plot.URLpng, stringsAsFactors=FALSE)
-#     ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin, fileURL=plot.URLhtmlTable)
-#     data_output_identifiers <- rbind(data_output_identifiers, ligne)
-#     
-# 
-#     one <-list(tableauResult = tableauResult,
-#                RDFMetadata=rdf.URL,
-#                rdf_file_path=rdf.filepath,
-#                rdf_subject=rdf_subject, 
-#                titles=titles,
-#                descriptions=descriptions,
-#                subjects=subjects,
-#                tabURIs=tabURIs,
-#                processes="http://www.ecoscope.org/ontologies/resources/processI7",
-#                image=plot.URLpng,
-#                data_output_identifiers=data_output_identifiers,
-#                download=download,
-#                start=temporal_extent_begin,
-#                end=temporal_extent_end,
-#                spatial=spatial_extent,
-#                withSparql=withSparql)
+    # 
+    #     titles=c(paste(species.label, ":  Map of contribution of catches"), 
+    #              paste("Carte des contribution aux captures", species.label))
+    #     
+    #     
+    #     descriptions=c(c("en", paste("IRD Tuna Atlas: indicator #7 -  Map of contribution catches for species ",species.label, sep=" ")),
+    #                    c("fr", paste("IRD Atlas Thonier: indicator #7 - Carte des contributions aux captures pour l'espèce:",species.label, sep=" ")))
+    # 
+    #     
+    #     subjects=c(as.character(species.current))
+    #     rdf_subject=paste("http://www.ecoscope.org/ontologies/resources", tempfile.base, sep="")               
+    #     URI <- FAO2URIFromEcoscope(as.character(species.current))
+    #     tabURIs<- data.frame(type="species",URI=URI,stringsAsFactors=FALSE)    
+    #     
+    #     #TODO julien => A ADAPTER AVEC LA CONVEX HULL / ou la collection DE TOUTES LES GEOMETRIES CONCERNEES
+    #     spatial_extent="POLYGON((-180 -90,-180 90,180 90,180 -90,-180 -90))"
+    #     temporal_extent_begin=as.character(min(subDf$year))
+    #     temporal_extent_end=as.character(max(subDf$year))
+    #     
+    #     #create the RDF metadata
+    #     rdf.filepath <- paste(repository, "La_totale.rdf", sep="")
+    #     rdf.URL <- paste(URL,filename, ".rdf", sep="")
+    #     
+    #     download=data.frame(format="csv",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.csv", stringsAsFactors=FALSE)
+    #     ligne <- c(format="shp",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.shp")
+    #     download <- rbind(download, ligne)
+    #     ligne <- c(format="GML|WKT|shp|netCDF",URL="http://mdst-macroes.ird.fr/tmp/SpeciesByGear/XXX.nc....")
+    #     download <- rbind(download, ligne)
+    #     
+    # #     data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="image",year=temporal_extent_begin, fileURL=plot.filepath, stringsAsFactors=FALSE)
+    #     data_output_identifiers=data.frame(titre="1 en fait y a pas besoin de cet attribut",type="stackedArea",year=temporal_extent_begin, fileURL=plot.URLpng, stringsAsFactors=FALSE)
+    #     ligne <- c(titre="4 en fait y a pas besoin de cet attribut",type="dataTable",year=temporal_extent_begin, fileURL=plot.URLhtmlTable)
+    #     data_output_identifiers <- rbind(data_output_identifiers, ligne)
+    #     
+    # 
+    #     one <-list(tableauResult = tableauResult,
+    #                RDFMetadata=rdf.URL,
+    #                rdf_file_path=rdf.filepath,
+    #                rdf_subject=rdf_subject, 
+    #                titles=titles,
+    #                descriptions=descriptions,
+    #                subjects=subjects,
+    #                tabURIs=tabURIs,
+    #                processes="http://www.ecoscope.org/ontologies/resources/processI7",
+    #                image=plot.URLpng,
+    #                data_output_identifiers=data_output_identifiers,
+    #                download=download,
+    #                start=temporal_extent_begin,
+    #                end=temporal_extent_end,
+    #                spatial=spatial_extent,
+    #                withSparql=withSparql)
     one <-'toto'
-
+    
     return(one)  
   }
   
@@ -208,87 +208,87 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
   
   
   #List to store URLs of the set of files generated for each species
-#   liste <- list()
-#   store = new.rdf(ontology=FALSE)
-#   add.prefix(store,
-#              prefix="resources_def",
-#              namespace="http://www.ecoscope.org/ontologies/resources_def/")
-#   add.prefix(store,
-#              prefix="ical",
-#              namespace="http://www.w3.org/2002/12/cal/ical/")
-#   add.prefix(store,
-#              prefix="dct",
-#              namespace="http://purl.org/dc/terms/")
+  #   liste <- list()
+  #   store = new.rdf(ontology=FALSE)
+  #   add.prefix(store,
+  #              prefix="resources_def",
+  #              namespace="http://www.ecoscope.org/ontologies/resources_def/")
+  #   add.prefix(store,
+  #              prefix="ical",
+  #              namespace="http://www.w3.org/2002/12/cal/ical/")
+  #   add.prefix(store,
+  #              prefix="dct",
+  #              namespace="http://purl.org/dc/terms/")
   
-    
-    
-    #     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien
-    
-
+  
+  
+  #     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien#     julien
+  
+  
   
   #fisrt subset by species
   for (species.current in unique(df$species)) {
     
-#     if (withSparql) {      
-#       #get species scientific name from ecoscope sparql
-#       sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
-#       if (length(sparqlResult) > 0) {
-#         species.label <- sparqlResult[1,"scientific_name"]
-#         species.URI <- sparqlResult[1,"uri"]
-#       } else {
-#         species.label <- species.current
-#         species.URI <- species.current
-#       } 
-#     } else {
-#       species.label <- species.current
-#       species.URI <- species.current
-#     }
+    #     if (withSparql) {      
+    #       #get species scientific name from ecoscope sparql
+    #       sparqlResult <- getSpeciesFromEcoscope(as.character(species.current))
+    #       if (length(sparqlResult) > 0) {
+    #         species.label <- sparqlResult[1,"scientific_name"]
+    #         species.URI <- sparqlResult[1,"uri"]
+    #       } else {
+    #         species.label <- species.current
+    #         species.URI <- species.current
+    #       } 
+    #     } else {
+    #       species.label <- species.current
+    #       species.URI <- species.current
+    #     }
     species.label <- species.current
     species.URI <- species.current
     species.df <- df[df$species == species.current,]
     
     #plot for all the period
     one <- plotFct(species.df, species.label, species.current, tableauResult, store)
-#     tableauResult <- buildRdf(store,
-#                               one$tableauResult,
-#                               one$RDFMetadata,
-#                               one$rdf_file_path,
-#                               one$rdf_subject, 
-#                               one$titles,
-#                               one$descriptions,
-#                               one$subjects,
-#                               one$tabURIs,
-#                               one$processes,
-#                               one$image,
-#                               one$data_output_identifiers,
-#                               one$download,
-#                               one$start,
-#                               one$end,
-#                               one$spatial,
-#                               one$withSparql)        
+    #     tableauResult <- buildRdf(store,
+    #                               one$tableauResult,
+    #                               one$RDFMetadata,
+    #                               one$rdf_file_path,
+    #                               one$rdf_subject, 
+    #                               one$titles,
+    #                               one$descriptions,
+    #                               one$subjects,
+    #                               one$tabURIs,
+    #                               one$processes,
+    #                               one$image,
+    #                               one$data_output_identifiers,
+    #                               one$download,
+    #                               one$start,
+    #                               one$end,
+    #                               one$spatial,
+    #                               one$withSparql)        
     
     if (length(unique(species.df$year)) > 1)
     {
       #for each year
       for(year.current in unique(species.df$year)) {
         one <- plotFct(species.df[species.df$year==year.current,], species.label, species.current, tableauResult, store)
-#         tableauResult <- buildRdf(store,
-#                                   one$tableauResult,
-#                                   one$RDFMetadata,
-#                                   one$rdf_file_path,
-#                                   one$rdf_subject, 
-#                                   one$titles,
-#                                   one$descriptions,
-#                                   one$subjects,
-#                                   one$tabURIs,
-#                                   one$processes,
-#                                   one$image,
-#                                   one$data_output_identifiers,
-#                                   one$download,
-#                                   one$start,
-#                                   one$end,
-#                                   one$spatial,
-#                                   one$withSparql)
+        #         tableauResult <- buildRdf(store,
+        #                                   one$tableauResult,
+        #                                   one$RDFMetadata,
+        #                                   one$rdf_file_path,
+        #                                   one$rdf_subject, 
+        #                                   one$titles,
+        #                                   one$descriptions,
+        #                                   one$subjects,
+        #                                   one$tabURIs,
+        #                                   one$processes,
+        #                                   one$image,
+        #                                   one$data_output_identifiers,
+        #                                   one$download,
+        #                                   one$start,
+        #                                   one$end,
+        #                                   one$spatial,
+        #                                   one$withSparql)
       }
       
       #for each decade
@@ -297,34 +297,34 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
       {
         for(decade.current in unique(species.df$decade)) {
           one <- plotFct(species.df[species.df$decade==decade.current,], species.label, species.current, tableauResult, store)
-#           tableauResult <- buildRdf(store,
-#                                     one$tableauResult,
-#                                     one$RDFMetadata,
-#                                     one$rdf_file_path,
-#                                     one$rdf_subject, 
-#                                     one$titles,
-#                                     one$descriptions,
-#                                     one$subjects,
-#                                     one$tabURIs,
-#                                     one$processes,
-#                                     one$image,
-#                                     one$data_output_identifiers,
-#                                     one$download,
-#                                     one$start,
-#                                     one$end,
-#                                     one$spatial,
-#                                     one$withSparql)        
+          #           tableauResult <- buildRdf(store,
+          #                                     one$tableauResult,
+          #                                     one$RDFMetadata,
+          #                                     one$rdf_file_path,
+          #                                     one$rdf_subject, 
+          #                                     one$titles,
+          #                                     one$descriptions,
+          #                                     one$subjects,
+          #                                     one$tabURIs,
+          #                                     one$processes,
+          #                                     one$image,
+          #                                     one$data_output_identifiers,
+          #                                     one$download,
+          #                                     one$start,
+          #                                     one$end,
+          #                                     one$spatial,
+          #                                     one$withSparql)        
         }
       }
     }
   }
+  
+  # Packing the description of results in Json file storing all metadata (same as RDF)  
+  # julien<-buildJson(type="map", description="Rapport d'exécution du traitement i7",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i7_SpeciesMapRelativeCatches.R",results=tableauResult)
+  # fileJulien=paste(repository,"WebProcessingService.json", sep="")
+  # cat(julien, file=fileJulien)
 
-# Packing the description of results in Json file storing all metadata (same as RDF)  
-# julien<-buildJson(type="map", description="Rapport d'exécution du traitement i7",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i7_SpeciesMapRelativeCatches.R",results=tableauResult)
-# fileJulien=paste(repository,"WebProcessingService.json", sep="")
-# cat(julien, file=fileJulien)
-julien<-resultPlot
-return(julien)
-
-
+  return(resultPlot)
+  
+  
 }

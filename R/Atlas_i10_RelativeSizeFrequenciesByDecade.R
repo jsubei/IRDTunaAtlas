@@ -98,8 +98,8 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
     the.mean <- sum((LowerBound + (UpperBound - LowerBound) / 2) * Obs) / sum(Obs)
     return(c(mean=the.mean, median=the.median))
   }
-  URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesByDecade/"
-  repository<-"/data/www/html/tmp/RelativeSizeFrequenciesByDecade/" 
+  URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesByDecade/default/"
+  repository<-"./outputs/www/html/tmp/RelativeSizeFrequenciesByDecade/default/" 
   #define the resulr df  
   result.df <- c()
   

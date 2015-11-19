@@ -99,10 +99,10 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
   # tableauResult$results <- data.frame(titre=character(),
   tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
-  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByGear/cdn/"
-  repository<-"/data/www/html/tmp/SpeciesByGear/cdn/"
-# URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByGear/"
-# repository<-"/data/www/html/tmp/SpeciesByGear/"
+  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByGear/default/"
+  repository<-"./outputs/www/html/tmp/SpeciesByGear/default/"
+# URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByGear/cdn/"
+# repository<-"/data/www/html/tmp/SpeciesByGear/cdn/"
 
   #TODO : mcforeach ?
   for (species.current in unique(df$species)) {

@@ -5,11 +5,16 @@ ICCAT_fig_1 <- function(first.year.of.decade=2000){
   source("/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/R_scripts/wkt2spdf.r")
   library(rworldmap)
   library(mapplots)
+  library(repmis)
   
   ##Connection to db
   sql=paste("SELECT sum(capture_rf1.v_capt_rf1) AS value_v_capt_rf1, espece.lc_esp AS species ,g_engin.lc_g_engin AS gear_type,temps.an AS year, ocean.luk_ocean AS tuna_commission,ST_asText(carre.g_carre5) AS wkt FROM capture_rf1 JOIN temps USING(id_date)  JOIN ocean USING(c_ocean)  JOIN espece USING(c_esp)  JOIN g_engin USING(c_g_engin) JOIN carre USING(id_carre) WHERE temps.an >",first.year.of.decade-1,"AND temps.an <",first.year.of.decade+10 ,"AND espece.lc_esp = 'BFT' AND ocean.luk_ocean = 'Atlantic O.' AND (carre.c_t_carre IN (5, 6) AND capture_rf1.c_periode = 1) GROUP BY ocean.luk_ocean,temps.an,espece.lc_esp, g_engin.lc_g_engin, carre.g_carre5 ORDER BY espece.lc_esp, temps.an,g_engin.lc_g_engin, carre.g_carre5;",sep="")  
   drv <- dbDriver("PostgreSQL")
-  con <- dbConnect(drv, dbname="sardara_world", user="invsardara", password="fle087", host="aldabra2")
+  id <- repmis::source_DropboxData("conn.csv",
+                                               "ay4uoisahecht56",
+                                               sep = ",",
+                                               header = TRUE)
+  con <- dbConnect(drv, dbname=id$dbname, user=id$user, password=id$password, host=id$host)
   df <- dbGetQuery(con, sql)
   for(con in dbListConnections(drv)){
          dbDisconnect(con)

@@ -8,6 +8,8 @@
 \author{Taha Imzilen, Julien Barde}
 \maketitle
 \date
+\abstract{This document is an automated knitr report generated from data and R codes made available within or without BlueBridge infrastructure. We are using some of the Tuna Commissions data made available either from their Websites, the Tuna Atlas VRE along with Sardara or from the WP5 Blue Stock Assessment}
+
 
 \tableofcontents 
 %\printglossaries
@@ -168,20 +170,20 @@ print(indicator7)
 Indicateur 8 OK 
 <<indicator8, fig.width=4, fig.height=3, fig.align='center'>>=
 #fetch data from IRD WFS for indicator I8, with restriction on species="YFT" and year=2000
-require(IRDTunaAtlas)
-df <- readData(connectionType="remote", dataType="WFS",
-               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
-               layer="ns11:i6i7i8_mv", 
-               ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>')
-
-#build the I8 indicator with targeted species = "YFT"
-indicator8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df, 
-                                             targetedSpecies="YFT",
-                                             geomIdAttributeName="geom_id",
-                                             yearAttributeName="year", 
-                                             speciesAttributeName="species",                                         
-                                             valueAttributeName="value")
-print(indicator8) 
+# require(IRDTunaAtlas)
+# df <- readData(connectionType="remote", dataType="WFS",
+#                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+#                layer="ns11:i6i7i8_mv", 
+#                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>')
+# 
+# #build the I8 indicator with targeted species = "YFT"
+# indicator8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df, 
+#                                              targetedSpecies="YFT",
+#                                              geomIdAttributeName="geom_id",
+#                                              yearAttributeName="year", 
+#                                              speciesAttributeName="species",                                         
+#                                              valueAttributeName="value")
+# print(indicator8) 
 @
 et voilà  
 

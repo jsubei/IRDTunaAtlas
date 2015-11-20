@@ -91,10 +91,10 @@ Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien <- function(df,
   # tableauResult$results <- data.frame(titre=character(),
   tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
-    URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/cdn/"
-    repository<-"/data/www/html/tmp/RelativeSizeFrequenciesBySchoolType/cdn/"
-#   URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/"
-#   repository<-"/data/www/html/tmp/RelativeSizeFrequenciesBySchoolType/"
+    URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/default/"
+    repository<-"./outputs/www/html/tmp/RelativeSizeFrequenciesBySchoolType/default/"
+#   URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/cdn/"
+#   repository<-"/data/www/html/tmp/RelativeSizeFrequenciesBySchoolType/cdn/"
   
   
   

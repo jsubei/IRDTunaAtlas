@@ -112,10 +112,10 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
   # tableauResult$results <- data.frame(titre=character(),
   tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
-  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/cdn/"
-  repository<-"/data/www/html/tmp/SpeciesByMonthByOcean/cdn/"
-  # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/"
-  # repository<-"/data/www/html/tmp/SpeciesByMonthByOcean/"
+  URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/default/"
+  repository<-"./outputs/www/html/tmp/SpeciesByMonthByOcean/default/"
+  # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/cdn/"
+  # repository<-"/data/www/html/tmp/SpeciesByMonthByOcean/cdn/"
   #     
     for (species.current in unique(df$species)) {
   #     
@@ -454,7 +454,6 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
 }
 
 # julien<-buildJson(type="Pies Table", description="Rapport d'exécution du traitement i4",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/scripts/Atlas_i4_XXXX.R",results=tableauResult)
-julien<-'toto'
 return(resultPlot)
 
 }

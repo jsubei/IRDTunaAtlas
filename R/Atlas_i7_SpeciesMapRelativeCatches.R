@@ -198,9 +198,9 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
     #                end=temporal_extent_end,
     #                spatial=spatial_extent,
     #                withSparql=withSparql)
-    one <-'toto'
-    
-    return(one)  
+#     one <-'toto'
+    one <-resultPlot
+    return(one)      
   }
   
   #define the resulr df  
@@ -324,7 +324,7 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
   # fileJulien=paste(repository,"WebProcessingService.json", sep="")
   # cat(julien, file=fileJulien)
 
-  return(resultPlot)
+  return(one)
   
   
 }

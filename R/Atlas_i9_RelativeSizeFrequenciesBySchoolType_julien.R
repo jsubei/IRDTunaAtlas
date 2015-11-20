@@ -291,9 +291,9 @@ Datatable$save(plot.filepathtmltable,standalone=TRUE)
 #            end=temporal_extent_end,
 #            spatial=spatial_extent,
 #            withSparql=withSparql)
-one<-'toto'
-return(one)  
 
+one <-resultPlot
+return(one)      
   }
   
 
@@ -400,9 +400,9 @@ return(one)
   }
 
 # julien<-buildJson(type="Bar Chart", description="Rapport d'exécution du traitement i9", processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/scripts/Atlas_i9XXX.R",results=tableauResult)
-julien<-resultPlot
+# julien<-resultPlot
 
-return(julien)
+return(one)
 
 
 

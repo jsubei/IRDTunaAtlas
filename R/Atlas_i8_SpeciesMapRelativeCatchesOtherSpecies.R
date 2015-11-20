@@ -35,7 +35,8 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
                                                            geomIdAttributeName="geom_id",
                                                            yearAttributeName="year", 
                                                            speciesAttributeName="species",                                         
-                                                           valueAttributeName="value")#,                                                           withSparql=TRUE)
+                                                           valueAttributeName="value",
+                                                           withSparql=TRUE)
 {
   require(maps)
   
@@ -110,7 +111,8 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
 #              namespace="http://purl.org/dc/terms/")
   
   
-  plotFct <- function(subDf, species.targeted, species.current, tableauResult, store, lims) {
+plotFct <- function(subDf, species.targeted, species.label, tableauResult, store, lims) {
+#   plotFct <- function(subDf, species.targeted, species.current, tableauResult, store, lims) {
     
     #aggregate values by 5° CWP square and species
     aggData <- aggregate(value ~ geom_id + species, data=subDf, sum)    
@@ -241,8 +243,8 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
 #                spatial=spatial_extent,
 #                withSparql=withSparql)
 #     
-one<-'toto'
-    return(one)      
+one <-resultPlot
+return(one)      
   }
   
 #   if (withSparql) {      
@@ -259,13 +261,15 @@ one<-'toto'
 #     species.label <- species
 #     species.URI <- species
 #   }
-species.label <- species
-species.URI <- species
+species.label <- targetedSpecies
+species.URI <- targetedSpecies
   #define the result df  
   result.df <- c()
   
   #plot for all the period
   one <- plotFct(df, targetedSpecies, species.label, tableauResult, store)
+# plotFct <- function(subDf, species.targeted, species.current, tableauResult, store, lims) {
+  
 #   tableauResult <- buildRdf(store,
 #                             one$tableauResult,
 #                             one$RDFMetadata,
@@ -289,7 +293,7 @@ species.URI <- species
   {
     #for each year
     for(year.current in unique(df$year)) {
-      one <- plotFct(df[df$year==year.current,], targetedSpecies, species.label, species.current, tableauResult, store)
+      one <- plotFct(df[df$year==year.current,], targetedSpecies, species.label, tableauResult, store)
 #       tableauResult <- buildRdf(store,
 #                                 one$tableauResult,
 #                                 one$RDFMetadata,
@@ -314,7 +318,7 @@ species.URI <- species
     if (length(unique(df$decade)) > 1)
     {
       for(decade.current in unique(df$decade)) {
-        one <- plotFct(df[df$decade==decade.current,], targetedSpecies, species.label, species.current, tableauResult, store)
+        one <- plotFct(df[df$decade==decade.current,], targetedSpecies, species.label, tableauResult, store)
 #         tableauResult <- buildRdf(store,
 #                                   one$tableauResult,
 #                                   one$RDFMetadata,
@@ -337,7 +341,6 @@ species.URI <- species
   }
   # Packing the description of results in Json file storing all metadata (same as RDF)  
 # julien<-buildJson(type="map", description="Résultats de l'exécution du traitement i8 sur tout le jeu de données Sardara",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies.R",results=tableauResult)
-julien<-resultPlot
-return(julien)
+return(one)
   
 }

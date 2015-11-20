@@ -349,10 +349,12 @@ Atlas_i6_SpeciesMap_julien <- function(df,
 #                end=temporal_extent_end,
 #                spatial=spatial_extent,
 #                withSparql=withSparql)
-    one <-'toto'
-
+#     one <-'toto'
+# 
+#     return(one)  
+    one <-resultPlot
     return(one)  
-    
+
     }
   
   ################################################################################################
@@ -470,7 +472,8 @@ Atlas_i6_SpeciesMap_julien <- function(df,
   
 # Packing the description of results in Json file storing all metadata (same as RDF)  
 # julien<-buildJson(type="map", description="Rapport d'exécution du traitement i6",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i6_SpeciesMap.R",results=tableauResult)
-return(julien)
+# julien<-resultPlot
+return(one)
   
   
   }

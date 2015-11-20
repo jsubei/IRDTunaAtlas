@@ -42,7 +42,7 @@ or just create directly a new git directory by cloning codes of the repository (
 
 
 \section{Indicator 1: Time serie of catches according to oceans}
-
+ OK 
 This indicator gives an overview of global catches and regional catches with data provided by Tuna Commissions operating in different oceans / areas.
 
 <<indicator1, fig.width=4, fig.height=3, fig.align='center'>>=
@@ -51,15 +51,15 @@ df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
        ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',withSparql=FALSE)
-result <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
+indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
                           oceanAttributeName="ocean",
         speciesAttributeName="species",
                           valueAttributeName="value")
-print(result)
+print(indicator1)
 @
 
 \section{Indicator 2: bar}
-
+ OK 
 This indicator gives an overview of global catches and regional catches by gear with data provided by Tuna Commissions operating in different oceans / areas.
 
 <<indicator2, fig.width=4, fig.height=3, fig.align='center'>>=
@@ -68,18 +68,18 @@ df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
        ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',withSparql=FALSE)
-result <- Atlas_i2_SpeciesByGear_julien(df=df, 
+indicator2 <- Atlas_i2_SpeciesByGear_julien(df=df, 
                                  yearAttributeName="year", 
                                  gearTypeAttributeName="gear_type", 
                                  speciesAttributeName="species", 
                                  valueAttributeName="value")
-print(result)
+print(indicator2)
 @
 et voilà  
 
 
 \section{Tuna Atlas: indicator 3}
-
+ OK 
 This indicator gives an overview of monthly catches according to fishing gears for a given year
 
 <<indicator3, fig.width=4, fig.height=3, fig.align='center'>>=
@@ -89,7 +89,7 @@ df <- readData(connectionType="remote", dataType="WFS",
 ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2005</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',
                layer="ns11:i3_mv")
 #build the I3 indicator
-result <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df, 
+indicator3 <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df, 
                                  yearAttributeName="year", 
                                  monthAttributeName="month",
                                  gearTypeAttributeName="gear_type", 
@@ -97,14 +97,14 @@ result <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df,
                                  valueAttributeName="value",
                                  meanPrev5YearsAttributeName="mean_prev_5_years",
                                  stddevPrev5YearsAttributeName="stddev_prev_5_years")
-print(result)
+print(indicator3)
 @
 et voilà  
 
 \section{Tuna Atlas: indicator 4}
-Indicateur 4
+Indicateur 4 OK 
 <<indicator4, fig.width=4, fig.height=3, fig.align='center'>>=
-library(IRDTunaAtlas)
+require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i4_mv", 
@@ -112,79 +112,81 @@ df <- readData(connectionType="remote", dataType="WFS",
 
 
 #build the I4 indicator
-result <- Atlas_i4_SpeciesMonthByOcean_julien(df=df, 
+indicator4 <- Atlas_i4_SpeciesMonthByOcean_julien(df=df, 
                                           oceanAttributeName="ocean", 
                                           yearAttributeName="year", 
                                           monthAttributeName="month",
                                           speciesAttributeName="species", 
                                           valueAttributeName="value")
-print(result)
+print(indicator4)
 @
 et voilà  
 
 \section{Tuna Atlas: indicator 6}
-Indicateur 6
+Indicateur 6  OK 
 <<indicator6, fig.width=4, fig.height=3, fig.align='center'>>=
-require(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I6, with restriction on species="YFT" and year=2000
-  df <- readData(connectionType="remote", dataType="WFS",
+require(IRDTunaAtlas)
+df <- readData(connectionType="remote", dataType="WFS",
            url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
-		       layer="ns11:i6i7i8_mv", 
+  	       layer="ns11:i6i7i8_mv", 
 		       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>',withSparql=FALSE)
 
 	#build the I6 indicator
-	results <- Atlas_i6_SpeciesMap_julien(df=df, 
+indicator6 <- Atlas_i6_SpeciesMap_julien(df=df, 
 		                      geomIdAttributeName="geom_id",
 		                      yearAttributeName="year", 
 		                      speciesAttributeName="species",                                         
 		                      valueAttributeName="value")
-print(result)
+print(indicator6)
 @
-et voilà  
+
+
 
 
 \section{Tuna Atlas: indicator 7}
-Indicateur 7
+Indicateur 7 OK 
 <<indicator7, fig.width=4, fig.height=3, fig.align='center'>>=
-library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I7, with restriction on species="YFT" and year=2000
+require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i6i7i8_mv", 
                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
 
 #build the I7 indicator
-result <- Atlas_i7_SpeciesMapRelativeCatches(df=df, 
+indicator7 <- Atlas_i7_SpeciesMapRelativeCatches(df=df, 
                               geomIdAttributeName="geom_id",
                               yearAttributeName="year", 
                               speciesAttributeName="species",                                         
                               valueAttributeName="value")
+print(indicator7)
 @
 
 
 \section{Tuna Atlas: indicator 8}
-Indicateur 8
+Indicateur 8 OK 
 <<indicator8, fig.width=4, fig.height=3, fig.align='center'>>=
-library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I8, with restriction on species="YFT" and year=2000
+require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i6i7i8_mv", 
-               ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
+               ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>')
 
 #build the I8 indicator with targeted species = "YFT"
-result <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df, 
+indicator8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df, 
                                              targetedSpecies="YFT",
                                              geomIdAttributeName="geom_id",
                                              yearAttributeName="year", 
                                              speciesAttributeName="species",                                         
                                              valueAttributeName="value")
-print(result) 
+print(indicator8) 
 @
 et voilà  
 
 \section{Tuna Atlas: indicator 9}
-Indicateur 9
+Indicateur 9 OK 
 <<indicator9, fig.width=4, fig.height=3, fig.align='center'>>=
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
@@ -193,39 +195,36 @@ df <- readData(connectionType="remote", dataType="WFS",
                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
 
 #build the I9 indicator
-result <- Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien(df=df, 
+indicator9 <- Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien(df=df, 
                                                          yearAttributeName="year", 
                                                          speciesAttributeName="species", 
                                                          schoolAttributeName="school",
                                                          sizeClassLowerBoundAttributeName="class_low",
                                                          sizeClassUpperBoundAttributeName="class_up",
                                                          fishCountAttributeName="fish_count")
-print(result)
+print(indicator9)
 @
-et voilà  
 
 
 \section{Tuna Atlas: indicator 10}
-Indicateur 10
+Indicateur 10 OK 
 <<indicator10, fig.width=4, fig.height=3, fig.align='center'>>=
-library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicators I10, with restriction on species="YFT" and year >= 1980 and year <= 2005
+require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i9i10_mv", 
                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2005</ogc:Literal></ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyIsGreaterThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>1980</ogc:Literal></ogc:PropertyIsGreaterThanOrEqualTo></ogc:And></ogc:Filter>')
 
 #build the I10 indicator
-result <- Atlas_i10_RelativeSizeFrequenciesByDecade(df=df, 
+indicator10 <- Atlas_i10_RelativeSizeFrequenciesByDecade(df=df, 
                                                        temporalAgg=10,
                                                        yearAttributeName="year", 
                                                        speciesAttributeName="species", 
                                                        sizeClassLowerBoundAttributeName="class_low",
                                                        sizeClassUpperBoundAttributeName="class_up",
                                                        fishCountAttributeName="fish_count")
-print(result) 
+print(indicator10) 
 @
-et voilà  
-
 
 \end{document}

@@ -342,7 +342,5 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   
   
   return(resultPlot)
-  
-  
-  
+    
 }

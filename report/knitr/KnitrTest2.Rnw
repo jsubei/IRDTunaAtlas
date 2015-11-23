@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[a4paper,10pt]{report} 
 \usepackage{verbatim}
 \usepackage[utf8x]{inputenc}
 %\usepackage[pdftex]{graphicx}
@@ -44,7 +44,7 @@ or just create directly a new git directory by cloning codes of the repository (
 
 
 \section{Indicator 1: Time serie of catches according to oceans}
- OK 
+
 This indicator gives an overview of global catches and regional catches with data provided by Tuna Commissions operating in different oceans / areas.
 
 <<indicator1, fig.width=4, fig.height=3, fig.align='center'>>=
@@ -131,7 +131,7 @@ Indicateur 6  OK
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
            url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
-  	       layer="ns11:i6i7i8_mv", 
+           layer="ns11:i6i7i8_mv", 
 		       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>',withSparql=FALSE)
 
 	#build the I6 indicator
@@ -143,6 +143,7 @@ indicator6 <- Atlas_i6_SpeciesMap_julien(df=df,
 print(indicator6)
 @
 
+et voilà  
 
 
 
@@ -164,6 +165,7 @@ indicator7 <- Atlas_i7_SpeciesMapRelativeCatches(df=df,
                               valueAttributeName="value")
 print(indicator7)
 @
+et voilà  
 
 
 \section{Tuna Atlas: indicator 8}

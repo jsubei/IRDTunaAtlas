@@ -113,7 +113,8 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
   tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/default/"
-  repository<-"./outputs/www/html/tmp/SpeciesByMonthByOcean/default/"
+  repository<-paste(mywd,"outputs/www/html/tmp/SpeciesByMonthByOcean/default/",sep="")
+  
   # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/cdn/"
   # repository<-"/data/www/html/tmp/SpeciesByMonthByOcean/cdn/"
   #     

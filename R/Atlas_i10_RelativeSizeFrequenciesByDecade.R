@@ -99,7 +99,8 @@ Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
     return(c(mean=the.mean, median=the.median))
   }
   URL<-"http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesByDecade/default/"
-  repository<-"./outputs/www/html/tmp/RelativeSizeFrequenciesByDecade/default/" 
+  repository<-paste(mywd,"outputs/www/html/tmp/RelativeSizeFrequenciesByDecade/default/",sep="")
+  
   #define the resulr df  
   result.df <- c()
   

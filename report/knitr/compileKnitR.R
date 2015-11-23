@@ -16,16 +16,19 @@
 require(knitr)
 #load specifi R Packages and related functions parametrizations when needed to customize the report
 #Specify the working directory
-mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/report/knitr'
+mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/'
+report_subdirectory <- paste(mywd,'report/knitr/',sep="")
 setwd(mywd)
-source('KnitrTest2_parametrization.R')
+report_parametrization_file <-paste(report_subdirectory,"KnitrTest2_parametrization.R",sep="")
+source(report_parametrization_file)
 #Specify the names of knitr file to be compiled and resulting latex file name (knitr output)
-file.in <-'KnitrTest2.Rnw'
-file.out <- 'KnitrTest2.tex'
+file.in <-paste(report_subdirectory,"KnitrTest2.Rnw",sep="")
+file.out <- paste(report_subdirectory,"KnitrTest2.tex",sep="")
 # system(paste("unzip ",zipfile, " ./", sep=""))
 #knitr Compilation
 knit(file.in,file.out) 
 #Latex Compilation
+setwd(report_subdirectory)
 system(paste("pdflatex ",file.out, sep=""))
 system(paste("pdflatex ",file.out, sep=""))
 system(paste("pdflatex ",file.out, sep=""))

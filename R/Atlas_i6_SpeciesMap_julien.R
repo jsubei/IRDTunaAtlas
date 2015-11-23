@@ -78,7 +78,8 @@ Atlas_i6_SpeciesMap_julien <- function(df,
   #   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/cdn/"
   #   repository<-"/data/www/html/tmp/SpeciesMap/cdn/"
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/default/"
-  repository<-"./outputs/www/html/tmp/SpeciesMap/default/"  
+  repository<-paste(mywd,"outputs/www/html/tmp/SpeciesMap/default/",sep="")
+  
   
   #List to store URLs of the set of files generated for each species
   liste <- list()

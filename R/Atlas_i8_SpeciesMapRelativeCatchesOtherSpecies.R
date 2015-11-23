@@ -95,7 +95,7 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
   #   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatchesOtherSpecies/cdn/"
   #   repository<-"/data/www/html/tmp/SpeciesMapRelativeCatchesOtherSpecies/cdn/"
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatchesOtherSpecies/default/"
-  repository<-"./outputs/www/html/tmp/SpeciesMapRelativeCatchesOtherSpecies/default/"
+  repository<-paste(mywd,"outputs/www/html/tmp/SpeciesMapRelativeCatchesOtherSpecies/default/",sep="")
   
   
   #RDF schema to store the descriptions of results

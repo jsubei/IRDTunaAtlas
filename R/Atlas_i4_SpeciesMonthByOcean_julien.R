@@ -114,8 +114,7 @@ Atlas_i4_SpeciesMonthByOcean_julien <- function(df,
   
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/default/"
   repository<-paste(mywd,"outputs/www/html/tmp/SpeciesByMonthByOcean/default/",sep="")
-  
-  # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/cdn/"
+    # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByMonthByOcean/cdn/"
   # repository<-"/data/www/html/tmp/SpeciesByMonthByOcean/cdn/"
   #     
     for (species.current in unique(df$species)) {

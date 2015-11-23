@@ -131,8 +131,7 @@ Atlas_i3_SpeciesYearByGearMonth_julien<- function(df,
   tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/default/"
-repository<-paste(mywd,"outputs/www/html/tmp/SpeciesByYearByMonthByGear/default/",sep="")
-
+  repository<-paste(mywd,"outputs/www/html/tmp/SpeciesByYearByMonthByGear/default/",sep="")
 #   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/cdn/"
 #   repository<-"/data/www/html/tmp/SpeciesByYearByMonthByGear/cdn/"
   

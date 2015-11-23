@@ -100,7 +100,7 @@ Atlas_i2_SpeciesByGear_julien <- function(df,
   tableauResult <- data.frame(stringsAsFactors=FALSE)   
   
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByGear/default/"
-repository<-paste(mywd,"outputs/www/html/tmp/SpeciesByGear/default/",sep="")
+  repository<-paste(mywd,"outputs/www/html/tmp/SpeciesByGear/default/",sep="")
                   
 # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByGear/cdn/"
 # repository<-"/data/www/html/tmp/SpeciesByGear/cdn/"

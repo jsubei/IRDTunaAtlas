@@ -77,6 +77,7 @@ Atlas_i6_SpeciesMap_julien <- function(df,
   
   #   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/cdn/"
   #   repository<-"/data/www/html/tmp/SpeciesMap/cdn/"
+  
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/default/"
   repository<-paste(mywd,"outputs/www/html/tmp/SpeciesMap/default/",sep="")
   

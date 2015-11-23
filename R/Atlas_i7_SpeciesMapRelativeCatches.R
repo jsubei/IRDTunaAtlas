@@ -77,6 +77,7 @@ Atlas_i7_SpeciesMapRelativeCatches <- function(df,
   
   #     URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/cdn/"
   #     repository<-"/data/www/html/tmp/SpeciesMapRelativeCatches/cdn/"
+  
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/default/"
   repository<-paste(mywd,"outputs/www/html/tmp/SpeciesMapRelativeCatches/default/",sep="")
   

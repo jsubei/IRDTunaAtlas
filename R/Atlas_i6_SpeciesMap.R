@@ -76,6 +76,7 @@ Atlas_i6_SpeciesMap <- function(df,
   
     URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/cdn/"
     repository<-"/data/www/html/tmp/SpeciesMap/cdn/"
+  
 #   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesMap/"
 #   repository<-"/data/www/html/tmp/SpeciesMap/"  
 #   

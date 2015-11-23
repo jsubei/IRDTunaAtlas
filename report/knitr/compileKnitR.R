@@ -22,13 +22,13 @@ setwd(mywd)
 report_parametrization_file <-paste(report_subdirectory,"KnitrTest2_parametrization.R",sep="")
 source(report_parametrization_file)
 #Specify the names of knitr file to be compiled and resulting latex file name (knitr output)
-file.in <-paste(report_subdirectory,"KnitrTest2.Rnw",sep="")
-file.out <- paste(report_subdirectory,"KnitrTest2.tex",sep="")
+setwd(report_subdirectory)
+file.in <-'KnitrTest2.Rnw'
+file.out <- 'KnitrTest2.tex'
 # system(paste("unzip ",zipfile, " ./", sep=""))
 #knitr Compilation
 knit(file.in,file.out) 
 #Latex Compilation
-setwd(report_subdirectory)
 system(paste("pdflatex ",file.out, sep=""))
 system(paste("pdflatex ",file.out, sep=""))
 system(paste("pdflatex ",file.out, sep=""))

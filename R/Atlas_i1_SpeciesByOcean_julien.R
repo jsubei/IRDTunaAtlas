@@ -134,6 +134,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   # URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/"
   
   URL<-"http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/"
+  
   repository<-paste(mywd,"outputs/www/html/tmp/SpeciesByOcean/default/",sep="")
                     
   # repository<-"/data/www/html/tmp/SpeciesByOcean/"

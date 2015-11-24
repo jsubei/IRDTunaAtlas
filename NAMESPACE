@@ -37,5 +37,7 @@ export(
   Atlas_i10_RelativeSizeFrequenciesByDecade,
   enRichment,
   readData,
-  evaluateAndRenameAttributesNames
+  evaluateAndRenameAttributesNames,
+  ICCAT_BFT-Fig1,
+  wkt2spdf
 )

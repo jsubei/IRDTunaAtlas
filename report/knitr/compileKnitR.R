@@ -12,19 +12,39 @@ require(knitr)
 require(rworldmap)
 #load specifi R Packages and related functions parametrizations when needed to customize the report
 #Specify the working directory
-mywd <- '/home/taha/SVNs/Git/IRDTunaAtlas/'
+mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/'
+# mywd <- '/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/reports/'
+
+file.inout <-'Report_Sardara'
+# file.inout <-'KnitrTest2'
+# file.inout <-'ICCAT_Report_BFTE'
+
+Run_Report(path.inout = mywd,file.inout =file.inout,show.pdf=F)
+
+Run_Report <- function(path.inout,file.inout,show.pdf=F){
+#change working directory
+setwd(path.inout)
+#Creating variables for names of files requires to be compiled
+file.in <- paste(file.inout,".Rnw",sep="")
+file.out <- paste(file.inout,".tex",sep="")
+file.input.par <- paste(file.inout,".R",sep="")
+
+#### Check existence of .R and .Rnw fields
+if(!file.exists(paste(path.inout,file.input.par,sep="/"))){ stop("You have to create the .R field.")}
+if(!file.exists(paste(path.inout,file.in,sep="/"))){ stop("You have to create the .Rnw field.")}
+##
+
 report_subdirectory <- paste(mywd,'report/knitr/',sep="")
+
 setwd(mywd)
 report_parametrization_file <-paste(report_subdirectory,"KnitrTest2_parametrization.R",sep="")
-source(report_parametrization_file)
+# source(report_parametrization_file)
+source(file.input.par)
+
 #Specify the names of knitr file to be compiled and resulting latex file name (knitr output)
 setwd(report_subdirectory)
-# file.in <-'KnitrTest2.Rnw'
-# file.out <- 'KnitrTest2.tex'
-# file.in <-'ICCAT_Report_BFTE.Rnw'
-# file.out <- 'ICCAT_Report_BFTE.tex'
-file.in <-'Report_Sardara.Rnw'
-file.out <- 'Report_Sardara.tex'
+
+
 # system(paste("unzip ",zipfile, " ./", sep=""))
 #knitr Compilation
 knit(file.in,file.out) 
@@ -33,3 +53,4 @@ system(paste("pdflatex ",file.out, sep=""))
 system(paste("pdflatex ",file.out, sep=""))
 system(paste("pdflatex ",file.out, sep=""))
 
+}

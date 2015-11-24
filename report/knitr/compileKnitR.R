@@ -12,7 +12,7 @@ require(knitr)
 require(rworldmap)
 #load specifi R Packages and related functions parametrizations when needed to customize the report
 #Specify the working directory
-mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/'
+mywd <- '/home/taha/SVNs/Git/IRDTunaAtlas/'
 report_subdirectory <- paste(mywd,'report/knitr/',sep="")
 setwd(mywd)
 report_parametrization_file <-paste(report_subdirectory,"KnitrTest2_parametrization.R",sep="")
@@ -21,10 +21,10 @@ source(report_parametrization_file)
 setwd(report_subdirectory)
 # file.in <-'KnitrTest2.Rnw'
 # file.out <- 'KnitrTest2.tex'
-file.in <-'ICCAT_Report_BFTE.Rnw'
-file.out <- 'ICCAT_Report_BFTE.tex'
-# file.in <-'Report_Sardara.Rnw'
-# file.out <- 'Report_Sardara.tex'
+# file.in <-'ICCAT_Report_BFTE.Rnw'
+# file.out <- 'ICCAT_Report_BFTE.tex'
+file.in <-'Report_Sardara.Rnw'
+file.out <- 'Report_Sardara.tex'
 # system(paste("unzip ",zipfile, " ./", sep=""))
 #knitr Compilation
 knit(file.in,file.out) 

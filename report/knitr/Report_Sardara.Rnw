@@ -50,7 +50,8 @@ This indicator produce a graph of annual catches by ocean for each species prese
 \captionsetup[subfigure]{labelformat=empty}
 \centering
 %\subfloat[]{
-  <<graph_i1, fig.width=6,fig.height=6,out.width='1\\textwidth',message=FALSE,cache=FALSE, echo=FALSE>>=
+  <<graph_i1, fig.width=6,fig.height=6,out.width='1\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+source("/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/reports/Report_Sardara.R")
 forTitle <- gsub(x=do.call(paste,as.list(i1_specie_name)),replacement=";",pattern=" ")
 res <- list()
 for(i in 1:length(i1_specie_name)){

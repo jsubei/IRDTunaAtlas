@@ -14,6 +14,8 @@ import(rgdal)
 import(jsonlite)
 import(sp)
 import(fpc)
+import(repmis)
+import(rworldmap)
  
 
 export(

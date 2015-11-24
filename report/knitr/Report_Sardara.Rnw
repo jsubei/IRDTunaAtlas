@@ -1,0 +1,269 @@
+
+
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{animate}
+\usepackage{caption}
+%\usepackage{subcaption}
+\usepackage{subfig}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{media9}
+\usepackage{movie15}
+
+
+\begin{document}
+<<setup, include=FALSE, cache=FALSE>>=
+  library(knitr)
+## set global chunk options
+opts_chunk$set(fig.align='center', fig.show='hold', par=TRUE) #,fig.path='../figures/', cache.path='cache')
+options(replace.assign=TRUE, width=68)
+## tune details of base graphics (http://yihui.name/knitr/hooks)
+knit_hooks$set(par=function(before, options, envir){
+  if (before && options$fig.show!='none') par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3)
+})
+@
+
+\title{Sardara indicators}
+\author{Taha Imzilen, Tristan Rouyer, Julien Barde, Sylvain Bonhommeau }
+
+\maketitle
+
+\section*{Abstract}
+???? 
+\clearpage
+\section*{INTRODUCTION}
+????
+\clearpage
+\section{Indicators}
+
+\subsection{Indicator 1 (i1): Annual catches by ocean}
+This indicator produce a graph of annual catches by ocean for each species present in the input data.
+% # <<value_i1,cache=TRUE, echo=FALSE>>=
+% # specie_name <- i1_specie_name
+% # scientific_specie_name <- i1_scientific_specie_name
+% # @
+
+\begin{figure}[!ht]
+\captionsetup[subfigure]{labelformat=empty}
+\centering
+%\subfloat[]{
+  <<graph_i1, fig.width=6,fig.height=6,out.width='1\\textwidth',message=FALSE,cache=FALSE, echo=FALSE>>=
+forTitle <- gsub(x=do.call(paste,as.list(i1_specie_name)),replacement=";",pattern=" ")
+res <- list()
+for(i in 1:length(i1_specie_name)){
+#   Annual catches by ocean for \Sexpr{scientific_specie_name[2]} (\Sexpr{specie_name[2]}).
+df <- readData(connectionType="remote", dataType="WFS",
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+               layer="ns11:i1i2_mv", 
+               ogcFilter=paste('<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName>><ogc:Literal>',i1_specie_name[i],'</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',sep=""))
+
+res[[i]] <- Atlas_i1_SpeciesByOcean(df=df, yearAttributeName="year",
+                                  oceanAttributeName="ocean", speciesAttributeName="species",
+                                  valueAttributeName="value",
+                                  scientific_name_specie=i1_scientific_specie_name[i])
+}
+multiplot(plotlist=res, cols=2)
+
+@
+
+%}
+%\quad
+\caption{\label{fig:graph_i1} graph of annual catches by ocean for each species present in the input data  (\Sexpr{forTitle})}
+         \end{figure}        
+         \clearpage   
+
+% 
+\subsection{Indicator 2 (i2):  Annual catches by gear}
+This indicator produce a graph of annual catches by gear for each species present in the input data.
+% # <<value_i2,cache=TRUE, echo=FALSE>>=
+% # specie_name <- i2_specie_name
+% # scientific_specie_name <- i2_scientific_specie_name
+% # @
+
+\begin{figure}[!ht]
+\captionsetup[subfigure]{labelformat=empty}
+\centering
+% \subfloat[]{
+  <<graph_i2, fig.width=6,fig.height=6,out.width='1\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+forTitle <- gsub(x=do.call(paste,as.list(i2_specie_name)),replacement=";",pattern=" ")
+res <- list()
+for(i in 1:length(i2_specie_name)){
+#   Annual catches by ocean for \Sexpr{scientific_specie_name[2]} (\Sexpr{specie_name[2]}).
+df <- readData(connectionType="remote", dataType="WFS",
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+               layer="ns11:i1i2_mv", 
+               ogcFilter=paste('<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName>><ogc:Literal>',i2_specie_name[i],'</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',sep=""))
+
+res[[i]] <- Atlas_i2_SpeciesByGear(df=df, yearAttributeName="year",
+                                  gearTypeAttributeName="gear_type", speciesAttributeName="species",
+                                  valueAttributeName="value",
+                                  scientific_name_specie=i2_scientific_specie_name[i])
+}
+multiplot(plotlist=res, cols=2)
+
+
+@
+% }\quad
+\caption{\label{fig:graph_i2} graph of annual catches by gear for each species present in the input data  (\Sexpr{forTitle})}
+         \end{figure}        
+         \clearpage   
+        
+%         
+        
+\subsection{Indicator 3 (i3):  Annual catches by gear and by month}
+This indicator build a graph of catches of a given species for a given year by gear type and by month. Provide comparaison with monthly mean of the 5 previous years.
+
+\begin{figure}[!ht]
+\captionsetup[subfigure]{labelformat=empty}
+\centering
+% \subfloat[]{
+  <<graph_i3, fig.width=6,fig.height=6,out.width='1\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+forTitle <- gsub(x=do.call(paste,as.list(i3_specie_name)),replacement=";",pattern=" ")
+res <- list();k=1
+for(i in 1:length(i3_specie_name)){
+  for(j in 1:length(i3_year)){
+#   Annual catches by ocean for \Sexpr{scientific_specie_name[2]} (\Sexpr{specie_name[2]}).
+df <- readData(connectionType="remote", dataType="WFS",
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+               layer="ns11:i3_mv", 
+               ogcFilter=paste('<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>',i3_specie_name[i],'</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>',i3_year[j],'</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>',sep=""))
+res[[k]] <- Atlas_i3_SpeciesYearByGearMonth(df=df, yearAttributeName="year",
+                                 monthAttributeName="month",
+                                 gearTypeAttributeName="gear_type", 
+                                 speciesAttributeName="species", 
+                                 valueAttributeName="value",
+                                 meanPrev5YearsAttributeName="mean_prev_5_years",
+                                 stddevPrev5YearsAttributeName="stddev_prev_5_years",
+                                  scientific_name_specie=i3_scientific_specie_name[i])
+k <- k+1
+}
+if(j>1){multiplot(plotlist=res, cols=2);k <- 1}
+}
+if(j==1){multiplot(plotlist=res, cols=2)}
+@
+% }\quad
+\caption{\label{fig:graph_i3} graph of annual catches by gear and by month for each species present in the input data  (\Sexpr{forTitle})}
+         \end{figure}        
+         \clearpage  
+         
+                
+\subsection{Indicator 4 (i4):  Catches by month and by ocean}
+This indicator build a graph of monthly (seasonal) catches by ocean for a species. 
+
+\begin{figure}[!ht]
+\captionsetup[subfigure]{labelformat=empty}
+\centering
+% \subfloat[]{
+  <<graph_i4, fig.width=12,fig.height=12,out.width='0.9\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+forTitle <- gsub(x=do.call(paste,as.list(i4_specie_name)),replacement=";",pattern=" ")
+res <- list();k=1
+for(i in 1:length(i4_specie_name)){
+  for(j in 1:length(i4_year)){
+df <- readData(connectionType="remote", dataType="WFS",
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+               layer="ns11:i4_mv", 
+               ogcFilter=paste('<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>',i4_specie_name[i],'</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>',as.numeric(i4_year[j])+5,'</ogc:Literal></ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyIsGreaterThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>',i4_year[j],'</ogc:Literal></ogc:PropertyIsGreaterThanOrEqualTo></ogc:And></ogc:Filter>',sep=""))
+
+#build the I4 indicator
+res[[k]] <- Atlas_i4_SpeciesMonthByOcean(df=df, 
+                                          oceanAttributeName="ocean", 
+                                          yearAttributeName="year", 
+                                          monthAttributeName="month",
+                                          speciesAttributeName="species", 
+                                          valueAttributeName="value",
+                                       scientific_name_specie=i4_scientific_specie_name[i])
+k <- k+1
+}
+if(j>1){multiplot(plotlist=res, cols=2);k <- 1}
+}
+if(j==1){multiplot(plotlist=res, cols=2)}
+@
+% }\quad
+\caption{\label{fig:graph_i4} graph of Catches by month and by ocean for each species present in the input data (\Sexpr{forTitle})}
+         \end{figure}        
+         \clearpage  
+         
+%         
+\subsection{Indicator 9 (i9):  Size frequencies by school type}
+This indicator build a graph of relative contribution of size frequencies in catches for a species by school type. 
+% # <<value_i2,cache=TRUE, echo=FALSE>>=
+% # specie_name <- i2_specie_name
+% # scientific_specie_name <- i2_scientific_specie_name
+% # @
+
+\begin{figure}[!ht]
+\captionsetup[subfigure]{labelformat=empty}
+\centering
+% \subfloat[]{
+  <<graph_i9, fig.width=6,fig.height=6,out.width='1\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+forTitle <- gsub(x=do.call(paste,as.list(i9_specie_name)),replacement=";",pattern=" ")
+res <- list();k=1
+for(i in 1:length(i9_specie_name)){
+  for(j in 1:length(i9_year)){
+df <- readData(connectionType="remote", dataType="WFS",
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+               layer="ns11:i9i10_mv", 
+               ogcFilter=paste('<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>',i9_specie_name[i],'</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>',i9_year[j],'</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>',sep=""))
+
+#build the I9 indicator
+res[[k]] <- Atlas_i9_RelativeSizeFrequenciesBySchoolType(df=df, 
+                                                         yearAttributeName="year", 
+                                                         speciesAttributeName="species", 
+                                                         schoolAttributeName="school",
+                                                         sizeClassLowerBoundAttributeName="class_low",
+                                                         sizeClassUpperBoundAttributeName="class_up",
+                                                         fishCountAttributeName="fish_count",
+                                                       scientific_name_specie=i9_scientific_specie_name[i])
+k<- k+1
+}
+if(j>1){multiplot(plotlist=res, cols=2);k <- 1}
+}
+if(j==1){multiplot(plotlist=res, cols=2)}
+@
+% }\quad
+\caption{\label{fig:graph_i9} graph of Size frequencies by school type for each species present in the input data  (\Sexpr{forTitle})}
+         \end{figure}        
+         \clearpage   
+        
+%         
+%         
+\subsection{Indicator 10 (i10): Size frequencies by decade}
+This indicator build a graph relative contribution of size frequencies in catches for a species by decade. 
+
+
+\begin{figure}[!ht]
+\captionsetup[subfigure]{labelformat=empty}
+\centering
+% \subfloat[]{
+  <<graph_i10, fig.width=8,fig.height=8,out.width='0.8\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+forTitle <- gsub(x=do.call(paste,as.list(i10_specie_name)),replacement=";",pattern=" ")
+res <- list()
+for(i in 1:length(i10_specie_name)){
+#   Annual catches by ocean for \Sexpr{scientific_specie_name[2]} (\Sexpr{specie_name[2]}).
+df <- readData(connectionType="remote", dataType="WFS",
+               url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+               layer="ns11:i9i10_mv", 
+               ogcFilter=paste('<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>',i10_specie_name[i],'</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>',i10_period[2],'</ogc:Literal></ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyIsGreaterThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>',i10_period[1],'</ogc:Literal></ogc:PropertyIsGreaterThanOrEqualTo></ogc:And></ogc:Filter>',sep=""))
+
+
+res[[i]] <- Atlas_i10_RelativeSizeFrequenciesByDecade(df=df, 
+                                                       temporalAgg=10,
+                                                       yearAttributeName="year", 
+                                                       speciesAttributeName="species", 
+                                                       sizeClassLowerBoundAttributeName="class_low",
+                                                       sizeClassUpperBoundAttributeName="class_up",
+                                                       fishCountAttributeName="fish_count",
+                                                       scientific_name_specie=i10_scientific_specie_name[i])
+
+}
+multiplot(plotlist=res, cols=2)
+
+@
+% }\quad
+\caption{\label{fig:graph_i10} graph of Size frequencies by decade for each species present in the input data  (\Sexpr{forTitle})}
+         \end{figure}        
+         \clearpage   
+         \end{document}

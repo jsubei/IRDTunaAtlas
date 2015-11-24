@@ -1,0 +1,111 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\renewcommand{\sfdefault}{lmss}
+\renewcommand{\ttdefault}{lmtt}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+%\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{caption}
+%\usepackage{subcaption}
+\usepackage{subfig}
+%\newcommand{\subfloat}[2][need a sub-caption]{\subcaptionbox{#1}{#2}}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[authoryear]{natbib}
+\usepackage{float}
+\usepackage[unicode=true,pdfusetitle, bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2, breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=true]{hyperref}
+\hypersetup{pdfstartview={XYZ null null 1}}
+
+\makeatletter
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{ICCAT REPORT 2014-2015}
+\rhead{EXECUTIVE SUMMARY BFTE}
+
+
+
+\begin{document}
+<<setup, include=FALSE, cache=FALSE>>=
+  library(knitr)
+## set global chunk options
+opts_chunk$set(fig.align='center', fig.show='hold', par=TRUE) #,fig.path='../figures/', cache.path='cache')
+options(replace.assign=TRUE, width=68)
+## tune details of base graphics (http://yihui.name/knitr/hooks)
+knit_hooks$set(par=function(before, options, envir){
+  if (before && options$fig.show!='none') par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3)
+})
+@
+
+\title{INTERNATIONAL COMMISSION \\ for the \\ CONSERVATION of ATLANTIC TUNAS \\
+    \large   BFTE-Bluefin East}
+   
+\author{Taha Imzilen, Tristan Rouyer, Julien Barde, Sylvain Bonhommeau  }
+\maketitle
+
+\clearpage
+
+\section{Fishery trends and indicators - East Atlantic and Mediterranean}
+  It is very well known that introduction of fattening and farming activities into the Mediterranean in 1997 and good market conditions resulted in rapid changes in the Mediterranean fisheries for bluefin tuna mainly due to increasing purse seine catches. In the last few years, nearly all of the declared Mediterranean bluefin fishery production was exported overseas. Declared catches in the East Atlantic and Mediterranean reached a peak of over 50,000 t in 1996 and then decreased substantially, stabilizing around TAC levels established by ICCAT for the most recent period (BFTE-Figure 1). Both the increase and the subsequent decrease in declared production occurred mainly for the Mediterranean (BFTE-Figure 1). Since 2008, there was a significant decrease in thereported catch following more restrictive TACs. Declared catch was, as used in the assessment (with minor updates for2012 and 2013 at the time of the meeting), 23,849 t, 19,751 t, 11,148 t, 9,774t, 10,852 t, and 13,133t for the East Atlantic and Mediterranean, of which 16,205 t, 13,066 t, 6,835 t, 5,790 t, 7,019 t, and 9,016t were declared for the Mediterranean for those same years (BFT-Table 1). \\ 
+
+
+  Information available has demonstrated that catches of bluefin tuna from the East Atlantic and Mediterranean were seriouslyunder-reported between the mid-1990s through 2007. The Committee views this lack of compliance with TAC and under-reporting of the catch as a major cause of stock decline over that period. The Committee has estimated that realized catches during this period could have been in the order of 50,000 t to 61,000 t per year based on the number of vessels operating in the Mediterranean Sea and their respective catch rates. Estimates for 2008 and 2009 using updated vessel capacity and performance statistics from the various reports submitted to ICCAT under [Rec. 08-05] result in estimates that are significantly lower than the corresponding reported Task I data (see Report of the 2010 ICCAT Bluefin Tuna Data Preparatory Meeting,Anon. 2011c).Although care is needed considering estimates of catch using these capacity measures, the Committee's interpretation is that a substantial decrease in the catch occurred in the eastern Atlantic and Mediterranean Sea in 2008 and 2009. 
+\newpage
+\begin{figure}[!ht]
+\centering
+\subfloat[bluefin tuna catches per main gears from 1960 to 1969.]{
+  <<graph_i1_1960, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+require(IRDTunaAtlas)
+# source("../../R/ICCAT_BFT_Fig1.R")
+# source("../../R/wkt2spdf.R")
+ICCAT_fig_1(1960)
+@
+}
+\subfloat[bluefin tuna catches per main gears  from 1970 to 1979.]{
+  <<graph_i1_1970, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+require(IRDTunaAtlas)
+# source("../../R/ICCAT_BFT_Fig1.R")
+# source("../../R/wkt2spdf.R")
+ICCAT_fig_1(1970)
+# plot(1,1)
+@
+}
+\newline
+\subfloat[bluefin tuna catches per main gears  from 1980 to 1989.]{
+  <<graph_i1_1980, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+require(IRDTunaAtlas)
+# source("../../R/ICCAT_BFT_Fig1.R")
+# source("../../R/wkt2spdf.R")
+ICCAT_fig_1(1980)
+# plot(1,1)
+@
+}
+\subfloat[bluefin tuna catches per main gears  from 1990 to 1999.]{
+  <<graph_i1_1990, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+require(IRDTunaAtlas)
+# source("../../R/ICCAT_BFT_Fig1.R")
+# source("../../R/wkt2spdf.R")
+ICCAT_fig_1(1990)
+# plot(1,1)
+@
+}
+\newline
+\subfloat[bluefin tuna catches per main gears  from 2000 to 2009.]{
+  <<graph_i1_2000, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+require(IRDTunaAtlas)
+# source("../../R/ICCAT_BFT_Fig1.R")
+# source("../../R/wkt2spdf.R")
+ICCAT_fig_1(2000)
+# plot(1,1)
+@
+}
+
+\caption{\label{fig:graph_i1} Geographic distribtion of bluefin tuna catches per 5x5 degrees and per main gears from 1950 to 2012}
+         \end{figure}
+         
+         \clearpage
+
+         \end{document}

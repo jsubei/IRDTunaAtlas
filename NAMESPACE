@@ -38,6 +38,6 @@ export(
   enRichment,
   readData,
   evaluateAndRenameAttributesNames,
-  ICCAT_BFT_Fig1,
+  ICCAT_fig_1,
   wkt2spdf
 )

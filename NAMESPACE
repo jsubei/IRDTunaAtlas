@@ -42,5 +42,6 @@ export(
   readData,
   evaluateAndRenameAttributesNames,
   ICCAT_fig_1,
-  wkt2spdf
+  wkt2spdf,
+  Run_Report
 )

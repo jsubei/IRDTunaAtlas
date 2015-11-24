@@ -3,6 +3,7 @@ require(IRDTunaAtlas)
 # Rapport Taha
 require(repmis)
 require(rworldmap)
+require(pryr)
 # Rapport Taha => nécessite package media9.sty pour Latex
 
 

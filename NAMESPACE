@@ -16,7 +16,8 @@ import(sp)
 import(fpc)
 import(repmis)
 import(rworldmap)
- 
+import(pryr)
+
 
 export(
   WFS2GMLFile,

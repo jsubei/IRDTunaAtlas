@@ -12,20 +12,13 @@ require(knitr)
 mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/'
 # mywd <- '/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/reports/'
 
-file.inout <-'KnitrTest2'
 # file.inout <-'KnitrTest2'
-# file.inout <-'ICCAT_Report_BFTE'
+# file.inout <-'KnitrTest2'
+file.inout <-'ICCAT_Report_BFTE'
 
 Run_Report(path.inout = mywd,file.inout =file.inout,show.pdf=F)
 
 Run_Report <- function(path.inout,file.inout,show.pdf=F){
-mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/'
-# mywd <- '/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/reports/'
-  
-# file.inout <-'KnitrTest2'
-# path.inout <-mywd
-# #change working directory
-# mywd <- path.inout
 
 report_subdirectory <- paste(mywd,'report/knitr/',sep="")
 setwd(report_subdirectory)

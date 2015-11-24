@@ -13,7 +13,7 @@ mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/'
 # mywd <- '/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/reports/'
 
 # file.inout <-'KnitrTest2'
-# file.inout <-'KnitrTest2'
-file.inout <-'ICCAT_Report_BFTE'
+# file.inout <-'ICCAT_Report_BFTE'
+# file.inout <-'Report_Sardara'
 
 Run_Report(path.inout = mywd,file.inout =file.inout,show.pdf=F)

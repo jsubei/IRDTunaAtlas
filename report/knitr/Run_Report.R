@@ -1,8 +1,8 @@
-Run_Report <- function(path.inout,file.inout,show.pdf=F){
+Run_Report <- function(path.inout,file.inout,zip_file,show.pdf=F){
   
   report_subdirectory <- paste(mywd,'report/knitr/',sep="")
   setwd(report_subdirectory)
-  
+  system(paste("unzip ",zip_file, sep=""))
   #Creating variables for names of files requires to be compiled
   file.in <- paste(file.inout,".Rnw",sep="")
   file.out <- paste(file.inout,".tex",sep="")

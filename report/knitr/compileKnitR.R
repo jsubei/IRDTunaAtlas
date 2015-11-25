@@ -1,9 +1,10 @@
-#Taha Imzilen & Julien Barde - IRD
-#52North WPS annotations
+#Taha Imzilen & Julien Barde - IRD - BlueBridge project http://www.bluebridge-vres.eu/ 
+
+#R annotations to get OGC WPS metadata from 52North WPS Server Java API
 # wps.des: id = knitrCompile, title = Generic R code to compile knitr documents, abstract =  This script is meant to enable the compilation of any knitr Code using open data and source code avilable through URLS or made available by complying with a template of sub-repositories coming along the knitr main code within a zip file;
-# wps.in: id = upload_report, type = string, title = , value = "/main.Rnd";
-# wps.in: id = report_parametrization, type = string, title = Data URL, value = "http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas";
-# wps.out: id = Pdfresult, type = string, title = result file path list;
+# wps.in: id = upload_zip_knitr_report, type = string, title = Zip file containing all files required for knitR compilation, value = "";
+# wps.in: id = file_prefix, type = string, title = Prefix of files to be used for compilation, value = "main_report.Rnw";
+# wps.out: id = Pdfresult, type = string, title = result file path list, value = "main_report.pdf";
 
 #STEP: load knitr Package
 require(knitr)
@@ -19,5 +20,11 @@ file.inout <-'KnitrTest2'
 # file.inout <-'ICCAT_Report_BFTE'
 # file.inout <-'Report_Sardara'
 
+#STEP 3: file.inout variable will store the prefix used for the names of the 2 default files expected to run the compilation:
+# zip='/tmp/knitr.zip'
+zip='/tmp/ICCAT_report.zip'
+
 #STEP 3: Execution of the function which compiles the knitR code
+# Run_Report(path.inout = mywd,file.inout =file.inout,show.pdf=F)
 Run_Report(path.inout = mywd,file.inout =file.inout, zip_file = zip, show.pdf=F)
+

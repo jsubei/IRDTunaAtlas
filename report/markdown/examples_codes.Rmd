@@ -24,7 +24,7 @@ ext_widgets : {rCharts: [libraries/nvd3]}
 
 ---
 ## INDICATOR 1 version Julien
-```{r i1, results = 'hide', tidy = F, message = F}
+```{r i1}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",

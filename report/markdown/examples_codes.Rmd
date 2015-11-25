@@ -1,6 +1,6 @@
 ---
 title       : Tuna Atlas indicators
-subtitle    : Quelques exemples en écologie marine
+subtitle    : Quelques exemples de Plots
 author      : Julien Barde
 date        : September 21, 2015
 job         : UMR MARBEC, IRD, Sète
@@ -13,10 +13,11 @@ license     : by-nc-sa
 github:
   user: jsubei
   repo: IRDTunaAtlas
-logo        : logo_IRD.svg
+logo        : http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg
 knit        : slidify::knit2slides
 ext_widgets : {rCharts: [libraries/nvd3]}
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="100">
 ## Installation
 
 - Installation du paquet GIT sur l'OS
@@ -24,7 +25,7 @@ ext_widgets : {rCharts: [libraries/nvd3]}
 
 ---
 ## INDICATOR 1 version Julien
-```{r i1}
+```{r simple-plot, fig.height = 6, fig.align = 'center', message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -38,8 +39,9 @@ print(result)
 ```
 
 --
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1 version Julien: résultat
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_Rickshaw.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_NVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 ## INDICATOR 2 version Julien
@@ -58,12 +60,14 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 2 version Julien: résultat
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByGear/I2_Thunnus_albacaresNVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 3 version Julien
-```{r i3, results = 'hide', tidy = F, message = F}
+```{r eval = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -82,10 +86,12 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 3 version Julien: résultat
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/I3_Thunnus_obesus_2000_bingo.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 4 version Julien
 ```{r i4, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
@@ -106,10 +112,12 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 4 version Julien: résultat
 <iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 6 version Julien
 ```{r i6, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
@@ -129,10 +137,12 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 6 version Julien: résultat
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesMap/I6_Thunnus_albacares_2002_to_2002_.png' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 7 version Julien
 ```{r i7, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
@@ -152,16 +162,19 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 7 version Julien
 ```{r i7bis, results = 'hide', tidy = F, message = F}
 print(result) 
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 7 version Julien: résultat
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/cdn/I7_Thunnus_albacares_2000_to_2000_.png' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 8 version Julien
 ```{r i8, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
@@ -182,10 +195,12 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 8 version Julien: résultat
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatchesOtherSpecies/I8_Thunnus_albacares_2000-2000_.png' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 9 version Julien
 ```{r i9, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
@@ -206,6 +221,7 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 9 version Julien: résultat
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/I9__Thunnus_obesus_2005_-_2005bis.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 ---
@@ -230,10 +246,12 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 10 version Julien: résultat
 <iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 11 version Julien
 ```{r i11, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
@@ -253,5 +271,10 @@ print(result)
 ```
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 11 version Julien: résultat
+```{r i11_result, results = 'hide', tidy = F, message = F}
+print(result) 
+```
+
 <iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>

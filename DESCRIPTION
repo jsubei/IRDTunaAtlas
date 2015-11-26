@@ -1,4 +1,4 @@
-Package: IRDTunaAtlas
+Package: Indicators_For_Fisheries_Tuna_Atlas
 Type: Package
 Title: IRD (www.ird.fr) - UMR EME - Tuna atlas
 Version: 0.2
@@ -9,4 +9,4 @@ Description: IRD Tuna Atlas - iMarine project.
 License: GPL (version 2 or later)
 Depends: R (>= 2.15), pryr,repmis, rworldmap, XML, ggplot2, rgdal, RCurl, RColorBrewer, plyr, mapdata, rgeos, maps, mapplots, ncdf, sp, fpc, rCharts, base64enc
 Imports: methods
-URL: https://github.com/jsubei/IRDTunaAtlas
+URL: https://github.com/juldebar/IRDTunaAtlas

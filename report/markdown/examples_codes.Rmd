@@ -17,25 +17,26 @@ logo        : http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.s
 knit        : slidify::knit2slides
 ext_widgets : {rCharts: [libraries/nvd3]}
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="100">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="200">
 ## Installation
 
 - Installation du paquet GIT sur l'OS
 - Créer un nouveau projet avec Git => clone 
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1 version Julien
-```{r simple-plot, fig.height = 6, fig.align = 'center', message = F}
+```{r indicator1, fig.height = 6, fig.align = 'center', message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
        ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',withSparql=FALSE)
-result <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
+indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
                           oceanAttributeName="ocean",
   		  speciesAttributeName="species",
                           valueAttributeName="value")
-print(result)
+print(indicator1)
 ```
 
 --
@@ -44,19 +45,20 @@ print(result)
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_NVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 2 version Julien
-```{r i2, results = 'hide', tidy = F, message = F}
+```{r indicator2, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
        ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',withSparql=FALSE)
-result <- Atlas_i2_SpeciesByGear_julien(df=df, 
+indicator2 <- Atlas_i2_SpeciesByGear_julien(df=df, 
                                  yearAttributeName="year", 
                                  gearTypeAttributeName="gear_type", 
                                  speciesAttributeName="species", 
                                  valueAttributeName="value")
-print(result)
+print(indicator2)
 ```
 
 ---
@@ -74,7 +76,7 @@ df <- readData(connectionType="remote", dataType="WFS",
 ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2005</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',
                layer="ns11:i3_mv")
 #build the I3 indicator
-result <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df, 
+indicator3 <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df, 
                                  yearAttributeName="year", 
                                  monthAttributeName="month",
                                  gearTypeAttributeName="gear_type", 
@@ -82,7 +84,7 @@ result <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df,
                                  valueAttributeName="value",
                                  meanPrev5YearsAttributeName="mean_prev_5_years",
                                  stddevPrev5YearsAttributeName="stddev_prev_5_years")
-print(result)
+print(indicator3)
 ```
 
 ---
@@ -93,7 +95,7 @@ print(result)
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 4 version Julien
-```{r i4, results = 'hide', tidy = F, message = F}
+```{r indicator4, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -102,13 +104,13 @@ df <- readData(connectionType="remote", dataType="WFS",
 
 
 #build the I4 indicator
-result <- Atlas_i4_SpeciesMonthByOcean_julien(df=df, 
+indicator4 <- Atlas_i4_SpeciesMonthByOcean_julien(df=df, 
                                           oceanAttributeName="ocean", 
                                           yearAttributeName="year", 
                                           monthAttributeName="month",
                                           speciesAttributeName="species", 
                                           valueAttributeName="value")
-print(result)
+print(indicator4)
 ```
 
 ---
@@ -119,7 +121,7 @@ print(result)
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 6 version Julien
-```{r i6, results = 'hide', tidy = F, message = F}
+```{r indicator6, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I6, with restriction on species="YFT" and year=2000
   df <- readData(connectionType="remote", dataType="WFS",
@@ -128,12 +130,12 @@ require(IRDTunaAtlas)
 		       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>',withSparql=FALSE)
 
 	#build the I6 indicator
-	results <- Atlas_i6_SpeciesMap_julien(df=df, 
+	indicator6 <- Atlas_i6_SpeciesMap_julien(df=df, 
 		                      geomIdAttributeName="geom_id",
 		                      yearAttributeName="year", 
 		                      speciesAttributeName="species",                                         
 		                      valueAttributeName="value")
-print(result)
+print(indicator6)
 ```
 
 ---
@@ -144,7 +146,7 @@ print(result)
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 7 version Julien
-```{r i7, results = 'hide', tidy = F, message = F}
+```{r indicator7, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I7, with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
@@ -153,19 +155,19 @@ df <- readData(connectionType="remote", dataType="WFS",
                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
 
 #build the I7 indicator
-result <- Atlas_i7_SpeciesMapRelativeCatches(df=df, 
+indicator7 <- Atlas_i7_SpeciesMapRelativeCatches(df=df, 
                               geomIdAttributeName="geom_id",
                               yearAttributeName="year", 
                               speciesAttributeName="species",                                         
                               valueAttributeName="value")
-print(result) 
+print(indicator7) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 7 version Julien
-```{r i7bis, results = 'hide', tidy = F, message = F}
-print(result) 
+```{r indicator7bis, results = 'hide', tidy = F, message = F}
+print(indicator7) 
 ```
 
 ---
@@ -176,7 +178,7 @@ print(result)
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 8 version Julien
-```{r i8, results = 'hide', tidy = F, message = F}
+```{r indicator8, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I8, with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
@@ -185,13 +187,13 @@ df <- readData(connectionType="remote", dataType="WFS",
                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
 
 #build the I8 indicator with targeted species = "YFT"
-result <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df, 
+indicator8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df, 
                                              targetedSpecies="YFT",
                                              geomIdAttributeName="geom_id",
                                              yearAttributeName="year", 
                                              speciesAttributeName="species",                                         
                                              valueAttributeName="value")
-print(result) 
+print(indicator8) 
 ```
 
 ---
@@ -202,7 +204,7 @@ print(result)
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 9 version Julien
-```{r i9, results = 'hide', tidy = F, message = F}
+```{r indicator9, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -210,14 +212,14 @@ df <- readData(connectionType="remote", dataType="WFS",
                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
 
 #build the I9 indicator
-result <- Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien(df=df, 
+indicator9 <- Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien(df=df, 
                                                          yearAttributeName="year", 
                                                          speciesAttributeName="species", 
                                                          schoolAttributeName="school",
                                                          sizeClassLowerBoundAttributeName="class_low",
                                                          sizeClassUpperBoundAttributeName="class_up",
                                                          fishCountAttributeName="fish_count")
-print(result) 
+print(indicator9) 
 ```
 
 ---
@@ -226,7 +228,7 @@ print(result)
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/I9__Thunnus_obesus_2005_-_2005bis.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 ---
 ## INDICATOR 10 version Julien
-```{r i10, results = 'hide', tidy = F, message = F}
+```{r indicator10, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicators I10, with restriction on species="YFT" and year >= 1980 and year <= 2005
 df <- readData(connectionType="remote", dataType="WFS",
@@ -235,25 +237,27 @@ df <- readData(connectionType="remote", dataType="WFS",
                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2005</ogc:Literal></ogc:PropertyIsLessThanOrEqualTo><ogc:PropertyIsGreaterThanOrEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>1980</ogc:Literal></ogc:PropertyIsGreaterThanOrEqualTo></ogc:And></ogc:Filter>')
 
 #build the I10 indicator
-result <- Atlas_i10_RelativeSizeFrequenciesByDecade(df=df, 
+indicator10 <- Atlas_i10_RelativeSizeFrequenciesByDecade(df=df, 
                                                        temporalAgg=10,
                                                        yearAttributeName="year", 
                                                        speciesAttributeName="species", 
                                                        sizeClassLowerBoundAttributeName="class_low",
                                                        sizeClassUpperBoundAttributeName="class_up",
                                                        fishCountAttributeName="fish_count")
-print(result) 
+print(indicator10) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 10 version Julien: résultat
-<iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+```{r i10_result, results = 'hide', tidy = F, message = F}
+print(indicator10) 
+```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 11 version Julien
-```{r i11, results = 'hide', tidy = F, message = F}
+```{r indicator11, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicators I11 with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
@@ -262,19 +266,17 @@ df <- readData(connectionType="remote", dataType="WFS",
                ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>')
 
 #build the I11 indicator
-result <- Atlas_i11_CatchesByCountry(df=df, 
+indicator11 <- Atlas_i11_CatchesByCountry(df=df, 
                                      geomIdAttributeName="geom_id",
                                      countryAttributeName="country", 
                                      speciesAttributeName="species",                                         
                                      valueAttributeName="value")
-print(result) 
+print(indicator11) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 11 version Julien: résultat
 ```{r i11_result, results = 'hide', tidy = F, message = F}
-print(result) 
+print(indicator11) 
 ```
-
-<iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>

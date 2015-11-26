@@ -1,6 +1,6 @@
 Run_Report <- function(path.inout,file.inout,zip_file,show.pdf=F){
   
-  report_subdirectory <- paste(mywd,'report/knitr/',sep="")
+  report_subdirectory <- paste(path.inout,'report/knitr/',sep="") 
   setwd(report_subdirectory)
   system(paste("unzip ",zip_file, sep=""))
   #Creating variables for names of files requires to be compiled
@@ -27,8 +27,11 @@ Run_Report <- function(path.inout,file.inout,zip_file,show.pdf=F){
   system(paste("pdflatex ",file.out, sep=""))
   system(paste("pdflatex ",file.out, sep=""))
   system(paste("pdflatex ",file.out, sep=""))
+  system(paste("cp ",file.inout,".pdf /data/www/html/tmp/report/",file.inout,".pdf",sep=""))
+  
   if(show.pdf){
     system(paste("acroread ",file.inout,".pdf",sep=""))
   }
+  
   
 }

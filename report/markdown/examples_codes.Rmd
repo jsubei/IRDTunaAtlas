@@ -84,7 +84,7 @@ indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
 ## INDICATOR 1: D3JS rCharts result
 ```{r i1_rchart_d3js_bis_result, message = F}
     plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'lineChart') 
-    plotRchartsNVD3bis$print()    
+    plotRchartsNVD3bis$print('chart_i1_d3js_bis')    
 
 ``` 
 
@@ -97,9 +97,9 @@ indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
     plotRchartsRickshaw$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")
     plotRchartsRickshaw$yAxis(orientation = 'right')
     plotRchartsRickshaw$set(width = 1000, height = 300, legend = TRUE, slider = TRUE)  
-    plotRchartsRickshaw  
+    plotRchartsRickshaw$print('chart_i1_Rickshaw')
 ``` 
-    plotRchartsRickshaw$print('chart_i1_rickshaw')   
+    plotRchartsRickshaw$save(".",standalone=TRUE)
 
 
 ---
@@ -403,7 +403,9 @@ options(
 )
 library(knitr)
 opts_chunk$set(tidy = F, results = 'asis', comment = NA)
+library(datasets)
 ```
+
 ---
 ## test rCharts
 ```{r rcharts, fig.align = 'center', fig.height = 3, fig.width = 3}
@@ -425,3 +427,4 @@ p1 <- nPlot(mpg ~ wt, group = 'cyl', data = mtcars, type = 'scatterChart')
 p1$xAxis(axisLabel = 'Weight')
 p1
 ```
+

@@ -1,7 +1,7 @@
 ---
-title: Tutorial Package Tuna Atlas: Tuna Commissions, FAO, IRD
-author: Julien Barde
-date: "2015-12-01"
+title: rCharts NVD3 Tutorial
+author: Ramnath Vaidyanathan
+date: "2014-01-14"
 framework: bootstrap
 hitheme: twitter-bootstrap
 highlighter: prettify
@@ -28,10 +28,12 @@ git fetch --all
 git reset --hard origin/master
 ```
 
+
 ---
 ## NVD3 Plots using rCharts
 
 This is a short tutorial on how to use NVD3 with rCharts. The source for this tutorial can be found [here](https://gist.github.com/ramnathv/8070363#file-example6-rmd)
+
 ```{r set, tidy = F, cache = F, echo = F}
 library(rCharts)
 library(knitr)
@@ -409,17 +411,9 @@ n1$print('chart10')
 
 ---
 ### Scatter Chart
+
 ```{r}
 p1 <- nPlot(mpg ~ wt, group = 'cyl', data = mtcars, type = 'scatterChart')
 p1$xAxis(axisLabel = 'Weight')
 p1
-```
-
----
-### Polychart Chart
-```{r}
-names(iris) = gsub("\\.", "", names(iris))
-r1 <- rPlot(SepalLength ~ SepalWidth | Species, data = iris, color = "Species", 
-    type = "point")
-r1$print("polyScatter")
 ```

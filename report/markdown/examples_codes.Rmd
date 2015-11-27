@@ -1,10 +1,21 @@
 ---
-title: rCharts NVD3 Tutorial
-author: Ramnath Vaidyanathan
-date: "2014-01-14"
-framework: bootstrap
-hitheme: twitter-bootstrap
-highlighter: prettify
+title       : Tuna Atlas indicators
+subtitle    : Quelques exemples de Plots
+author      : Julien Barde
+date        : September 21, 2015
+job         : UMR MARBEC, IRD, Sète
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      #   
+widgets     : [bootstrap, quiz]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+license     : by-nc-sa
+github:
+  user: juldebar
+  repo: IndicatorsForFisheries
+logo        : mydeck/assets/img/logo_IRD.svg
+knit        : slidify::knit2slides
+ext_widgets : {rCharts: [libraries/nvd3]}
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="250">
 ## Installation

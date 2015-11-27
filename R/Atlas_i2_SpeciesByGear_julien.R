@@ -328,5 +328,5 @@ julien <- 'toto'
 
 listeResult<-aggData
 listeResult<-list(listeResult,resultPlot)
-return(aggData)
+return(listeResult)
 }

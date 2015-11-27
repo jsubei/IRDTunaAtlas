@@ -345,6 +345,6 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   
   listeResult<-aggData
   listeResult<-list(listeResult,resultPlot)
-  return(listeResult)
+  return(aggData)
     
 }

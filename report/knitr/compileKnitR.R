@@ -1,7 +1,7 @@
 #Taha Imzilen & Julien Barde - IRD - BlueBridge project http://www.bluebridge-vres.eu/ 
 
 #R annotations to get OGC WPS metadata from 52North WPS Server Java API
-# wps.des: id = knitrCompile, title = Generic R code to compile knitr documents, abstract =  This script is meant to enable the compilation of any knitr Code using open data and source code avilable through URLS or made available by complying with a template of sub-repositories coming along the knitr main code within a zip file;
+# wps.des: id = compileKnitR, title = Generic R code to compile knitr documents, abstract =  This script is meant to enable the compilation of any knitr Code using open data and source code avilable through URLS or made available by complying with a template of sub-repositories coming along the knitr main code within a zip file;
 
 # wps.in: id = repository, type = string, title = repository used to read report file, value = "/home/tomcat7/IRDTunaAtlas/";
 # wps.in: id = file_prefix, type = string, title = Prefix of files to be used for compilation: name of ".Rnw" and ".R" .should be the same than the name of report file, value = "main_report";
@@ -9,10 +9,14 @@
 # wps.in: id = URL, type = string, title = URL used to publish pdf result , value = "http://mdst-macroes.ird.fr/tmp/reports/";
 
 # wps.out: id = pdfresult, type = string, title = result pdf file path lis;
-repository="/home/taha/SVNs/Git/IRDTunaAtlas/"
-file_prefix="ICCAT_Report_BFTE"
-upload_zip_knitr_report="/tmp/knitr.zip"
-URL="/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/reports/"
+
+#for local test (delete it before uploading in WPS)
+# repository="/home/tomcat7/IRDTunaAtlas/"
+# file_prefix="toto"
+# upload_zip_knitr_report="/tmp/knitr.zip"
+# URL="http://mdst-macroes.ird.fr/tmp/reports/"
+
+
 #STEP: load knitr Package
 require(knitr)
 #STEP 1: Specify the working directory of the machine running the process
@@ -38,8 +42,3 @@ Run_Report(path.inout = mywd,file.inout =file.inout, zip_file = zip, show.pdf=F)
 pdfresult <- paste(URL,"/",file_prefix,".pdf",sep="")
 
 
-#for local test (delete it before uploading in WPS)
-# repository="/home/taha/SVNs/Git/IRDTunaAtlas/"
-# file_prefix="ICCAT_Report_BFTE"
-# upload_zip_knitr_report="/tmp/knitr.zip"
-# URL="/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/reports/"

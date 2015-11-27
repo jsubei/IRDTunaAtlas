@@ -11,49 +11,62 @@ widgets     : [bootstrap, quiz]            # {mathjax, quiz, bootstrap}
 mode        : selfcontained # {standalone, draft}
 license     : by-nc-sa
 github:
-  user: jsubei
+  user: juldebar
   repo: IRDTunaAtlas
-logo        : http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg
+logo        : mydeck/assets/img/logo_IRD.svg
 knit        : slidify::knit2slides
 ext_widgets : {rCharts: [libraries/nvd3]}
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="200">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="250">
 ## Installation
 
 - Installation du paquet GIT sur l'OS
 - Créer un nouveau projet avec Git => clone 
+- Compiler les sources du package dans R (répertoire à adapter):
+```{r compil_package, message = F,eval=FALSE}
+setwd("/home/tomcat7/IRDTunaAtlas/")
+devtools::build()
+install.packages("/home/tomcat7/IndicatorsForFisheries_0.2.tar.gz",
+type="source", repo=NULL)
+```
+
+Si besoin remettre les codes du serveur Github (dans un terminal dans le répertoire du package):
+```{r align_github, eval=FALSE}
+git fetch --all
+git reset --hard origin/master
+```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 1 version Julien
-```{r indicator1, fig.height = 6, fig.align = 'center', message = F}
+## INDICATOR 1: WFS data access 
+```{r indicator1, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
-       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',withSparql=FALSE)
+       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',
+       withSparql=FALSE)
 indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
-                          oceanAttributeName="ocean",
-  		  speciesAttributeName="species",
-                          valueAttributeName="value")
-print(indicator1)
+                                             oceanAttributeName="ocean",
+                                             speciesAttributeName="species",
+                                             valueAttributeName="value")
 ```
 
 --
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 1: résultat ggplot
-```{r i1_ggplot_result, results = 'hide', tidy = F, message = F}
+## INDICATOR 1: ggplot result
+```{r i1_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6, echo=FALSE}
 print(indicator1) 
 ```
 
 --
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 1 version Julien: résultat
+## INDICATOR 1: rCharts result example (see others)
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_NVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 2 version Julien
+## INDICATOR 2: WFS data access 
 ```{r indicator2, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
@@ -65,25 +78,24 @@ indicator2 <- Atlas_i2_SpeciesByGear_julien(df=df,
                                  gearTypeAttributeName="gear_type", 
                                  speciesAttributeName="species", 
                                  valueAttributeName="value")
-print(indicator2)
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 2: résultat ggplot
-```{r i2_ggplot_result, results = 'hide', tidy = F, message = F}
+## INDICATOR 2: ggplot result
+```{r i2_ggplot_result,  fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator2) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 2 version Julien: résultat
+## INDICATOR 2: rCharts result
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByGear/I2_Thunnus_albacaresNVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 3 version Julien
-```{r eval = F}
+## INDICATOR 3: WFS data access 
+```{r indicator3, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -98,24 +110,23 @@ indicator3 <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df,
                                  valueAttributeName="value",
                                  meanPrev5YearsAttributeName="mean_prev_5_years",
                                  stddevPrev5YearsAttributeName="stddev_prev_5_years")
-print(indicator3)
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 3: résultat ggplot
-```{r i3_ggplot_result, results = 'hide', tidy = F, message = F}
+## INDICATOR 3: ggplot result 
+```{r i3_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator3) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 3 version Julien: résultat
+## INDICATOR 3: rCharts result
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/I3_Thunnus_obesus_2000_bingo.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 4 version Julien
+## INDICATOR 4: WFS data access
 ```{r indicator4, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
@@ -135,19 +146,15 @@ indicator4 <- Atlas_i4_SpeciesMonthByOcean_julien(df=df,
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 4: résultat ggplot
-```{r i4_ggplot_result, results = 'hide', tidy = F, message = F}
+## INDICATOR 4: ggplot result
+```{r i4_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator4) 
 ```
 
+no rCharts version for now
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 4 version Julien: résultat
-<iframe src = '' onload="this.width=screen.width;this.height=screen.height;"></iframe>
-
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 6 version Julien
+## INDICATOR 6: WFS data access
 ```{r indicator6, results = 'hide', tidy = F, message = F}
 require(IRDTunaAtlas)
 #fetch data from IRD WFS for indicator I6, with restriction on species="YFT" and year=2000
@@ -166,15 +173,15 @@ require(IRDTunaAtlas)
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 6: résultat ggplot
-```{r i6_ggplot_result, results = 'hide', tidy = F, message = F}
+## INDICATOR 6: ggplot result
+```{r i6_ggplot_result, , fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator6) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 6 version Julien: résultat
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesMap/I6_Thunnus_albacares_2002_to_2002_.png' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+## INDICATOR 6: netCDF / Thredds & WMS & Openlayers result
+<iframe src = 'http://mdst-macroes.ird.fr:8080/thredds/godiva2/godiva2.html?server=http://mdst-macroes.ird.fr:8080/thredds/wms/macroes/world/indicators_i6i7i8/indicatorsi6i7i8_YFT_19501980.ncml#' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
@@ -193,27 +200,14 @@ indicator7 <- Atlas_i7_SpeciesMapRelativeCatches(df=df,
                               yearAttributeName="year", 
                               speciesAttributeName="species",                                         
                               valueAttributeName="value")
-print(indicator7) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 7: résultat ggplot
-```{r i7_ggplot_result, results = 'hide', tidy = F, message = F}
+## INDICATOR 7: résultat ggplot (version rCharts / Openlayers possible avec netCDF)
+```{r i7_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator7) 
 ```
-
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 7 version Julien
-```{r indicator7bis, results = 'hide', tidy = F, message = F}
-print(indicator7) 
-```
-
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 7 version Julien: résultat
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatches/cdn/I7_Thunnus_albacares_2000_to_2000_.png' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
@@ -233,13 +227,12 @@ indicator8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df,
                                              yearAttributeName="year", 
                                              speciesAttributeName="species",                                         
                                              valueAttributeName="value")
-print(indicator8) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 8: résultat ggplot
-```{r i8_ggplot_result, results = 'hide', tidy = F, message = F}
+```{r i8_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator8) 
 ```
 
@@ -251,7 +244,7 @@ print(indicator8)
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 9 version Julien
-```{r indicator9, results = 'hide', tidy = F, message = F}
+```{r indicator9, fig.align = 'center', fig.height = 6, fig.width = 6}
 require(IRDTunaAtlas)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -266,19 +259,18 @@ indicator9 <- Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien(df=df,
                                                          sizeClassLowerBoundAttributeName="class_low",
                                                          sizeClassUpperBoundAttributeName="class_up",
                                                          fishCountAttributeName="fish_count")
+```
+
+---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+## INDICATOR 9: résultat (version GGplot)
+```{r i9_ggplot_result, , fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator9) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 9: résultat ggplot
-```{r i9_ggplot_result, results = 'hide', tidy = F, message = F}
-print(indicator9) 
-```
-
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 9 version Julien: résultat
+## INDICATOR 9: résultat (version rCharts)
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/I9__Thunnus_obesus_2005_-_2005bis.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
@@ -299,19 +291,18 @@ indicator10 <- Atlas_i10_RelativeSizeFrequenciesByDecade(df=df,
                                                        sizeClassLowerBoundAttributeName="class_low",
                                                        sizeClassUpperBoundAttributeName="class_up",
                                                        fishCountAttributeName="fish_count")
+```
+
+---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+## INDICATOR 10: résultat (version GGplot)
+```{r i10_ggplot_result,, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator10) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 10: résultat ggplot
-```{r i10_ggplot_result, results = 'hide', tidy = F, message = F}
-print(indicator10) 
-```
-
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 11 version Julien
+## INDICATOR 11: accès aux données en WFS
 ```{r indicator11, results = 'hide', tidy = F, message = F}
 library(IRDTunaAtlas)
 #fetch data from IRD WFS for indicators I11 with restriction on species="YFT" and year=2000
@@ -326,12 +317,11 @@ indicator11 <- Atlas_i11_CatchesByCountry(df=df,
                                      countryAttributeName="country", 
                                      speciesAttributeName="species",                                         
                                      valueAttributeName="value")
-print(indicator11) 
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 11 version Julien: résultat
-```{r i11_result, results = 'hide', tidy = F, message = F}
+## INDICATOR 11: résultat (version GGplot)
+```{r i11_result,  fig.height = 7, results = 'hide', tidy = F, message = F}
 print(indicator11) 
 ```

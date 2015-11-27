@@ -344,6 +344,6 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   #                   results=tableauResult)
   
   
-  return(resultPlot)
+  return(plotRchartsRickshaw)
     
 }

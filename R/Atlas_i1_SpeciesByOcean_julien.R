@@ -21,7 +21,7 @@
 # 
 # OTHER EXAMPLE with WFS
 # 
-# require(IRDTunaAtlas)
+# require(IndicatorsForFisheries)
 # df <- readData(connectionType="remote", dataType="WFS",
 #                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
 #                layer="ns11:i1i2_mv", 
@@ -344,7 +344,7 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   #                   results=tableauResult)
   
   listeResult<-aggData
-  listeResult<-list(listeResult,resultPlot)
-  return(aggData)
+#   listeResult<-list(listeResult,resultPlot)
+  return(listeResult)
     
 }

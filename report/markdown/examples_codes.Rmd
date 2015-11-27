@@ -12,7 +12,7 @@ mode        : selfcontained # {standalone, draft}
 license     : by-nc-sa
 github:
   user: juldebar
-  repo: IRDTunaAtlas
+  repo: IndicatorsForFisheries
 logo        : mydeck/assets/img/logo_IRD.svg
 knit        : slidify::knit2slides
 ext_widgets : {rCharts: [libraries/nvd3]}
@@ -22,12 +22,12 @@ ext_widgets : {rCharts: [libraries/nvd3]}
 
 - Installation du paquet GIT sur l'OS:
 ```{r install_github_repository, eval=FALSE}
-git  clone https://github.com/juldebar/IRDTunaAtlas.git
+git  clone https://github.com/juldebar/IndicatorsForFisheries.git
 ```
 - Créer un nouveau projet avec Git => clone 
 - Compiler les sources du package dans R (répertoire à adapter):
 ```{r compil_package, message = F, eval=FALSE}
-setwd("/home/tomcat7/IRDTunaAtlas/")
+setwd("/home/tomcat7/IndicatorsForFisheries/")
 devtools::build()
 install.packages("/home/tomcat7/IndicatorsForFisheries_0.2.tar.gz",
 type="source", repo=NULL)
@@ -43,7 +43,7 @@ git reset --hard origin/master
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: WFS data access 
 ```{r indicator1, message = F}
-require(IRDTunaAtlas)
+require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
@@ -59,26 +59,25 @@ indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: ggplot result
 ```{r i1_rchart_result, message = F}
-aggData <-indicator1
+    aggData <-indicator1
     plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'stackedAreaChart', id = 'chart')
     plotRchartsNVD3$xAxis(axisLabel = 'Year')
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
     plotRchartsNVD3$chart(width = 800, height = 400, useInteractiveGuideline=TRUE)
     plotRchartsNVD3
     
-```
-
-print(indicator1) 
+``` 
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: ggplot result
 ```{r i1_ggplot_result}
-ggplot_i1<-indicator1[2]
-print(ggplot_i1)    
+print(indicator1)
+
 ```
 
- 
+ggplot_i1<-indicator1[2]
+print(ggplot_i1)    
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
@@ -89,7 +88,7 @@ print(ggplot_i1)
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 2: WFS data access 
 ```{r indicator2, results = 'hide', tidy = F, message = F}
-require(IRDTunaAtlas)
+require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
@@ -128,7 +127,7 @@ print(indicator2)
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 3: WFS data access 
 ```{r indicator3, results = 'hide', tidy = F, message = F}
-require(IRDTunaAtlas)
+require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
 ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2005</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',
@@ -160,7 +159,7 @@ print(indicator3)
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 4: WFS data access
 ```{r indicator4, results = 'hide', tidy = F, message = F}
-library(IRDTunaAtlas)
+library(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i4_mv", 
@@ -189,7 +188,7 @@ no rCharts version for now
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 6: WFS data access
 ```{r indicator6, results = 'hide', tidy = F, message = F, cache.comments=TRUE,}
-require(IRDTunaAtlas)
+require(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicator I6, with restriction on species="YFT" and year=2000
   df <- readData(connectionType="remote", dataType="WFS",
 		       url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -220,7 +219,7 @@ print(indicator6)
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 7: WFS data access
 ```{r indicator7, results = 'hide', tidy = F, message = F}
-library(IRDTunaAtlas)
+library(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicator I7, with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -247,7 +246,7 @@ no rCharts version but Openlayers possible thourgh netCDF export and Thredds ncW
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 8: WFS data access
 ```{r indicator8, results = 'hide', tidy = F, message = F}
-library(IRDTunaAtlas)
+library(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicator I8, with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -274,7 +273,7 @@ print(indicator8)
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 9: WFS data access
 ```{r indicator9, results = 'hide', tidy = F, message = F}
-require(IRDTunaAtlas)
+require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i9i10_mv", 
@@ -305,7 +304,7 @@ print(indicator9)
 ---
 ## INDICATOR 10: WFS data access
 ```{r indicator10, results = 'hide', tidy = F, message = F}
-library(IRDTunaAtlas)
+library(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicators I10, with restriction on species="YFT" and year >= 1980 and year <= 2005
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -333,7 +332,7 @@ print(indicator10)
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 11: WFS data access
 ```{r indicator11, results = 'hide', tidy = F, message = F}
-library(IRDTunaAtlas)
+library(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicators I11 with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -373,7 +372,7 @@ opts_chunk$set(tidy = F, results = 'asis', comment = NA)
 ```
 ---
 ## test rCharts
-```{r rcharts, fig.align = 'center', fig.height = 6, fig.width = 6}
+```{r rcharts, fig.align = 'center', fig.height = 3, fig.width = 3}
 require(rCharts)
 haireye = as.data.frame(HairEyeColor)
 n1 <- nPlot(Freq ~ Hair, 

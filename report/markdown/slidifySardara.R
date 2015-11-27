@@ -1,6 +1,8 @@
 # http://slidify.github.io/dcmeetup
 # http://slidify.github.io/playground/
 require(slidify)
+require(IndicatorsForFisheries)
+
 mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/'
 report_subdirectory <- paste(mywd,'report/markdown/',sep="")
 setwd(report_subdirectory)

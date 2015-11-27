@@ -1,7 +1,7 @@
 ---
-title: rCharts NVD3 Tutorial
-author: Ramnath Vaidyanathan
-date: "2014-01-14"
+title: Tutorial Package Tuna Atlas: Tuna Commissions, FAO, IRD
+author: Julien Barde
+date: "2015-12-01"
 framework: bootstrap
 hitheme: twitter-bootstrap
 highlighter: prettify
@@ -28,12 +28,10 @@ git fetch --all
 git reset --hard origin/master
 ```
 
-
 ---
 ## NVD3 Plots using rCharts
 
 This is a short tutorial on how to use NVD3 with rCharts. The source for this tutorial can be found [here](https://gist.github.com/ramnathv/8070363#file-example6-rmd)
-
 ```{r set, tidy = F, cache = F, echo = F}
 library(rCharts)
 library(knitr)
@@ -215,7 +213,7 @@ no rCharts version for now
 require(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicator I6, with restriction on species="YFT" and year=2000
   df <- readData(connectionType="remote", dataType="WFS",
-		       url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
+  	       url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
 		       layer="ns11:i6i7i8_mv", 
 		       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2000</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter>',withSparql=FALSE)
 
@@ -411,10 +409,17 @@ n1$print('chart10')
 
 ---
 ### Scatter Chart
-
 ```{r}
 p1 <- nPlot(mpg ~ wt, group = 'cyl', data = mtcars, type = 'scatterChart')
 p1$xAxis(axisLabel = 'Weight')
 p1
 ```
 
+---
+### Polychart Chart
+```{r}
+names(iris) = gsub("\\.", "", names(iris))
+r1 <- rPlot(SepalLength ~ SepalWidth | Species, data = iris, color = "Species", 
+    type = "point")
+r1$print("polyScatter")
+```

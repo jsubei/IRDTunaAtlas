@@ -39,6 +39,18 @@ git fetch --all
 git reset --hard origin/master
 ```
 
+
+---
+## NVD3 Plots using rCharts
+
+This is a short tutorial on how to use NVD3 with rCharts. The source for this tutorial can be found [here](https://gist.github.com/ramnathv/8070363#file-example6-rmd)
+
+```{r set, tidy = F, cache = F, echo = F}
+library(rCharts)
+library(knitr)
+opts_chunk$set(tidy = F, results = 'asis', comment = NA)
+```
+
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: WFS data access 
@@ -57,23 +69,44 @@ indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 1: ggplot result
-```{r i1_rchart_result, message = F}
+## INDICATOR 1: D3JS rCharts result
+```{r i1_rchart_d3js_result, message = F}
     aggData <-indicator1
     plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'stackedAreaChart', id = 'chart')
     plotRchartsNVD3$xAxis(axisLabel = 'Year')
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
-    plotRchartsNVD3$chart(width = 800, height = 400, useInteractiveGuideline=TRUE)
-    plotRchartsNVD3
-    
+    plotRchartsNVD3$chart(width = 1000, height = 300, useInteractiveGuideline=TRUE)
+    plotRchartsNVD3$print('chart_i1_d3js')    
 ``` 
+
+---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+## INDICATOR 1: D3JS rCharts result
+```{r i1_rchart_d3js_bis_result, message = F}
+    plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'lineChart') 
+    plotRchartsNVD3bis$print()    
+
+``` 
+
+---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+## INDICATOR 1: ggplot result
+```{r i1_rchart_Rickshaw_result, message = F}
+    aggData <-indicator1
+    plotRchartsRickshaw <- Rickshaw$new()
+    plotRchartsRickshaw$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")
+    plotRchartsRickshaw$yAxis(orientation = 'right')
+    plotRchartsRickshaw$set(width = 1000, height = 300, legend = TRUE, slider = TRUE)  
+    plotRchartsRickshaw  
+``` 
+    plotRchartsRickshaw$print('chart_i1_rickshaw')   
+
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: ggplot result
 ```{r i1_ggplot_result}
 print(indicator1)
-
 ```
 
 ggplot_i1<-indicator1[2]
@@ -104,6 +137,13 @@ indicator2 <- Atlas_i2_SpeciesByGear_julien(df=df,
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 2: ggplot result
 ```{r i2_ggplot_result}
+print(indicator2) 
+```
+
+---
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+## INDICATOR 2: rCharts result
+```{r i2_rCharts_HighCharts_result}
 require(rCharts)
 aggData <-indicator2
 plotRchartsHighcharts  <- hPlot(value ~ year, data = aggData, type = 'column', group = 'gear_type', radius = 6, title = "Catches per month per fishing gear",width = "100%")
@@ -113,15 +153,9 @@ plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, ma
 # plotRchartsHighcharts$chart(width = 800,height = 400, zoomType = "xy")
 plotRchartsHighcharts$chart(zoomType = "xy")
 plotRchartsHighcharts$exporting(enabled = T)
-plotRchartsHighcharts 
+plotRchartsHighcharts$print('chart_i2_Highcharts')
 ```
 
-print(indicator2) 
-
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 2: rCharts result
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByGear/I2_Thunnus_albacaresNVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
@@ -380,7 +414,7 @@ n1 <- nPlot(Freq ~ Hair,
   data = subset(haireye, Sex == 'Male'),
   type = 'multiBarChart'
 )
-n1$print('chart1')
+n1$print('chart10')
 ```
 
 ---

@@ -342,6 +342,6 @@ species.URI <- targetedSpecies
   }
   # Packing the description of results in Json file storing all metadata (same as RDF)  
 # julien<-buildJson(type="map", description="Résultats de l'exécution du traitement i8 sur tout le jeu de données Sardara",processSourceCode="http://mdst-macroes.ird.fr:8084/wps/R/Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies.R",results=tableauResult)
-return(one)
+return(resultPlot)
   
 }

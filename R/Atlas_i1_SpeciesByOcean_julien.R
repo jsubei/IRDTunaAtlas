@@ -343,7 +343,8 @@ Atlas_i1_SpeciesByOcean_julien <- function(df,
   #                   processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/toto_wps.R",
   #                   results=tableauResult)
   
-  
+  listeResult<-aggData
+  listeResult<-list(listeResult,resultPlot)
   return(aggData)
     
 }

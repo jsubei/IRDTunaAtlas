@@ -59,6 +59,7 @@ indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: ggplot result
 ```{r i1_ggplot_result}
+aggData <-indicator1[1]
     plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'stackedAreaChart', id = 'chart')
     plotRchartsNVD3$xAxis(axisLabel = 'Year')
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
@@ -95,7 +96,15 @@ indicator2 <- Atlas_i2_SpeciesByGear_julien(df=df,
 ## INDICATOR 2: ggplot result
 ```{r i2_ggplot_result}
 require(rCharts)
-indicator2
+aggData <-indicator2[1]
+plotRchartsHighcharts  <- hPlot(value ~ year, data = aggData, type = 'column', group = 'gear_type', radius = 6, title = "Catches per month per fishing gear",width = "100%")
+plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
+plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
+plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, margin = 20)
+# plotRchartsHighcharts$chart(width = 800,height = 400, zoomType = "xy")
+plotRchartsHighcharts$chart(zoomType = "xy")
+plotRchartsHighcharts$exporting(enabled = T)
+plotRchartsHighcharts 
 ```
 
 print(indicator2) 

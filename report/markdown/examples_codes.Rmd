@@ -15,7 +15,7 @@ github:
   repo: IndicatorsForFisheries
 logo        : mydeck/assets/img/logo_IRD.svg
 knit        : slidify::knit2slides
-ext_widgets : {rCharts: [libraries/nvd3]}
+ext_widgets : {rCharts: ["libraries/highcharts","libraries/nvd3", "libraries/morris", "libraries/leaflet", "libraries/rickshaw"]}
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="250">
 ## Installation
@@ -96,27 +96,25 @@ indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
     plotRchartsRickshaw <- Rickshaw$new()
     plotRchartsRickshaw$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")
     plotRchartsRickshaw$yAxis(orientation = 'right')
-    plotRchartsRickshaw$set(width = 1000, height = 300, legend = TRUE, slider = TRUE)  
+    plotRchartsRickshaw$set(width = 500, height = 200, legend = TRUE, slider = TRUE)  
     plotRchartsRickshaw$print('chart_i1_Rickshaw')
 ``` 
-    plotRchartsRickshaw$save(".",standalone=TRUE)
-
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: ggplot result
 ```{r i1_ggplot_result}
-print(indicator1)
+    plotRchartsRickshaw$print('chart_i1_Rickshaw')
 ```
-
-ggplot_i1<-indicator1[2]
-print(ggplot_i1)    
-See other rCharts examples [here](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/)
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: rCharts result example (see others)
 <iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_NVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+
+ggplot_i1<-indicator1[2]
+print(ggplot_i1)    
+See other rCharts examples [here](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/)
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">

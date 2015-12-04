@@ -13,9 +13,13 @@
 #for local test (delete it before uploading in WPS)
 # repository="/home/tomcat7/IRDTunaAtlas/"
 # file_prefix="toto"
-# upload_zip_knitr_report="/tmp/knitr.zip"
+# upload_zip_knitr_report="/tmp/ICCAT_report.zip"
 # URL="http://mdst-macroes.ird.fr/tmp/reports/"
 
+repository="/home/julien/SVNs/GIT/IRDTunaAtlas/"
+file_prefix="Report_Sardara"
+upload_zip_knitr_report="/tmp/knitr.zip"
+URL="http://mdst-macroes.ird.fr/tmp/reports/"
 
 #STEP: load knitr Package
 require(knitr)

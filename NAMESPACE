@@ -18,6 +18,7 @@ import(repmis)
 import(rworldmap)
 import(pryr)
 import(grid)
+import(cowplot)
 
 
 export(

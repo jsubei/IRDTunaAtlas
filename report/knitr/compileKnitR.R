@@ -19,7 +19,7 @@
 ##############Local Test on Julien PC######################
 # repository="/home/julien/SVNs/GIT/IRDTunaAtlas/"
 # file_prefix="test_julien_zip"
-# upload_zip_knitr_report="/tmp//tmp/knitr_test_julien_wfs.zip"
+# upload_zip_knitr_report="/tmp/knitr_test_julien_wfs.zip"
 # URL="http://mdst-macroes.ird.fr/tmp/reports/"
 #####################################################################################################
 

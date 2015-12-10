@@ -26,7 +26,7 @@ Run_Report <- function(path.inout,file.inout,zip_file,show.pdf=F){
   system(paste("pdflatex ",file.out, sep=""))
   system(paste("pdflatex ",file.out, sep=""))
   system(paste("pdflatex ",file.out, sep=""))
-  system(paste("cp ",file.inout,".pdf /data/www/html/tmp/report/",file.inout,".pdf",sep=""))
+#   system(paste("cp ",file.inout,".pdf /data/www/html/tmp/report/",file.inout,".pdf",sep=""))
   
   if(show.pdf){
     system(paste("acroread ",file.inout,".pdf",sep=""))

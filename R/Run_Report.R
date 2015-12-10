@@ -2,7 +2,7 @@ Run_Report <- function(path.inout,file.inout,zip_file,show.pdf=F){
   
   report_subdirectory <- paste(path.inout,'report/knitr/',sep="") 
   setwd(report_subdirectory)
-  system(paste("unzip ",zip_file, sep=""))
+  system(paste("unzip -o ",zip_file, sep=""))
   #Creating variables for names of files requires to be compiled
   file.in <- paste(file.inout,".Rnw",sep="")
   file.out <- paste(file.inout,".tex",sep="")
@@ -19,14 +19,13 @@ Run_Report <- function(path.inout,file.inout,zip_file,show.pdf=F){
   
   #Specify the names of knitr file to be compiled and resulting latex file name (knitr output)
   setwd(report_subdirectory)
-  
-  # system(paste("unzip ",zipfile, " ./", sep=""))
+
   #knitr Compilation
   knit(file.in,file.out) 
   #Latex Compilation
-  system(paste("pdflatex ",file.out, sep=""))
-  system(paste("pdflatex ",file.out, sep=""))
-  system(paste("pdflatex ",file.out, sep=""))
+#   system(paste("pdflatex ",file.out, sep=""))
+#   system(paste("pdflatex ",file.out, sep=""))
+#   system(paste("pdflatex ",file.out, sep=""))
   system(paste("cp ",file.inout,".pdf /data/www/html/tmp/report/",file.inout,".pdf",sep=""))
   
   if(show.pdf){

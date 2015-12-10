@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<wps:Execute service="WPS" version="1.0.0"
+xmlns:wps="http://www.opengis.net/wps/1.0.0"
+xmlns:ows="http://www.opengis.net/ows/1.1"
+xmlns:ogc="http://www.opengis.net/ogc"
+xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">
+  <ows:Identifier>org.n52.wps.server.r.knitrCompile</ows:Identifier>
+  <wps:DataInputs>
+    <wps:Input>
+      <ows:Identifier>file_prefix</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData dataType="xs:string">Sardara_FonctionsPlots</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>upload_zip_knitr_report</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData dataType="xs:string">/tmp/Functions_Plots_Sardara.zip</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+</wps:DataInputs>
+  <wps:ResponseForm>
+    <wps:ResponseDocument storeExecuteResponse="false" lineage="false" status="false">
+      <wps:Output asReference="false" schema="http://schemas.opengis.net/gml/3.1.1/base/feature.xsd" mimeType="text/xml" encoding="UTF-8">
+        <ows:Identifier>pdfresult</ows:Identifier>
+        <ows:Title>pdfresult</ows:Title>
+        <ows:Abstract>pdfresult</ows:Abstract>
+      </wps:Output>
+    </wps:ResponseDocument>
+  </wps:ResponseForm>
+</wps:Execute>

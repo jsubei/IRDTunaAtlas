@@ -1,3 +1,5 @@
+
+
 \documentclass{article}
 \usepackage[sc]{mathpazo}
 \renewcommand{\sfdefault}{lmss}
@@ -9,6 +11,7 @@
 \usepackage{caption}
 %\usepackage{subcaption}
 \usepackage{subfig}
+\usepackage{xcolor}
 %\newcommand{\subfloat}[2][need a sub-caption]{\subcaptionbox{#1}{#2}}
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
 \setcounter{secnumdepth}{2}
@@ -58,52 +61,63 @@ knit_hooks$set(par=function(before, options, envir){
 \centering
 \subfloat[bluefin tuna catches per main gears from 1960 to 1969.]{
   <<graph_i1_1960, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
-require(IRDTunaAtlas)
-# source("../../R/ICCAT_BFT_Fig1.R")
-# source("../../R/wkt2spdf.R")
 ICCAT_fig_1(1960)
 @
 }
 \subfloat[bluefin tuna catches per main gears  from 1970 to 1979.]{
   <<graph_i1_1970, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
-require(IRDTunaAtlas)
-# source("../../R/ICCAT_BFT_Fig1.R")
-# source("../../R/wkt2spdf.R")
+
 ICCAT_fig_1(1970)
 # plot(1,1)
 @
 }
-\newline
+\\
 \subfloat[bluefin tuna catches per main gears  from 1980 to 1989.]{
   <<graph_i1_1980, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
-require(IRDTunaAtlas)
-# source("../../R/ICCAT_BFT_Fig1.R")
-# source("../../R/wkt2spdf.R")
 ICCAT_fig_1(1980)
 # plot(1,1)
 @
 }
 \subfloat[bluefin tuna catches per main gears  from 1990 to 1999.]{
   <<graph_i1_1990, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
-require(IRDTunaAtlas)
-# source("../../R/ICCAT_BFT_Fig1.R")
-# source("../../R/wkt2spdf.R")
 ICCAT_fig_1(1990)
 # plot(1,1)
 @
 }
-\newline
+\\
 \subfloat[bluefin tuna catches per main gears  from 2000 to 2009.]{
   <<graph_i1_2000, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
-require(IRDTunaAtlas)
-# source("../../R/ICCAT_BFT_Fig1.R")
-# source("../../R/wkt2spdf.R")
 ICCAT_fig_1(2000)
 # plot(1,1)
 @
 }
-
+\subfloat[bluefin tuna catches per main gears  from 2010 to 2015.]{
+  <<graph_i1_2010, fig.width=4.5,fig.height=4.5,out.width='0.4\\textwidth',message=FALSE,cache=TRUE, echo=FALSE>>=
+ICCAT_fig_1(2010)
+# plot(1,1)
+@
+}
 \caption{\label{fig:graph_i1} Geographic distribtion of bluefin tuna catches per 5x5 degrees and per main gears from 1950 to 2012}
+         \end{figure}
+         
+         \clearpage
+         
+\begin{figure}[!ht]
+\captionsetup[subfigure]{labelformat=empty}
+\centering
+\fbox{\subfloat[]{ 
+  <<graph_i1_region, fig.width=12,fig.height=6,out.width='1\\textwidth',message=FALSE,cache=FALSE, echo=FALSE>>=
+ICCAT_fig_1a("region")
+@
+}}
+\\[-2ex]
+
+\fbox{\subfloat[]{ 
+  <<graph_i1_gear, fig.width=12,fig.height=6,out.width='1\\textwidth',message=FALSE,cache=FALSE, echo=FALSE>>=
+ICCAT_fig_1a("gear")
+@
+}}
+\caption{\label{fig:graph_i1a}Reported catch for the east Atlantic and Mediterranean from Task I data from 1950 to 2013 split by the SCRS by main areas (top panel) and by gear (bottom panel) together with unreported catch estimated by the SCRS (using fishing capacity information and mean catch rates over the last decade) from 1998 to 2007 ( the SCRS did not detect unreported catch using capacity  since 2008) and TAC levels since 1998.}
          \end{figure}
          
          \clearpage

@@ -1,34 +1,51 @@
-Run_Report <- function(path.inout,file.inout,zip_file,show.pdf=F){
-  
-  report_subdirectory <- paste(mywd,'report/knitr/',sep="")
-  setwd(report_subdirectory)
-  system(paste("unzip ",zip_file, sep=""))
-  #Creating variables for names of files requires to be compiled
-  file.in <- paste(file.inout,".Rnw",sep="")
-  file.out <- paste(file.inout,".tex",sep="")
-  # report_parametrization_file
-  file.input.par <- paste(file.inout,".R",sep="")
-  
-  #### Check existence of .R and .Rnw fields
-  if(!file.exists(paste(report_subdirectory,file.input.par,sep="/"))){ stop("You have to create the .R field.")}
-  if(!file.exists(paste(report_subdirectory,file.in,sep="/"))){ stop("You have to create the .Rnw field.")}
-  ##
-  report_parametrization_file<-paste(report_subdirectory,file.input.par,sep="")
-  # source(report_parametrization_file)
-  source(report_parametrization_file)
-  
-  #Specify the names of knitr file to be compiled and resulting latex file name (knitr output)
-  setwd(report_subdirectory)
-  
-  # system(paste("unzip ",zipfile, " ./", sep=""))
-  #knitr Compilation
-  knit(file.in,file.out) 
-  #Latex Compilation
-  system(paste("pdflatex ",file.out, sep=""))
-  system(paste("pdflatex ",file.out, sep=""))
-  system(paste("pdflatex ",file.out, sep=""))
-  if(show.pdf){
-    system(paste("acroread ",file.inout,".pdf",sep=""))
-  }
-  
+#Taha IMZILEN - IRD / MARBEC
+
+#2015/11/20: Taha - Initial version
+##################################################################
+#Run_Report : Function to run report
+####
+
+################
+##EXAMPLE OF USE
+# Run_Report(file.inout ="ICCAT_Report_BFTE",
+#           path.inout = "/home/taha/R/monR-2013/esp_travail/IRDTunaAtlas/reports/",show.pdf=F)
+# 
+
+
+##########
+##Notes: file.inout is the knitr and R file without extension(.Rdw et .R)
+##         path.inout is the address where the knitr file is located
+
+
+
+
+
+################
+### RUN FONCTION
+################
+
+Run_Report <- function(file.inout,path.inout,show.pdf=F){
+
+library(knitr)
+setwd(path.inout)
+
+file.in <- paste(file.inout,".Rnw",sep="")
+file.out <- paste(file.inout,".tex",sep="")
+file.input.par <- paste(file.inout,".R",sep="")
+
+#### Check existence of .R and .Rnw fields
+if(!file.exists(paste(path.inout,file.input.par,sep="/"))){ stop("You have to create the .R field.")}
+if(!file.exists(paste(path.inout,file.in,sep="/"))){ stop("You have to create the .Rnw field.")}
+##
+source(file.input.par)
+knit(file.in,file.out)  ### knitr function to transform the .Rnw into a tex file
+
+system(paste("pdflatex ",file.out, sep=""))
+system(paste("pdflatex ",file.out, sep=""))
+system(paste("pdflatex ",file.out, sep=""))
+if(show.pdf){
+system(paste("evince ",file.inout,".pdf",sep=""))
 }
+}
+
+

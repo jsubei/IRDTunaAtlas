@@ -9,17 +9,20 @@
 # wps.in: id = URL, type = string, title = URL used to publish pdf result , value = "http://mdst-macroes.ird.fr/tmp/reports/";
 
 # wps.out: id = pdfresult, type = string, title = result pdf file path lis;
-
+####################################################################################################
+##############Test on IRD server######################
 #for local test (delete it before uploading in WPS)
 # repository="/home/tomcat7/IRDTunaAtlas/"
 # file_prefix="toto"
 # upload_zip_knitr_report="/tmp/ICCAT_report.zip"
 # URL="http://mdst-macroes.ird.fr/tmp/reports/"
-
+##############Local Test Julien######################
 repository="/home/julien/SVNs/GIT/IRDTunaAtlas/"
-file_prefix="Report_Sardara"
-upload_zip_knitr_report="/tmp/knitr.zip"
+file_prefix="Sardara_FonctionsPlots"
+upload_zip_knitr_report="/tmp/Functions_Plots_Sardara.zip"
 URL="http://mdst-macroes.ird.fr/tmp/reports/"
+#####################################################################################################
+
 
 #STEP: load knitr Package
 require(knitr)

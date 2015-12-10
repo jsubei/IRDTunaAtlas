@@ -40,9 +40,9 @@ if(!file.exists(paste(path.inout,file.in,sep="/"))){ stop("You have to create th
 source(file.input.par)
 knit(file.in,file.out)  ### knitr function to transform the .Rnw into a tex file
 
-system(paste("pdflatex ",file.out, sep=""))
-system(paste("pdflatex ",file.out, sep=""))
-system(paste("pdflatex ",file.out, sep=""))
+# system(paste("pdflatex ",file.out, sep=""))
+# system(paste("pdflatex ",file.out, sep=""))
+# system(paste("pdflatex ",file.out, sep=""))
 if(show.pdf){
 system(paste("evince ",file.inout,".pdf",sep=""))
 }

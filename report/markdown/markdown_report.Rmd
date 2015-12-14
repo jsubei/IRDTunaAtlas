@@ -1,13 +1,28 @@
 ---
-title: rCharts NVD3 Tutorial
+title: rCharts
+subtitle: Interactive JS Charts from R
 author: Ramnath Vaidyanathan
-date: "2014-01-14"
-framework: bootstrap
-hitheme: twitter-bootstrap
-highlighter: prettify
+github: {user: ramnathv, repo: rChartsNYT, branch: "gh-pages"}
+framework: minimal
+mode: selfcontained
+widgets: [polycharts]
+highlighter: highlight.js
+hitheme: solarized_light
+background: images/subtle_freckles.png
+assets:
+  css: 
+    - "http://fonts.googleapis.com/css?family=Open+Sans"
+    - "http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700"
+ext_widgets : {rCharts: ["libraries/highcharts","libraries/nvd3", "libraries/morris", "libraries/leaflet", "libraries/rickshaw"]}
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="250">
-## Installation
+## Installation / Preliminaries
+### Preliminaries
+
+To install R/qtl, you need to first install the package.
+(This needs to be done just once.)
+
+You then load the R/qtl package using the `library` function Type (within R):
 
 - Installation du paquet GIT sur l'OS:
 ```{r install_github_repository, eval=FALSE}
@@ -18,9 +33,14 @@ git  clone https://github.com/juldebar/IndicatorsForFisheries.git
 ```{r compil_package, message = F, eval=FALSE}
 setwd("/home/tomcat7/IndicatorsForFisheries/")
 devtools::build()
-install.packages("/home/tomcat7/IndicatorsForFisheries_0.2.tar.gz",
-type="source", repo=NULL)
+install.packages("/home/tomcat7/IndicatorsForFisheries_0.2.tar.gz",type="source", repo=NULL)
 ```
+ `install.packages("IndicatorsForFisheries")`
+
+```{r load_qtl}
+library(IndicatorsForFisheries)
+```
+
 
 Si besoin remettre les codes du serveur Github (dans un terminal dans le répertoire du package):
 ```{r align_github, eval=FALSE}
@@ -28,6 +48,7 @@ git fetch --all
 git reset --hard origin/master
 ```
 
+A noter qu'on peut faire des rapports paramétrés avec knitR: [here](http://rmarkdown.rstudio.com/developer_parameterized_reports.html)
 
 ---
 ## NVD3 Plots using rCharts
@@ -35,9 +56,11 @@ git reset --hard origin/master
 This is a short tutorial on how to use NVD3 with rCharts. The source for this tutorial can be found [here](https://gist.github.com/ramnathv/8070363#file-example6-rmd)
 
 ```{r set, tidy = F, cache = F, echo = F}
-library(rCharts)
-library(knitr)
-opts_chunk$set(tidy = F, results = 'asis', comment = NA)
+require(knitr)
+require(rmarkdown)
+require(rCharts)
+options(RCHART_WIDTH = 600, RCHART_HEIGHT = 400)
+opts_chunk$set(results = 'asis', comment = NA, message = F, tidy = F)
 ```
 
 ---
@@ -48,45 +71,51 @@ require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
-       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',
-       withSparql=FALSE)
+       ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',withSparql=FALSE)
 indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
-                                             oceanAttributeName="ocean",
-                                             speciesAttributeName="species",
-                                             valueAttributeName="value")
+                          oceanAttributeName="ocean",
+        speciesAttributeName="species",
+                          valueAttributeName="value")
+resultPlot <- ggplot(indicator1$data, aes(x=year, y=value, group=ocean)) + 
+  geom_area(aes(fill=ocean), position="stack") + 
+  geom_line(position="stack", color="grey20") + 
+  scale_fill_manual(name="Ocean", values=indicator1$colors) +
+  xlab("Year") + ylab("Catches in thousand tons") + 
+  ggtitle(paste(indicator1$species, "catches by Ocean")) +
+  theme(legend.position="bottom")
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: D3JS rCharts result
-```{r i1_rchart_d3js_result, message = F}
+```{r i1_rchart_d3js_result,results = 'asis', comment = NA}
     aggData <-indicator1
-    plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'stackedAreaChart', id = 'chart')
+    plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = indicator1$data, type = 'stackedAreaChart', id = 'chart')
     plotRchartsNVD3$xAxis(axisLabel = 'Year')
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
     plotRchartsNVD3$chart(width = 1000, height = 300, useInteractiveGuideline=TRUE)
-    plotRchartsNVD3$print('chart_i1_d3js')    
+    plotRchartsNVD3$print('chart_i1_d3js', include_assets = TRUE)  
 ``` 
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: D3JS rCharts result
-```{r i1_rchart_d3js_bis_result, message = F}
-    plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = aggData, type = 'lineChart') 
-    plotRchartsNVD3bis$print('chart_i1_d3js_bis')    
-
+```{r i1_rchart_d3js_bis_result,results = 'asis', comment = NA}
+    plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = indicator1$data, type = 'lineChart') 
+    plotRchartsNVD3bis$print('chart_i1_d3js_bis', include_assets = TRUE)   
 ``` 
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: ggplot result
-```{r i1_rchart_Rickshaw_result, message = F}
+[External Web page here](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_NVD3.html)
+```{r i1_rchart_Rickshaw_result,results = 'asis', comment = NA}
     aggData <-indicator1
     plotRchartsRickshaw <- Rickshaw$new()
-    plotRchartsRickshaw$layer(value ~ year, data = aggData, group='ocean', type = 'area', title = "C'est de la balle")
+    plotRchartsRickshaw$layer(value ~ year, data = indicator1$data, group='ocean', type = 'area', title = "C'est de la balle")
     plotRchartsRickshaw$yAxis(orientation = 'right')
     plotRchartsRickshaw$set(width = 1000, height = 300, legend = TRUE, slider = TRUE)  
-    plotRchartsRickshaw$print('chart_i1_Rickshaw')
+    plotRchartsRickshaw$print('chart_i1_Rickshaw', include_assets = TRUE)  
 ``` 
     plotRchartsRickshaw$save(".",standalone=TRUE)
 
@@ -95,17 +124,12 @@ indicator1 <- Atlas_i1_SpeciesByOcean_julien(df=df, yearAttributeName="year",
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 1: ggplot result
 ```{r i1_ggplot_result}
-print(indicator1)
+print(resultPlot)
 ```
 
 ggplot_i1<-indicator1[2]
 print(ggplot_i1)    
 See other rCharts examples [here](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/)
-
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 1: rCharts result example (see others)
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_NVD3.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
@@ -121,13 +145,20 @@ indicator2 <- Atlas_i2_SpeciesByGear_julien(df=df,
                                  gearTypeAttributeName="gear_type", 
                                  speciesAttributeName="species", 
                                  valueAttributeName="value")
+    resultPlot <- ggplot(indicator2$data, aes(x=year, y=value, fill=gear_type, order=gear_type)) + 
+    geom_bar(stat="identity", width=0.8) + 
+    geom_bar(stat="identity", width=0.8, colour="grey20", show_guide=FALSE) + 
+    scale_fill_manual(name="Gear type", values=indicator2$colors) +
+    xlab("Year") + ylab("Catches in thousand tons") + 
+    ggtitle(paste(indicator2$species, "catches by gear type")) +
+    theme(legend.position="bottom")
 ```
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 2: ggplot result
 ```{r i2_ggplot_result}
-print(indicator2) 
+print(resultPlot)
 ```
 
 ---
@@ -136,14 +167,14 @@ print(indicator2)
 ```{r i2_rCharts_HighCharts_result}
 require(rCharts)
 aggData <-indicator2
-plotRchartsHighcharts  <- hPlot(value ~ year, data = aggData, type = 'column', group = 'gear_type', radius = 6, title = "Catches per month per fishing gear",width = "100%")
+plotRchartsHighcharts  <- hPlot(value ~ year, data = indicator2$data, type = 'column', group = 'gear_type', radius = 6, title = "Catches per month per fishing gear",width = "100%")
 plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
 plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
 plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, margin = 20)
 # plotRchartsHighcharts$chart(width = 800,height = 400, zoomType = "xy")
 plotRchartsHighcharts$chart(zoomType = "xy")
 plotRchartsHighcharts$exporting(enabled = T)
-plotRchartsHighcharts$print('chart_i2_Highcharts')
+plotRchartsHighcharts$print('chart_i2_Highcharts', include_assets = TRUE)  
 ```
 
 
@@ -170,14 +201,11 @@ indicator3 <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df,
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
 ## INDICATOR 3: ggplot result 
+[External Web page rCharts result](http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/I3_Thunnus_obesus_2000_bingo.html)
+
 ```{r i3_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator3) 
 ```
-
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 3: rCharts result
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/I3_Thunnus_obesus_2000_bingo.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
 
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
@@ -397,23 +425,13 @@ library(datasets)
 ```
 
 ---
-## test rCharts
-```{r rcharts, fig.align = 'center', fig.height = 3, fig.width = 3}
-require(rCharts)
-haireye = as.data.frame(HairEyeColor)
-n1 <- nPlot(Freq ~ Hair, 
-  group = 'Eye',
-  data = subset(haireye, Sex == 'Male'),
-  type = 'multiBarChart'
-)
-n1$print('chart10')
-```
+### Plotly
 
----
-### Scatter Chart
-
-```{r}
-p1 <- nPlot(mpg ~ wt, group = 'cyl', data = mtcars, type = 'scatterChart')
-p1$xAxis(axisLabel = 'Weight')
-p1
+```{r plotly, fig.align = 'center',  cache=FALSE, fig.height = 3, fig.width = 3}
+library(plotly)
+p <- plot_ly(iris, x = Petal.Length, y = Petal.Width,
+             color = Species, mode = "markers")
+# print(p)
+# p$print('plotly')
+p
 ```

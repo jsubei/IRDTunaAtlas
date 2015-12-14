@@ -324,8 +324,9 @@ download <- rbind(download, ligne)
   }
 # julien<-buildJson(type="bar Chart", description="Rapport d'exécution du traitement i2",processSourceCode="http://mdst-macroes.ird.fr:8084/wps//R/scripts/Atlas_i2_SpeciesByOcean_HighCharts.R",results=tableauResult)
 
-listeResult<-list("data"=aggData,"species"=species.label)
+listeResult<-list("data"=aggData,"species"=species.label, "colors"=my.colors)
+return(listeResult)
 
-listeResult    
+    
 
 }

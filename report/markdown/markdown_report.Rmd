@@ -1,14 +1,14 @@
 ---
-title: rCharts
-subtitle: Interactive JS Charts from R
-author: Ramnath Vaidyanathan
-github: {user: ramnathv, repo: rChartsNYT, branch: "gh-pages"}
-framework: minimal
+title: Sardara
+subtitle: Html Report
+author: Julien Barde
+github: {user: juldebar, repo: IRDTunaAtlas, branch: "master"}
+framework   : minimal        # {io2012, html5slides, shower, dzslides, ...}
 mode: selfcontained
-widgets: [polycharts]
-highlighter: highlight.js
+highlighter : prettify  # {highlight.js, prettify, highlight}
 hitheme: solarized_light
-background: images/subtle_freckles.png
+widgets: [polycharts]
+background: ../knitr/Draft.png
 assets:
   css: 
     - "http://fonts.googleapis.com/css?family=Open+Sans"
@@ -16,6 +16,7 @@ assets:
 ext_widgets : {rCharts: ["libraries/highcharts","libraries/nvd3", "libraries/morris", "libraries/leaflet", "libraries/rickshaw"]}
 ---
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/FAO_SWIO_Workshop/assets/img/logo_IRD.svg" width="250">
+# Setting up
 ## Installation / Preliminaries
 ### Preliminaries
 
@@ -59,13 +60,17 @@ This is a short tutorial on how to use NVD3 with rCharts. The source for this tu
 require(knitr)
 require(rmarkdown)
 require(rCharts)
-options(RCHART_WIDTH = 600, RCHART_HEIGHT = 400)
+options(RCHART_WIDTH = 500, RCHART_HEIGHT = 300)
 opts_chunk$set(results = 'asis', comment = NA, message = F, tidy = F)
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+# Examples
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 1: WFS data access 
+
+Nombre total de représentations par le biais de cet indicateur: une série temporelle par espèce soit 13 indicateurs pour le moment [cf indicateurs précalculés sur le serveur MDST](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/)
+
 ```{r indicator1, message = F}
 require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
@@ -86,42 +91,43 @@ resultPlot <- ggplot(indicator1$data, aes(x=year, y=value, group=ocean)) +
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 1: D3JS rCharts result
-```{r i1_rchart_d3js_result,results = 'asis', comment = NA}
+```{r i1_rchart_d3js_result}
     aggData <-indicator1
     plotRchartsNVD3 <- nPlot(value ~ year, group = 'ocean', data = indicator1$data, type = 'stackedAreaChart', id = 'chart')
     plotRchartsNVD3$xAxis(axisLabel = 'Year')
     plotRchartsNVD3$yAxis(axisLabel = 'Catches')
-    plotRchartsNVD3$chart(width = 1000, height = 300, useInteractiveGuideline=TRUE)
+#     plotRchartsNVD3$chart(width = 500, height = 200, useInteractiveGuideline=TRUE)
     plotRchartsNVD3$print('chart_i1_d3js', include_assets = TRUE)  
 ``` 
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 1: D3JS rCharts result
-```{r i1_rchart_d3js_bis_result,results = 'asis', comment = NA}
+```{r i1_rchart_d3js_bis_result}
     plotRchartsNVD3bis <- nPlot(value ~ year, group = 'ocean', data = indicator1$data, type = 'lineChart') 
+    plotRchartsNVD3bis$xAxis(axisLabel = 'Year')
+    plotRchartsNVD3bis$yAxis(axisLabel = 'Catches')
     plotRchartsNVD3bis$print('chart_i1_d3js_bis', include_assets = TRUE)   
 ``` 
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 1: ggplot result
 [External Web page here](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/I1_Thunnus_albacares_NVD3.html)
-```{r i1_rchart_Rickshaw_result,results = 'asis', comment = NA}
-    aggData <-indicator1
+```{r i1_rchart_Rickshaw_result}
     plotRchartsRickshaw <- Rickshaw$new()
     plotRchartsRickshaw$layer(value ~ year, data = indicator1$data, group='ocean', type = 'area', title = "C'est de la balle")
-    plotRchartsRickshaw$yAxis(orientation = 'right')
-    plotRchartsRickshaw$set(width = 1000, height = 300, legend = TRUE, slider = TRUE)  
+#     plotRchartsRickshaw$yAxis(orientation = 'right')
+    plotRchartsRickshaw$set(width = 400, height = 200, legend = TRUE, slider = TRUE)  
     plotRchartsRickshaw$print('chart_i1_Rickshaw', include_assets = TRUE)  
 ``` 
     plotRchartsRickshaw$save(".",standalone=TRUE)
 
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 1: ggplot result
 ```{r i1_ggplot_result}
 print(resultPlot)
@@ -132,7 +138,7 @@ print(ggplot_i1)
 See other rCharts examples [here](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/)
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 2: WFS data access 
 ```{r indicator2, results = 'hide', tidy = F, message = F}
 require(IndicatorsForFisheries)
@@ -155,14 +161,14 @@ indicator2 <- Atlas_i2_SpeciesByGear_julien(df=df,
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 2: ggplot result
 ```{r i2_ggplot_result}
 print(resultPlot)
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 2: rCharts result
 ```{r i2_rCharts_HighCharts_result}
 require(rCharts)
@@ -171,15 +177,15 @@ plotRchartsHighcharts  <- hPlot(value ~ year, data = indicator2$data, type = 'co
 plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
 plotRchartsHighcharts$plotOptions(column = list(stacking = "normal", dataLabels = list(enabled = T, rotation = -90, align = 'right', color = '#FFFFFF', x = 4, y = 10, style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif'))))
 plotRchartsHighcharts$legend(align = 'center', verticalAlign = 'top', y = 30, margin = 20)
-# plotRchartsHighcharts$chart(width = 800,height = 400, zoomType = "xy")
-plotRchartsHighcharts$chart(zoomType = "xy")
+plotRchartsHighcharts$chart(width = 800,height = 400, zoomType = "xy")
+# plotRchartsHighcharts$chart(zoomType = "xy")
 plotRchartsHighcharts$exporting(enabled = T)
 plotRchartsHighcharts$print('chart_i2_Highcharts', include_assets = TRUE)  
 ```
 
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 3: WFS data access 
 ```{r indicator3, results = 'hide', tidy = F, message = F}
 require(IndicatorsForFisheries)
@@ -199,16 +205,16 @@ indicator3 <- Atlas_i3_SpeciesYearByGearMonth_julien(df=df,
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 3: ggplot result 
 [External Web page rCharts result](http://mdst-macroes.ird.fr/tmp/SpeciesByYearByMonthByGear/I3_Thunnus_obesus_2000_bingo.html)
 
-```{r i3_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
+```{r i3_ggplot_result, fig.align = 'center'}
 print(indicator3) 
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 4: WFS data access
 ```{r indicator4, results = 'hide', tidy = F, message = F}
 library(IndicatorsForFisheries)
@@ -228,7 +234,7 @@ indicator4 <- Atlas_i4_SpeciesMonthByOcean_julien(df=df,
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 4: ggplot result
 ```{r i4_ggplot_result, fig.align = 'center', fig.height = 7, fig.width = 7}
 print(indicator4) 
@@ -237,7 +243,7 @@ print(indicator4)
 no rCharts version for now
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 6: WFS data access
 ```{r indicator6, results = 'hide', tidy = F, message = F, cache.comments=TRUE,}
 require(IndicatorsForFisheries)
@@ -256,19 +262,16 @@ require(IndicatorsForFisheries)
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 6: ggplot result
-```{r i6_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
+```{r i6_ggplot_result, fig.align = 'center', fig.height = 8, fig.width = 8}
 print(indicator6) 
 ```
 
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 6: netCDF / Thredds & WMS & Openlayers result
-<iframe src = 'http://mdst-macroes.ird.fr:8080/thredds/godiva2/godiva2.html?server=http://mdst-macroes.ird.fr:8080/thredds/wms/macroes/world/indicators_i6i7i8/indicatorsi6i7i8_YFT_19501980.ncml#' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+netCDF / Thredds & WMS & Openlayers result [Exemple sur Thredds](http://mdst-macroes.ird.fr:8080/thredds/godiva2/godiva2.html?server=http://mdst-macroes.ird.fr:8080/thredds/wms/macroes/world/indicators_i6i7i8/indicatorsi6i7i8_YFT_19501980.ncml)
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 7: WFS data access
 ```{r indicator7, results = 'hide', tidy = F, message = F}
 library(IndicatorsForFisheries)
@@ -287,7 +290,7 @@ indicator7 <- Atlas_i7_SpeciesMapRelativeCatches(df=df,
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 7: ggplot result
 ```{r i7_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator7) 
@@ -295,7 +298,7 @@ print(indicator7)
 no rCharts version but Openlayers possible thourgh netCDF export and Thredds ncWMS
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 8: WFS data access
 ```{r indicator8, results = 'hide', tidy = F, message = F}
 library(IndicatorsForFisheries)
@@ -315,14 +318,14 @@ indicator8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df,
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 8: ggplot result
 ```{r i8_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator8) 
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 9: WFS data access
 ```{r indicator9, results = 'hide', tidy = F, message = F}
 require(IndicatorsForFisheries)
@@ -342,16 +345,13 @@ indicator9 <- Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien(df=df,
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 9: ggplot result
 ```{r i9_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator9) 
 ```
 
----
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
-## INDICATOR 9: rCharts result
-<iframe src = 'http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/I9__Thunnus_obesus_2005_-_2005bis.html' onload="this.width=screen.width;this.height=screen.height;"></iframe>
+rCharts result[](http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolType/I9__Thunnus_obesus_2005_-_2005bis.html)
 
 ---
 ## INDICATOR 10: WFS data access
@@ -374,14 +374,14 @@ indicator10 <- Atlas_i10_RelativeSizeFrequenciesByDecade(df=df,
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 10: ggpot result
 ```{r i10_ggplot_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator10) 
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 11: WFS data access
 ```{r indicator11, results = 'hide', tidy = F, message = F}
 library(IndicatorsForFisheries)
@@ -400,7 +400,7 @@ indicator11 <- Atlas_i11_CatchesByCountry(df=df,
 ```
 
 ---
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="300">
+<img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 11: ggplot result
 ```{r i11_result, fig.align = 'center', fig.height = 6, fig.width = 6}
 print(indicator11) 

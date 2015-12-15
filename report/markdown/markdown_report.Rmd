@@ -67,7 +67,8 @@ opts_chunk$set(results = 'asis', comment = NA, message = F, tidy = F)
 ---
 # Examples
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
-## INDICATOR 1: WFS data access 
+## INDICATOR 1: Time serie of catches according to oceans
+WFS data access 
 
 Nombre total de représentations par le biais de cet indicateur: une série temporelle par espèce soit 13 indicateurs pour le moment [cf indicateurs précalculés sur le serveur MDST](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/)
 

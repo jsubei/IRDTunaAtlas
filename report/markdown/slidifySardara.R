@@ -75,7 +75,7 @@ if(!require(slidify)){
   library(slidify)
 }
 
-library(plyr)
+# library(plyr)
 
 zip_package_url = "https://github.com/juldebar/IRDTunaAtlas/archive/master.zip"
 working_directory_init=getwd()

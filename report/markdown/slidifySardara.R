@@ -74,8 +74,9 @@ if(!require(slidify)){
   install_github('ramnathv/slidifyLibraries')
   library(slidify)
 }
-
-# library(plyr)
+if(!require(plyr)){
+  library(plyr)
+}
 
 zip_package_url = "https://github.com/juldebar/IRDTunaAtlas/archive/master.zip"
 working_directory_init=getwd()

@@ -40,6 +40,18 @@ You then load the R/qtl package using the `library` function Type (within R):
 
 ```{r load_qtl}
 #library(IndicatorsForFisheries)
+source(paste(mywd,"/R/IRDTunaAtlas_julien.R",sep=""))
+source(paste(mywd,"/R/wkt2spdf.R",sep=""))
+source(paste(mywd,"/R/Atlas_i1_SpeciesByOcean_julien.R",sep=""))
+source(paste(mywd,"/R/Atlas_i2_SpeciesByGear_julien.R",sep=""))
+source(paste(mywd,"/R/Atlas_i3_SpeciesYearByGearMonth_julien.R",sep=""))
+source(paste(mywd,"/R/Atlas_i4_SpeciesMonthByOcean_julien.R",sep=""))
+source(paste(mywd,"/R/Atlas_i6_SpeciesMap_julien.R",sep=""))
+source(paste(mywd,"/R/Atlas_i7_SpeciesMapRelativeCatches.R",sep=""))
+source(paste(mywd,"/R/Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies.R",sep=""))
+source(paste(mywd,"/R/Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien.R",sep=""))
+source(paste(mywd,"/R/Atlas_i10_RelativeSizeFrequenciesByDecade.R",sep=""))
+source(paste(mywd,"/R/Atlas_i11_CatchesByCountry.R",sep=""))
 ```
 
 

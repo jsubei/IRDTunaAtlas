@@ -27,19 +27,19 @@ You then load the R/qtl package using the `library` function Type (within R):
 
 - Installation du paquet GIT sur l'OS:
 ```{r install_github_repository, eval=FALSE}
-git  clone https://github.com/juldebar/IndicatorsForFisheries.git
+#git  clone https://github.com/juldebar/IndicatorsForFisheries.git
 ```
 - Créer un nouveau projet avec Git => clone 
 - Compiler les sources du package dans R (répertoire à adapter):
 ```{r compil_package, message = F, eval=FALSE}
-setwd("/home/tomcat7/IndicatorsForFisheries/")
-devtools::build()
-install.packages("/home/tomcat7/IndicatorsForFisheries_0.2.tar.gz",type="source", repo=NULL)
+# setwd("/home/tomcat7/IndicatorsForFisheries/")
+#devtools::build()
+#install.packages("/home/tomcat7/IndicatorsForFisheries_0.2.tar.gz",type="source", repo=NULL)
 ```
  `install.packages("IndicatorsForFisheries")`
 
-```{r load_qtl, message = F}
-library(IndicatorsForFisheries)
+```{r load_qtl}
+#library(IndicatorsForFisheries)
 ```
 
 
@@ -57,9 +57,9 @@ A noter qu'on peut faire des rapports paramétrés avec knitR: [here](http://rma
 This is a short tutorial on how to use NVD3 with rCharts. The source for this tutorial can be found [here](https://gist.github.com/ramnathv/8070363#file-example6-rmd)
 
 ```{r set, tidy = F, cache = F, echo = F}
-require(knitr)
-require(rmarkdown)
-require(rCharts)
+## require(knitr)
+## require(rmarkdown)
+## require(rCharts)
 options(RCHART_WIDTH = 500, RCHART_HEIGHT = 300)
 opts_chunk$set(results = 'asis', comment = NA, message = F, tidy = F)
 ```
@@ -73,7 +73,7 @@ WFS data access
 Nombre total de représentations par le biais de cet indicateur: une série temporelle par espèce soit 13 indicateurs pour le moment [cf indicateurs précalculés sur le serveur MDST](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/default/)
 
 ```{r indicator1, message = F}
-require(IndicatorsForFisheries)
+# require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
@@ -142,7 +142,7 @@ See other rCharts examples [here](http://mdst-macroes.ird.fr/tmp/SpeciesByOcean/
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 2: WFS data access 
 ```{r indicator2, results = 'hide', tidy = F, message = F}
-require(IndicatorsForFisheries)
+## require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
        url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
        layer="ns11:i1i2_mv", 
@@ -172,7 +172,7 @@ print(resultPlot)
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 2: rCharts result
 ```{r i2_rCharts_HighCharts_result}
-require(rCharts)
+## require(rCharts)
 aggData <-indicator2
 plotRchartsHighcharts  <- hPlot(value ~ year, data = indicator2$data, type = 'column', group = 'gear_type', radius = 6, title = "Catches per month per fishing gear",width = "100%")
 plotRchartsHighcharts$xAxis(labels = list(rotation = -45, align = 'right', style = list(fontSize = '13px', fontFamily = 'Verdana, sans-serif')), replace = F)
@@ -189,7 +189,7 @@ plotRchartsHighcharts$print('chart_i2_Highcharts', include_assets = TRUE)
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 3: WFS data access 
 ```{r indicator3, results = 'hide', tidy = F, message = F}
-require(IndicatorsForFisheries)
+## require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
 ogcFilter='<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:PropertyIsEqualTo><ogc:PropertyName>species</ogc:PropertyName><ogc:Literal>YFT</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>year</ogc:PropertyName><ogc:Literal>2005</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>',
@@ -247,7 +247,7 @@ no rCharts version for now
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 6: WFS data access
 ```{r indicator6, results = 'hide', tidy = F, message = F, cache.comments=TRUE,}
-require(IndicatorsForFisheries)
+## require(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicator I6, with restriction on species="YFT" and year=2000
   df <- readData(connectionType="remote", dataType="WFS",
   	       url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -329,7 +329,7 @@ print(indicator8)
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 9: WFS data access
 ```{r indicator9, results = 'hide', tidy = F, message = F}
-require(IndicatorsForFisheries)
+## require(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i9i10_mv", 

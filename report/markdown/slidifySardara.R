@@ -1,10 +1,91 @@
+if(!require(maptools)){
+  install.packages("maptools")
+  library(maptools)
+}
+if(!require(sp)){
+  install.packages("sp")
+  library(sp)
+}
+if(!require(rgeos)){
+  install.packages("rgeos")
+  library(rgeos)
+}
+if(!require(ggmap)){
+  install.packages("ggmap")
+  library(ggmap)
+}
+if(!require(shapefiles)){
+  install.packages("shapefiles")
+  library(shapefiles)
+}
+if(!require(rworldmap)){
+  install.packages("rworldmap")
+  library(rworldmap)
+}
+if(!require(geosphere)){
+  install.packages("geosphere")
+  library(geosphere)
+}
+if(!require(data.table)){
+  install.packages("data.table")
+  library(data.table)
+}
+if(!require(RCurl)){
+  install.packages("RCurl")
+  library(RCurl)
+}
+if(!require(rgdal)){
+  install.packages("rgdal")
+  library(rgdal)
+}
+if(!require(mapplots)){
+  install.packages("mapplots")
+  library(mapplots)
+}
+
+if(!require(XML)){
+  install.packages("XML")
+  library(XML)
+}
+
 # http://slidify.github.io/dcmeetup
 # http://slidify.github.io/playground/
-require(knitr)
-require(slidify)
-require(IndicatorsForFisheries)
-mywd <- '/home/julien/SVNs/GIT/IRDTunaAtlas/'
-report_subdirectory <- paste(mywd,'report/markdown/',sep="")
+if(!require(knitr)){
+  install.packages("knitr")
+  library(knitr)
+}
+if(!require(rmarkdown)){
+  install.packages("rmarkdown")
+  library(rmarkdown)
+}
+if(!require(devtools)){
+  install.packages("devtools")
+  library(devtools)
+}
+if(!require(slidify)){
+  install_github('ramnathv/slidify')
+  install_github('ramnathv/slidifyLibraries')
+  library(slidify)
+}
+
+library(plyr)
+
+zip_package_url = "https://github.com/juldebar/IRDTunaAtlas/archive/master.zip"
+working_directory_init=getwd()
+setwd(working_directory_init)
+zip_file=paste(working_directory_init,"/master.zip",sep="")
+download.file(zip_package_url, destfile = zip_file, method='auto', quiet = FALSE, mode = "w",cacheOK = TRUE,extra = getOption("download.file.extra"))
+unzip(zip_file, overwrite = T, exdir = working_directory_init)
+system("chmod -R 777 ./*")
+
+
+
+mywd <- paste(getwd(),"/IRDTunaAtlas-master/",sep="")
+setwd(mywd)
+
+
+# require(IndicatorsForFisheries)
+report_subdirectory <- paste(mywd,'/report/markdown/',sep="")
 setwd(report_subdirectory)
 # slidify("examples_codes.Rmd")
 slidify("markdown_report.Rmd")

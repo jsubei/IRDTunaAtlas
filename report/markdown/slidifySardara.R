@@ -5,10 +5,16 @@ rm(list=ls())
 ######################################################################
 ##### SET UP PACKAGES ##########
 ######################################################################
-
-
+if(!require(maps)){
+  install.packages("maps")
+  library(maps)
+}
+if(!require(devtools)){
+  install.packages("devtools")
+  library(devtools)
+}
 if(!require(IndicatorsForFisheries)){
-install_github("IRDTunaAtlas", "juldebar")
+  install_github("IRDTunaAtlas", "juldebar")
 }
 library(IndicatorsForFisheries)
 if(!require(plyr)){
@@ -97,18 +103,18 @@ system("chmod -R 777 ./*")
 
 mywd <- paste(getwd(),"/IRDTunaAtlas-master/",sep="")
 setwd(mywd)
-source(paste(mywd,"/R/IRDTunaAtlas_julien.R",sep=""))
-source(paste(mywd,"/R/wkt2spdf.R",sep=""))
-source(paste(mywd,"/R/Atlas_i1_SpeciesByOcean_julien.R",sep=""))
-source(paste(mywd,"/R/Atlas_i2_SpeciesByGear_julien.R",sep=""))
-source(paste(mywd,"/R/Atlas_i3_SpeciesYearByGearMonth_julien.R",sep=""))
-source(paste(mywd,"/R/Atlas_i4_SpeciesMonthByOcean_julien.R",sep=""))
-source(paste(mywd,"/R/Atlas_i6_SpeciesMap_julien.R",sep=""))
-source(paste(mywd,"/R/Atlas_i7_SpeciesMapRelativeCatches.R",sep=""))
-source(paste(mywd,"/R/Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies.R",sep=""))
-source(paste(mywd,"/R/Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien.R",sep=""))
-source(paste(mywd,"/R/Atlas_i10_RelativeSizeFrequenciesByDecade.R",sep=""))
-source(paste(mywd,"/R/Atlas_i11_CatchesByCountry.R",sep=""))
+# source(paste(mywd,"/R/IRDTunaAtlas_julien.R",sep=""))
+# source(paste(mywd,"/R/wkt2spdf.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i1_SpeciesByOcean_julien.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i2_SpeciesByGear_julien.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i3_SpeciesYearByGearMonth_julien.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i4_SpeciesMonthByOcean_julien.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i6_SpeciesMap_julien.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i7_SpeciesMapRelativeCatches.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i9_RelativeSizeFrequenciesBySchoolType_julien.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i10_RelativeSizeFrequenciesByDecade.R",sep=""))
+# source(paste(mywd,"/R/Atlas_i11_CatchesByCountry.R",sep=""))
 
 # require(IndicatorsForFisheries)
 report_subdirectory <- paste(mywd,'/report/markdown/',sep="")
@@ -120,3 +126,4 @@ slidify("markdown_report.Rmd")
 # http://mdst-macroes.ird.fr/tmp/SpeciesMapRelativeCatchesOtherSpecies/I8_Thunnus_albacares_2000-2000_.png
 # rm(list=ls())
 # https://github.com/yihui/knitr-examples/blob/master/001-minimal.md
+

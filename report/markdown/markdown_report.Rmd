@@ -219,7 +219,7 @@ print(indicator3)
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 4: WFS data access
 ```{r indicator4, results = 'hide', tidy = F, message = F}
-library(IndicatorsForFisheries)
+#library(IndicatorsForFisheries)
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
                layer="ns11:i4_mv", 
@@ -276,7 +276,7 @@ netCDF / Thredds & WMS & Openlayers result [Exemple sur Thredds](http://mdst-mac
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 7: WFS data access
 ```{r indicator7, results = 'hide', tidy = F, message = F}
-library(IndicatorsForFisheries)
+#library(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicator I7, with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -303,7 +303,7 @@ no rCharts version but Openlayers possible thourgh netCDF export and Thredds ncW
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 8: WFS data access
 ```{r indicator8, results = 'hide', tidy = F, message = F}
-library(IndicatorsForFisheries)
+#library(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicator I8, with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -358,7 +358,7 @@ rCharts result[](http://mdst-macroes.ird.fr/tmp/RelativeSizeFrequenciesBySchoolT
 ---
 ## INDICATOR 10: WFS data access
 ```{r indicator10, results = 'hide', tidy = F, message = F}
-library(IndicatorsForFisheries)
+#library(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicators I10, with restriction on species="YFT" and year >= 1980 and year <= 2005
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -386,7 +386,7 @@ print(indicator10)
 <img style="position: absolute; top: 0; left: 0; border: 0;" src="http://mdst-macroes.ird.fr/documentation/databases/Sardara/logos/logo_sardara_cmyk_vector.svg" width="500">
 ## INDICATOR 11: WFS data access
 ```{r indicator11, results = 'hide', tidy = F, message = F}
-library(IndicatorsForFisheries)
+#library(IndicatorsForFisheries)
 #fetch data from IRD WFS for indicators I11 with restriction on species="YFT" and year=2000
 df <- readData(connectionType="remote", dataType="WFS",
                url="http://mdst-macroes.ird.fr:8080/constellation/WS/wfs/tuna_atlas",
@@ -414,16 +414,16 @@ print(indicator11)
 This is a short tutorial on how to use NVD3 with rCharts. The source for this tutorial can be found [here](https://gist.github.com/ramnathv/8070363#file-example6-rmd)
 
 ```{r setup, tidy = F, cache = F, echo = F}
-library(rCharts)
+#library(rCharts)
 options(
   rcharts.mode = 'iframesrc', 
   rcharts.cdn = TRUE,
   RCHART_WIDTH = 700,
   RCHART_HEIGHT = 400
 )
-library(knitr)
+#library(knitr)
 opts_chunk$set(tidy = F, results = 'asis', comment = NA)
-library(datasets)
+#library(datasets)
 ```
 
 ---

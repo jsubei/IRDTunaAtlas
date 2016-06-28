@@ -38,7 +38,7 @@ install.packages("/home/tomcat7/IndicatorsForFisheries_0.2.tar.gz",type="source"
 ```
  `install.packages("IndicatorsForFisheries")`
 
-```{r load_qtl}
+```{r load_qtl, message = F}
 library(IndicatorsForFisheries)
 ```
 
@@ -436,3 +436,4 @@ p <- plot_ly(iris, x = Petal.Length, y = Petal.Width,
 # p$print('plotly')
 p
 ```
+

@@ -15,8 +15,10 @@ if(!require(devtools)){
 }
 if(!require(IndicatorsForFisheries)){
   install_github("IRDTunaAtlas", "juldebar")
+  library(IndicatorsForFisheries)
 }
-library(IndicatorsForFisheries)
+
+
 if(!require(plyr)){
   library(plyr)
 }

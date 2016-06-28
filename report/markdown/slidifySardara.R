@@ -5,6 +5,15 @@ rm(list=ls())
 ######################################################################
 ##### SET UP PACKAGES ##########
 ######################################################################
+
+
+if(!require(IndicatorsForFisheries)){
+install_github("IRDTunaAtlas", "juldebar")
+}
+library(IndicatorsForFisheries)
+if(!require(plyr)){
+  library(plyr)
+}
 if(!require(maptools)){
   install.packages("maptools")
   library(maptools)
@@ -74,9 +83,7 @@ if(!require(slidify)){
   install_github('ramnathv/slidifyLibraries')
   library(slidify)
 }
-if(!require(plyr)){
-  library(plyr)
-}
+
 
 zip_package_url = "https://github.com/juldebar/IRDTunaAtlas/archive/master.zip"
 working_directory_init=getwd()

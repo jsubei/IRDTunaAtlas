@@ -84,6 +84,8 @@ if(!require(devtools)){
   install.packages("devtools")
   library(devtools)
 }
+install_github('ramnathv/slidify')
+install_github('ramnathv/slidifyLibraries')
 if(!require(slidify)){
   install_github('ramnathv/slidify')
   install_github('ramnathv/slidifyLibraries')

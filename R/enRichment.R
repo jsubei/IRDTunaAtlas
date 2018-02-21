@@ -14,7 +14,7 @@ enRichment <- function(data, opendapUrl, varName,
                        verbose=FALSE,
                        window=0)
 {  
-  library(ncdf)
+  library(ncdf4)
   library(sp)
   library(fpc)
   

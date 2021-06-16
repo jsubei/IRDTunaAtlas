@@ -29,8 +29,8 @@ library(pacman)
 DRV=RPostgres::Postgres()
 Dbname ="tunaatlas"
 Host="db-tunaatlas.d4science.org"
-User="tunaatlas_u"
-Password="21c0551e7ed2911"
+User="dd"
+Password="dd"
 con <- dbConnect(drv=DRV,  dbname = Dbname, host = Host , user=User, password=Password,port="5432" )
 # codes_directory=codes_github_repository
 # query <- paste(readLines(paste0(codes_directory,"SQL/select_annotated_images_attributes.sql")), collapse=" ")

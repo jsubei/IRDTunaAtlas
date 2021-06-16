@@ -147,7 +147,7 @@ Atlas_i2_SpeciesByGear <- function(df,
     stop("Input data frame not specified")
   }
   
-  #check for input attributes
+  #check for input attributeshttps://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I2-:-Annual-catches-by-gear
   if(sum(names(df) == yearAttributeName) == 0) {
     stop("Cannot found year attribute")
   }
@@ -345,20 +345,17 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
       dfPrev5Years$month <- factor(month.abb[dfPrev5Years$month], levels=levels(reorder(month.abb[dfPrev5Years$month], dfPrev5Years$month)))
       #build the plot
       resultPlot <- ggplot() +
-        layer(data=current.df,
+        geom_bar(data=current.df,
               mapping=aes(x=month, y=value, fill=gear_type, order=gear_type),
-              stat="identity",
-              geom="bar") +
-        layer(data=dfPrev5Years,
+              stat="identity") + 
+        geom_line(data=dfPrev5Years,
               mapping=aes(x=month, y=mean_prev_5_years, group=1),
-              stat="identity",
-              geom="line") + 
-        layer(data=dfPrev5Years,
+              stat="identity") + 
+        geom_errorbar(data=dfPrev5Years,
               mapping=aes(x=month, ymax=mean_prev_5_years + stddev_prev_5_years, ymin=mean_prev_5_years - stddev_prev_5_years), 
               width=0.25, 
               color="dimgray",
-              stat="identity",
-              geom="errorbar") +
+              stat="identity") + 
         scale_fill_manual(name="Gear type", values=my.colors) +
         xlab("Month") + ylab("Catches in tons") + 
         ggtitle(paste(species.label, "monthly catches by gear type on", year.current))
@@ -381,7 +378,7 @@ Column {data-width=350}
 
 ### Select WKT on the map
 
-[https://github.com/juldebar/IRDTunaAtlas](https://github.com/juldebar/IRDTunaAtlas)
+To be done : add all WMS layers of input datasets
 
 ```{r}
 output$mymap <- renderLeaflet(
@@ -468,7 +465,8 @@ renderPrint({
 ```
 
 
-### Plot 1
+### Plot 1 [https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I1-%3A-Annual-catches-by-ocean](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I1-%3A-Annual-catches-by-ocean)
+
 
 ```{r}
 #unique(df_nominal$species)
@@ -494,7 +492,7 @@ resultPlot
 
 ```
 
-### Plot 2
+### Plot 2 [https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I2-:-Annual-catches-by-gear](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I2-:-Annual-catches-by-gear)
 
 
 ```{r}
@@ -539,40 +537,42 @@ i2
 
 ```
 
-### Plot 3
+### Plot 3 [https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I3-:-Catches-by-gear-and-by-month](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I3-:-Catches-by-gear-and-by-month)
+
 
 ```{r}
 
 query_i3 <- ("select year, month,  c_esp AS species,  c_g_engin AS gear_type, value, mean_prev_5_years, stddev_prev_5_years from i3 ;")
 df_i3 <- dbGetQuery(con, query_i3)
-df_i3
 #unique(df_i3$species)
-nrow(df_i3)
-colnames(df_i3)
-# unique(df_i3$ocean)
-target_species <- c("YFT")
-target_gear <- c("PS")
+# nrow(df_i3)
+# colnames(df_i3)
+# unique(df_i3$gear_type)
+target_species <- c("SKJ")
+target_gear <- c("BB","PS","LL","Baitboat")
+target_year <- c("2004")
 
 # Setting parameters (hard coded here) with selectInput widget
 
-renderPlot({ 
+# renderPlot({ 
 
 # df_i3_filtered <- df_i3 %>% filter(gear_group %in% input$gear_choice,species %in% input$species_choice) %>% rename(gear_type=gear_group)
-df_i3_filtered <- df_i3 %>% filter(gear_type %in% target_gear, species %in% target_species) 
-    
-Atlas_i3_SpeciesYearByGearMonth(df_i3_filtered, 
-                                            yearAttributeName="year", 
-                                            monthAttributeName="month", 
-                                            speciesAttributeName="species",
-                                            gearTypeAttributeName="gear_type",
-                                            valueAttributeName="value",
-                                            meanPrev5YearsAttributeName="mean_prev_5_years",
-                                            stddevPrev5YearsAttributeName="stddev_prev_5_years",
-                                            withSparql=FALSE)
-    
-plot(i3)
+df_i3_filtered <- df_i3 %>% filter(year %in% target_year, gear_type %in% target_gear, species %in% target_species) 
 
-})
+i3 <- Atlas_i3_SpeciesYearByGearMonth(df=df_i3_filtered,
+                                      yearAttributeName="year",
+                                      monthAttributeName="month",
+                                      speciesAttributeName="species",
+                                      gearTypeAttributeName="gear_type",
+                                      valueAttributeName="value",
+                                      meanPrev5YearsAttributeName="mean_prev_5_years",
+                                      stddevPrev5YearsAttributeName="stddev_prev_5_years",
+                                      withSparql=FALSE
+                                      )
+    
+i3
+
+# })
 
 
 ```

@@ -21,6 +21,8 @@ library(leaflet.extras)
 library(leafpm)
 library(mapedit)
 library(pacman)
+library(sf)
+library(sp)
 ```
 
 ```{r, include=FALSE}
@@ -28,7 +30,7 @@ library(pacman)
 ##Database Identifiers:
 DRV=RPostgres::Postgres()
 Dbname ="tunaatlas"
-Host="db-tunaatlas.d4science.org"
+Host=""
 User=""
 Password=""
 con <- dbConnect(drv=DRV,  dbname = Dbname, host = Host , user=User, password=Password,port="5432" )
@@ -374,6 +376,36 @@ Column {data-width=350}
 -----------------------------------------------------------------------
 
 
+### Select parameters to customize plots 1 and 2
+
+
+```{r}
+# Check http://jeffgoldsmith.com/p8105_f2017/shiny.html
+#Loading related dataset
+query_i1i2 <- ("select * from i1i2 ;")
+df_nominal <- dbGetQuery(con, query_i1i2)
+# head(df_nominal)
+# colnames(df_nominal)
+species = unique(df_nominal$species)
+gear_group = unique(df_nominal$gear_group)
+ocean = unique(df_nominal$ocean)
+selectInput("species_choice", label = h3("Select species"), choices = species, selected = "SKJ")
+selectInput("gear_choice", label = h3("Select gear"), choices = gear_group, selected = "PS",multiple = TRUE)
+selectInput("ocean_choice", label = h3("Select ocean"), choices = ocean, selected = "ICCAT",multiple = TRUE)
+wkt <- reactiveVal() 
+
+# textOutput(wkt())
+
+renderPrint({ 
+  paste0("Your current selection: ", input$species_choice," and ", input$gear_choice," and ", input$ocean_choice)
+  paste0("The area you have selected is (WKT format): ", wkt())
+})
+
+
+# selectInput widget
+
+```
+
 
 
 ### Select WKT on the map
@@ -408,61 +440,112 @@ addTiles() %>%
   
 )
     leafletOutput('mymap')  
-
-        observe({
-            click<-input$mymap_click
-            if(is.null(click))
-                return()
-            text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng)
-            text2<-paste("You've selected point ", text)
-mymap_proxy = leafletProxy("mymap") %>%
-        clearPopups() %>%
-        addPopups(click$lng, click$lat, text)
-    output$Click_text<-renderText({
-        text2
-    })
-            
-        })
     
+    
+        observe({
+              #use the draw_stop event to detect when users finished drawing
+            feature <- input$mymap_draw_new_feature
+            req(input$mymap_draw_stop)
+            print(feature)
+            polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+            # see  https://rstudio.github.io/leaflet/shiny.html
+            bb <- input$mymap_bounds 
+            geom_polygon <- input$mymap_draw_new_feature$geometry
+            # drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
+            geoJson <- geojsonio::as.json(feature)
+            # spdf <- geojsonio::geojson_sp(feature)
+            geom <- st_read(geoJson)
+            wkt(st_as_text(st_geometry(geom[1,])))
+            coord <- st_as_text(st_geometry(geom[1,]))
+            
+            north <- polygon_coordinates[[1]][[1]]
+            south <- polygon_coordinates[[2]][[1]]
+            east <- polygon_coordinates[[1]][[2]]
+            west <- polygon_coordinates[[2]][[2]]
+            
+            
+            if(is.null(polygon_coordinates))
+                return()
+            text<-paste("North ", north, "South ", east)
+            
+            mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(south,west,coord)
+            textOutput("wkt")
+        })
 
         
+#             
+#         observe({
+#           click<-input$mymap_click
+#             polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+#             # wkt <- st_as_text(polygon_coordinates)
+#             # see  https://rstudio.github.io/leaflet/shiny.html
+#             # bb <- input$mymap_bounds 
+#             
+#             north <- polygon_coordinates[[1]][[1]]
+#             south <- polygon_coordinates[[1]][[1]]
+#             east <- polygon_coordinates[[1]][[1]]
+#             west <- polygon_coordinates[[1]][[1]]
+#             
+#             
+#             if(is.null(click))
+#                 return()
+# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(north,south, "toto")
+#         })
         
         
-        
-  
+      # #get the coordinates of the polygon
+      # polygon_coordinates <- 
+      #   input$mymap_draw_new_feature$geometry$coordinates[[1]]
+    
+    # observeEvent(input$mymap_draw_new_feature,{
+    #     # feature <- input$mymap_draw_new_feature
+    #     polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+    #     text<-paste("Lattitude ","Lo")
+    #     mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(polygon_coordinates[[1]][[1]], polygon_coordinates[[2]][[1]])
+    # })
+
+#         observe({
+#             click<-input$mymap_click
+#             if(is.null(click))
+#                 return()
+#             text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng)
+#             text2<-paste("You've selected point ", text)
+# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(click$lng, click$lat, text)
+#     output$Click_text<-renderText({
+#       text2
+#     })
+#             
+#         })
+#     
+    
+  #   
+  #   output$rastersum <- renderText({
+  #   #use the draw_stop event to detect when users finished drawing
+  #   req(input$mymap_draw_stop)
+  # 
+  #   # get the coordinates of the polygon and make SpatialPolygons object
+  #   polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+  # 
+  #   drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
+  #   sp <- SpatialPolygons(list(Polygons(list(drawn_polygon),"drawn_polygon")))
+  # 
+  #   # set coords as latlong then transform to leaflet projection
+  #   proj4string(sp) <- LL
+  #   polyre <- spTransform(sp, leaf.proj)
+  # 
+  #   e <- extract(r,polyre)
+  #   sum(unlist(e),na.rm=T)
+  # 
+  # })
+
+# https://rdrr.io/github/rahulchauhan049/dashboard.experiment/src/R/mod_leaflet.R
+# https://stackoverflow.com/questions/44979900/how-to-download-polygons-drawn-in-leaflet-draw-as-geojson-file-from-r-shiny        
 ```
 
 
 
 Column {data-width=650}
 -----------------------------------------------------------------------
-
-### Select parameters to customize plots 1 and 2
-
-
-```{r}
-# Check http://jeffgoldsmith.com/p8105_f2017/shiny.html
-#Loading related dataset
-query_i1i2 <- ("select * from i1i2 ;")
-df_nominal <- dbGetQuery(con, query_i1i2)
-# head(df_nominal)
-# colnames(df_nominal)
-species = unique(df_nominal$species)
-gear_group = unique(df_nominal$gear_group)
-ocean = unique(df_nominal$ocean)
-selectInput("species_choice", label = h3("Select species"), choices = species, selected = "SKJ")
-selectInput("gear_choice", label = h3("Select gear"), choices = gear_group, selected = "PS",multiple = TRUE)
-selectInput("ocean_choice", label = h3("Select ocean"), choices = ocean, selected = "ICCAT",multiple = TRUE)
-
-
-renderPrint({ 
-  paste0("Your current choice:", input$species_choice,"and", input$gear_choice,"and", input$ocean_choice)
-})
-
-
-# selectInput widget
-
-```
 
 
 ### Plot 1 [https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I1-%3A-Annual-catches-by-ocean](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I1-%3A-Annual-catches-by-ocean)
@@ -576,3 +659,4 @@ i3
 
 
 ```
+

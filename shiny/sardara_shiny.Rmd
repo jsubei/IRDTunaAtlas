@@ -29,7 +29,6 @@ library(sp)
 #######################
 ##Database Identifiers:
 DRV=RPostgres::Postgres()
-Dbname ="tunaatlas"
 Host=""
 User=""
 Password=""
@@ -132,6 +131,8 @@ Atlas_i1_SpeciesByOcean <- function(df,
   return(resultPlot)
 }
 
+####################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################
 
 
 Atlas_i2_SpeciesByGear <- function(df, 
@@ -226,6 +227,8 @@ return(resultPlot)
 
 
 
+####################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################
       
         
         
@@ -370,13 +373,301 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
   return(resultPlot)
 }
 
+
+####################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################
+
+
+Atlas_i4_SpeciesMonthByOcean <- function(df, 
+                                         oceanAttributeName="ocean",
+                                         yearAttributeName="year", 
+                                         monthAttributeName="month", 
+                                         speciesAttributeName="species",                                         
+                                         valueAttributeName="value",
+                                         withSparql=FALSE)
+{
+  if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
+    stop("Missing library")
+  }
+  
+  if (missing(df)) {
+    stop("Input data frame not specified")
+  }
+  
+  #check for input attributes
+  if(sum(names(df) == oceanAttributeName) == 0) {
+    stop("Cannot found ocean attribute")
+  }
+  
+  if(sum(names(df) == yearAttributeName) == 0) {
+    stop("Cannot found year attribute")
+  }
+  
+  if(sum(names(df) == monthAttributeName) == 0) {
+    stop("Cannot found month attribute")
+  }
+  
+  if(sum(names(df) == speciesAttributeName) == 0) {
+    stop("Cannot found species attribute")
+  }
+  
+  if(sum(names(df) == valueAttributeName) == 0) {
+    stop("Cannot found value attribute")
+  }  
+  
+  #format columns
+  df[, oceanAttributeName] <- as.factor(df[, oceanAttributeName])
+  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  df[, monthAttributeName] <- as.numeric(df[, monthAttributeName])
+  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])    
+  
+  #aggregate to cut other columns
+  df <- aggregate(x=df[, valueAttributeName], 
+                  by=list(df[, oceanAttributeName], df[, yearAttributeName], df[, monthAttributeName], df[, speciesAttributeName]), 
+                  FUN=sum)
+  #rename columns
+  names(df) <- c("ocean", "year", "month", "species", "value")
+  
+  #setup month factor
+  df$month <- factor(df$month, labels=month.name)
+  
+  #test if FAO usual gear codes are used
+  if (length(intersect(levels(df$ocean), c("ATL", "IND", "PAC_E", "PAC_W"))) == length(levels(df$ocean))) {
+    df$ocean <- factor(df$ocean, levels=c("ATL", "IND", "PAC_E", "PAC_W"), labels=c("Atlantic O.", "Indian O.", "East Pacific O.", "West Pacific O."))
+  }
+  
+  #setup the palette
+  my.colors <- brewer.pal(length(levels(df$ocean)), "Set1")
+  names(my.colors) <- levels(df$ocean)  
+  
+  #define the resulr df  
+  result.df <- c()
+  
+  for (species.current in unique(df$species)) {
+
+      species.label <- species.current
+      species.URI <- species.current
+    
+    
+    species.df <- df[df$species == species.current,]
+    
+    #compute the decade
+    species.df$decade <- species.df$year - (species.df$year %% 10)
+    decades.factor <- sort(unique(species.df$decade))
+    
+    species.df$decade <- factor(species.df$decade, 
+                                levels=decades.factor,
+                                labels=unlist(lapply(X=decades.factor, FUN=function(dec) paste(min(species.df[species.df$decade == dec,]$year), "-", max(species.df[species.df$decade == dec,]$year), sep=""))))
+    for (decade.current in unique(species.df$decade)) {
+      current.df <- species.df[species.df$decade == decade.current,]
+  
+      #aggregate values by years and month
+      valuesSum <- aggregate(value ~ year + month, data=current.df, FUN=sum)
+      names(valuesSum) <- c("year", "month", "valuesSum")
+      mergedDf <- merge(current.df, valuesSum)
+      
+      #build the plot
+      #pie plot
+      resultPlot <- ggplot(data=mergedDf, mapping=aes(x=valuesSum/2, fill=ocean, y=value, width=valuesSum)) + 
+        facet_grid(facets=year ~ month) + 
+        geom_bar(aes(order = ocean), position="fill", stat="identity") + 
+        scale_fill_manual(name="Ocean", values=my.colors) +
+        coord_polar(theta="y") + 
+        theme(axis.text.y=element_text(size=6), axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + 
+        labs(title=paste(species.label, "monthly catches by ocean for", decade.current))
+      
+      #bar plot
+      #resultPlot <- ggplot(data=mergedDf) + facet_grid(facets=year ~ month) + geom_bar(mapping=aes(x=ocean, y=value, fill=ocean), stat="identity") + theme(axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + labs(title="Montly catches by ocean")
+      
+      #draw the plot
+      tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.label), "_", as.character(decade.current), "_", sep=""))
+      plot.filepath <- paste(tempfile.base, ".png", sep="")
+      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+      
+   
+    }
+    
+    #if multiple decade we produce a graph by decade
+    if (length(unique(species.df$decade)) > 1) {
+      #aggregate values by decade and month
+      valuesSum <- aggregate(value ~ decade + month, data=species.df, FUN=sum)
+      names(valuesSum) <- c("decade", "month", "valuesSum")
+      values <- aggregate(value ~ decade + month + ocean, data=species.df, FUN=sum)
+      mergedDf <- merge(values, valuesSum)
+      
+      #build the plot
+      #pie plot
+      resultPlot <- ggplot(data=mergedDf, mapping=aes(x=valuesSum/2, fill=ocean, y=value, width=valuesSum)) + 
+        facet_grid(facets=decade ~ month) + 
+        geom_bar(aes(order = ocean), position="fill", stat="identity") + 
+        scale_fill_manual(name="Ocean", values=my.colors) +
+        coord_polar(theta="y") + 
+        theme(axis.text.y=element_text(size=6), axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + 
+        labs(title=paste(species.label, "monthly catches by ocean and by decade"))
+      
+      #draw the plot
+      tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.current), "_byDecade_", sep=""))
+      #plot_file_path <- paste(tempfile.base, ".png", sep="")
+      plot.filepath <- paste(tempfile.base, ".png", sep="")
+      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+      
+     
+    }
+  }
+  
+  return(resultPlot)
+}
+
+
+
+####################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################
+
+
+
+Atlas_i6_SpeciesMap <- function(df,
+                                geomIdAttributeName="geom_id",
+                                yearAttributeName="year", 
+                                speciesAttributeName="species",                                         
+                                valueAttributeName="value",
+                                withSparql=FALSE)
+{
+   if (! require(maps)) {
+     stop("Missing library")
+   }
+  
+  #check inputs
+  if (class(df) != "SpatialPolygonsDataFrame")
+  {
+    stop(paste("Bad geometrical feature type, must be a SpatialPolygonsDataFrame"))
+  }
+    
+  if(sum(names(df) == geomIdAttributeName) == 0) {
+    stop("Cannot found geom id attribute")
+  }
+  
+  if(sum(names(df) == yearAttributeName) == 0) {
+    stop("Cannot found year attribute")
+  }
+  
+  if(sum(names(df) == speciesAttributeName) == 0) {
+    stop("Cannot found species attribute")
+  }
+  
+  if(sum(names(df) == valueAttributeName) == 0) {
+    stop("Cannot found value attribute")
+  }
+  
+  #format columns
+  df@data[, geomIdAttributeName] <- as.character(df@data[, geomIdAttributeName])
+  df@data[, yearAttributeName] <- as.numeric(df@data[, yearAttributeName])
+  df@data[, speciesAttributeName] <- as.factor(df@data[, speciesAttributeName])
+  df@data[, valueAttributeName] <- as.numeric(df@data[, valueAttributeName])
+
+  #rename columns
+  names(df)[which(names(df) == geomIdAttributeName)] <- "geom_id"
+  names(df)[which(names(df) == yearAttributeName)] <- "year"  
+  names(df)[which(names(df) == speciesAttributeName)] <- "species"
+  names(df)[which(names(df) == valueAttributeName)] <- "value"
+
+
+  plotFct <- function(subDf, species.label, lims) {
+    # subDf  <- species.df[species.df$decade==decade.current,]
+    #aggregate values by 5° CWP square
+    aggData <- aggregate(value ~ geom_id, data=subDf, sum)      
+
+    #create a spatial df object from
+    aggSp <- SpatialPolygons(species.df[match(aggData$geom_id, species.df$geom_id),]@polygons, proj4string=CRS("+init=epsg:4326"))
+    aggSpdf <- SpatialPolygonsDataFrame(Sr=aggSp, data=aggData, match.ID=FALSE)
+    
+    names(aggSpdf)[names(aggSpdf) == "geom_id"] <- "id"
+    aggSpdf.fortify <- ggplot2::fortify(aggSpdf, region="id")
+    class(aggSpdf.fortify)
+    aggSpdf.df <- plyr::join(aggSpdf.fortify, aggSpdf@data, by="id")
+    
+    world.df <-  ggplot2::fortify(maps::map("world", plot = FALSE, fill = TRUE))
+    
+    if (missing(lims)) {
+      lims <- range(aggSpdf.df$value, na.rm=TRUE)
+    }
+    
+    if (min(subDf$year) == max(subDf$year)) {
+      my.title <- paste(species.label , " catches 5x5° for ",  min(subDf$year), sep="")
+    } else {
+      my.title <- paste(species.label , " catches 5x5° for ",  min(subDf$year), "-",  max(subDf$year), sep="")
+    }
+    
+    resultPlot <- ggplot2::ggplot() +
+      ggplot2::geom_polygon(data=aggSpdf.df, mapping=ggplot2::aes(x = long, y = lat, fill=value, group=group)) +
+       ggplot2::scale_fill_continuous(low="yellow", high="blue", na.value="grey25", name="Catches in k. tons", limits=lims, 
+                          guide=guide_colourbar(direction="horizontal", 
+                                             title.position="top",
+                                             label.position="bottom",
+                                              barwidth=20)) +
+      geom_path(data=world.df, mapping=ggplot2::aes(x=long, y=lat, group=group), colour="grey25") +
+      coord_equal() +
+      theme(legend.position="bottom", axis.title.x=element_blank(), axis.title.y=element_blank()) +
+      labs(title=my.title)
+    
+    #draw the plot
+    base_temp_file <- tempfile(pattern=paste("I6_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
+    plot_file_path <- paste(base_temp_file, ".png", sep="")
+    ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
+    return(resultPlot)
+  }
+  
+  #define the resulr df  
+  result.df <- c()
+  
+  #convert values from tons to thousand tons
+  df$value <- df$value / 1000
+  
+  #fisrt subset by species
+  for (species.current in unique(df$species)) {
+    
+
+      species.label <- species.current
+      species.URI <- species.current
+    
+    species.df <- df[df$species == species.current,]
+    
+    #plot for all the period
+    result.plot.df <- plotFct(species.df, species.label)
+    result.df <- rbind(result.df, result.plot.df)
+    
+    #for each year
+    if (length(unique(species.df$year)) > 1)
+    {
+      for(year.current in unique(species.df$year)) {
+        result.plot.df <- plotFct(species.df[species.df$year==year.current,], species.label)
+        result.df <- rbind(result.df, result.plot.df)
+      }
+        
+      #for each decade
+      species.df$decade <- species.df$year - (species.df$year %% 10)
+      if (length(unique(species.df$decade)) > 1)
+      {
+        for(decade.current in unique(species.df$decade)) {
+         result.plot.df <- plotFct(species.df[species.df$decade==decade.current,], species.label)
+         result.df <- rbind(result.df, result.plot.df)
+        }
+      }
+    }
+  }
+
+  # return(result.df)
+  return(result.plot.df)
+}
+
+
 ```
 
 Column {data-width=350}
 -----------------------------------------------------------------------
 
 
-### Select parameters to customize plots 1 and 2
+### Select parameters to customize plots 1, 2, 3 and 4 (see [Github wiki](https://github.com/juldebar/IRDTunaAtlas/wiki))
 
 
 ```{r}
@@ -389,20 +680,50 @@ df_nominal <- dbGetQuery(con, query_i1i2)
 species = unique(df_nominal$species)
 gear_group = unique(df_nominal$gear_group)
 ocean = unique(df_nominal$ocean)
-selectInput("species_choice", label = h3("Select species"), choices = species, selected = "SKJ")
-selectInput("gear_choice", label = h3("Select gear"), choices = gear_group, selected = "PS",multiple = TRUE)
-selectInput("ocean_choice", label = h3("Select ocean"), choices = ocean, selected = "ICCAT",multiple = TRUE)
+
+query_i3 <- ("select year, month,  c_esp AS species,  c_g_engin AS gear_type, value, mean_prev_5_years, stddev_prev_5_years from i3 ;")
+df_i3 <- dbGetQuery(con, query_i3)
+gear_group_i3 = unique(df_i3$gear_type)
+year_i3 = unique(df_i3$year)
+# unique(df_i3$species)
+# unique(df_i3$year)
+# colnames(df_i3)
+# unique(df_i3$gear_type)
+
+# selectInput widget
+
+query_i4 <- ("select species, year, month, ocean, value from i4 ;")
+df_i4 <- dbGetQuery(con, query_i4)
+year_i4 = unique(df_i4$year)
+
+
+
+query_i6i7i8 <- ("select ogc_fid, geom_id, geom, year, species, country, value, count from i6i7i8;")
+# df_i6i7i8 <- dbGetQuery(con, query_i6i7i8)
+# colnames(df_i6i7i8)
+df_i6i7i8 = st_read(con, query = query_i6i7i8)
+year_i6i7i8 = unique(df_i6i7i8$year)
+
+
+  
+# selectInput widget
+
+selectInput("species_choice", label = h3("Select species for i1, i2 and i3 "), choices = species, selected = "SKJ")
+selectInput("ocean_choice", label = h3("Select ocean for i1"), choices = ocean, selected = "ICCAT",multiple = TRUE)
+selectInput("gear_choice", label = h3("Select gear(s) for i2"), choices = gear_group, selected = "PS",multiple = TRUE)
+
+selectInput("gear_choice_i3", label = h3("Select gear(s) for i3"), choices = gear_group_i3, selected = "PS",multiple = TRUE)
+selectInput("year_i3", label = h3("Select year for i3"), choices = year_i3, selected = "2000",multiple = FALSE)
+
 wkt <- reactiveVal() 
 
 # textOutput(wkt())
 
 renderPrint({ 
   paste0("Your current selection: ", input$species_choice," and ", input$gear_choice," and ", input$ocean_choice)
+  paste0("Your current selection for i3 : ", input$species_choice," and ", input$gear_choice_i3," and ", input$year_i3)
   paste0("The area you have selected is (WKT format): ", wkt())
 })
-
-
-# selectInput widget
 
 ```
 
@@ -429,8 +750,10 @@ addTiles() %>%
         )
     )   %>% setView(lng =48, lat =-8, zoom = 5
         ) %>% addWMSTiles(
-    "http://thredds.oreme.org:8080/thredds/wms/MARBEC/Seychelles/global-reanalysis-phy-001-030-monthly_SEY_t55_199301-201906.nc",
-    layers = "thetao",
+    # "http://thredds.oreme.org:8080/thredds/wms/MARBEC/Seychelles/global-reanalysis-phy-001-030-monthly_SEY_t55_199301-201906.nc",
+    "https://geoserver-sdi-lab.d4science.org/geoserver/sdilab_geoflow/ows?service=WMS",
+    layers = "global_catch_5deg_1m_ird_level0",
+        # layers = "thetao",
         options = WMSTileOptions(format = "image/png", transparent = TRUE), group ="Seatizen", attribution = "Seatizen WMS"
   )  %>%
     addLayersControl(
@@ -548,7 +871,7 @@ Column {data-width=650}
 -----------------------------------------------------------------------
 
 
-### Plot 1 [https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I1-%3A-Annual-catches-by-ocean](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I1-%3A-Annual-catches-by-ocean)
+### Plot 1 [Indicator I1 : Annual catches by ocean](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I1-%3A-Annual-catches-by-ocean)
 
 
 ```{r}
@@ -575,7 +898,7 @@ resultPlot
 
 ```
 
-### Plot 2 [https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I2-:-Annual-catches-by-gear](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I2-:-Annual-catches-by-gear)
+### Plot 2 [Indicator I2 : Annual catches by gear](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I2-:-Annual-catches-by-gear)
 
 
 ```{r}
@@ -620,27 +943,83 @@ i2
 
 ```
 
-### Plot 3 [https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I3-:-Catches-by-gear-and-by-month](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I3-:-Catches-by-gear-and-by-month)
+
+
+### Plot 6 [Indicator I6 : Catches by 5x5 degrees](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I6-:-Catches-by-5x5-degrees)
 
 
 ```{r}
+renderPlot({
 
-query_i3 <- ("select year, month,  c_esp AS species,  c_g_engin AS gear_type, value, mean_prev_5_years, stddev_prev_5_years from i3 ;")
-df_i3 <- dbGetQuery(con, query_i3)
-#unique(df_i3$species)
-# nrow(df_i3)
-# colnames(df_i3)
-# unique(df_i3$gear_type)
 target_species <- c("SKJ")
-target_gear <- c("BB","PS","LL","Baitboat")
 target_year <- c("2004")
+df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% target_year, species %in% target_species)
+
+df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_i3, species %in% input$species_choice) 
+class(df_i6i7i8_filtered)
+colnames(df_i6i7i8_filtered)
+
+df_i6i7i8_filtered <- as(df_i6i7i8_filtered, "Spatial")
+class(df_i6i7i8_filtered)
+
+i6 <- Atlas_i6_SpeciesMap(df=df_i6i7i8_filtered,
+                          geomIdAttributeName="geom_id",
+                          yearAttributeName="year",
+                          speciesAttributeName="species",
+                          valueAttributeName="value",
+                          withSparql=FALSE
+                          )
+    
+i6
+
+})
+
+
+```
+
+
+
+### Plot 4 [Indicator I4 : Catches by month and by ocean](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I4-:-Catches-by-month-and-by-ocean)
+
+
+```{r}
+renderPlot({
+
+df_i4_filtered <- df_i4 %>% filter(year %in% input$year_i3, ocean %in% input$ocean_choice, species %in% input$species_choice) 
+
+
+i4 <- Atlas_i4_SpeciesMonthByOcean(df=df_i4_filtered, 
+                                          oceanAttributeName="ocean", 
+                                          yearAttributeName="year", 
+                                          monthAttributeName="month",
+                                          speciesAttributeName="species", 
+                                          valueAttributeName="value",
+                                   withSparql=FALSE
+                                      )
+    
+i4
+
+})
+
+
+```
+
+
+### Plot 3 [Indicator I3 : Catches by gear and by month](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I3-:-Catches-by-gear-and-by-month)
+
+
+```{r}
+# target_species <- c("SKJ")
+# target_gear <- c("BB","PS","LL","Baitboat")
+# target_year <- c("2004")
 
 # Setting parameters (hard coded here) with selectInput widget
 
-# renderPlot({ 
+renderPlot({
 
 # df_i3_filtered <- df_i3 %>% filter(gear_group %in% input$gear_choice,species %in% input$species_choice) %>% rename(gear_type=gear_group)
-df_i3_filtered <- df_i3 %>% filter(year %in% target_year, gear_type %in% target_gear, species %in% target_species) 
+# df_i3_filtered <- df_i3 %>% filter(year %in% target_year, gear_type %in% target_gear, species %in% target_species) 
+df_i3_filtered <- df_i3 %>% filter(year %in% input$year_i3, gear_type %in% input$gear_choice_i3, species %in% input$species_choice) 
 
 i3 <- Atlas_i3_SpeciesYearByGearMonth(df=df_i3_filtered,
                                       yearAttributeName="year",
@@ -655,8 +1034,7 @@ i3 <- Atlas_i3_SpeciesYearByGearMonth(df=df_i3_filtered,
     
 i3
 
-# })
+})
 
 
 ```
-

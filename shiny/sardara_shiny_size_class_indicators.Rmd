@@ -1,0 +1,489 @@
+---
+title: "Sardara Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(dplyr)
+library(XML)
+library(DBI)
+library(RPostgres)
+library(RPostgreSQL)
+library(dplyr)
+library(leaflet)
+library(leaflet.extras)
+library(leafpm)
+library(mapedit)
+library(pacman)
+library(sf)
+library(sp)
+library(ggplot2)
+library(plyr)
+```
+
+```{r, include=FALSE}
+#######################
+##Database Identifiers:
+
+rm(list=ls())
+########################
+##Database Identifiers:
+
+DRV=RPostgres::Postgres()
+con <- dbConnect(drv=DRV,  dbname = Dbname, host = Host , user=User, password=Password,port="5432")
+
+
+
+####################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################
+
+
+Atlas_i9_RelativeSizeFrequenciesBySchoolType <- function(df,
+                                                         yearAttributeName="year",
+                                                         speciesAttributeName="species",
+                                                         schoolAttributeName="school",
+                                                         sizeClassLowerBoundAttributeName="class_low",
+                                                         sizeClassUpperBoundAttributeName="class_up",
+                                                         fishCountAttributeName="fish_count",
+                                                         withSparql=FALSE)
+{
+  if (! require(ggplot2) | ! require(RColorBrewer)) {
+    stop("Missing library")
+  }
+  
+  if (missing(df)) {
+    stop("Input data frame not specified")
+  }
+  
+  #check for input attributes
+  if(sum(names(df) == yearAttributeName) == 0) {
+    stop("Cannot found year attribute")
+  }
+  
+  if(sum(names(df) == speciesAttributeName) == 0) {
+    stop("Cannot found species attribute")
+  }
+  
+  if(sum(names(df) == schoolAttributeName) == 0) {
+    stop("Cannot found school type attribute")
+  }  
+  
+  if(sum(names(df) == sizeClassLowerBoundAttributeName) == 0) {
+    stop("Cannot found size class lower bound attribute")
+  }  
+  
+  if(sum(names(df) == sizeClassUpperBoundAttributeName) == 0) {
+    stop("Cannot found size class upper bound attribute")
+  }
+  
+  if(sum(names(df) == fishCountAttributeName) == 0) {
+    stop("Cannot found fish count attribute")
+  }  
+  
+  #format columns
+  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  df[, schoolAttributeName] <- as.factor(df[, schoolAttributeName])
+  df[, sizeClassLowerBoundAttributeName] <- as.numeric(df[, sizeClassLowerBoundAttributeName])    
+  df[, sizeClassUpperBoundAttributeName] <- as.numeric(df[, sizeClassUpperBoundAttributeName])
+  df[, fishCountAttributeName] <- as.numeric(df[, fishCountAttributeName])    
+  
+  #rename columns
+  names(df)[which(names(df) == yearAttributeName)] <- "year"  
+  names(df)[which(names(df) == speciesAttributeName)] <- "species"
+  names(df)[which(names(df) == schoolAttributeName)] <- "school"
+  names(df)[which(names(df) == sizeClassLowerBoundAttributeName)] <- "sizeClassLowerBound"
+  names(df)[which(names(df) == sizeClassUpperBoundAttributeName)] <- "sizeClassUpperBound"
+  names(df)[which(names(df) == fishCountAttributeName)] <- "fishCount"
+  
+  #test if usual school codes are used
+  if (length(intersect(levels(df$school), c("IND", "BO", "BL"))) == length(levels(df$school))) {
+    df$school <- factor(df$school, levels=c("IND", "BO", "BL"), labels=c("Undefined school", "Log school", "Free school"))
+  }
+  
+  #setup the palette
+  my.colors <- brewer.pal(length(levels(df$school)), "Set1")
+  names(my.colors) <- levels(df$school)
+  
+  #plot fct
+  plotFct <- function(subDf, species.label, lims=c()) {
+    #aggregate values by size class and school type
+    valuesSum <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school, data=subDf, FUN=sum)
+    valuesSum$relative <- (valuesSum$fishCount / sum(valuesSum$fishCount)) * 100
+#     mergedDf <- data.frame(sizeClass=valuesSum$sizeClass, school=valuesSum$school, relative=valuesSum$fishCount / sum(valuesSum$fishCount))
+#     mergedDf$relative <- mergedDf$relative * 100
+    
+    #plot title
+    if (min(subDf$year) == max(subDf$year)) {
+      my.title <- paste(species.label , " size frequencies by school type for ",  min(subDf$year), sep="")
+    } else {
+      my.title <- paste(species.label , " size frequencies by school type for ",  min(subDf$year), "-",  max(subDf$year), sep="")
+    }
+    
+    #build the plot
+    plot.result <- ggplot(mapping=aes(fill=school, order=school)) +
+      geom_rect(data=valuesSum, mapping=aes(xmin = sizeClassLowerBound, xmax = sizeClassUpperBound, ymin = 0, ymax = relative), colour="grey25") +
+      scale_fill_manual(name="School type", values=my.colors) +
+      xlab("Size (in cm)") + ylab("Relative contribution (in %)") + 
+      labs(colour="School type", title=my.title) +
+      theme(legend.position="bottom")
+    
+    if (length(lims) == 4) {
+      plot.result <- plot.result + scale_x_continuous(limits=c(lims[1], lims[2])) + scale_y_continuous(limits=c(lims[3], lims[4]))
+    }
+    
+    #draw the plot
+    base_temp_file <- tempfile(pattern=paste("I9_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
+    plot_file_path <- paste(base_temp_file, ".png", sep="")
+    ggsave(filename=plot_file_path, plot=plot.result, dpi=100)
+    
+    #create the RDF metadata
+    return(plot.result)
+  }
+  
+  #define the resulr df  
+  result.df <- c()
+  
+  for (species.current in unique(df$species)) {    
+    
+      species.label <- species.current
+      species.URI <- species.current
+      
+    #species.df <- df[df$species == species.current,]
+    species.df <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school + year, data=df[df$species == species.current,], FUN=sum)
+    
+    #plot for all the period
+    result.plot.df <- plotFct(species.df, species.label)
+    result.df <- rbind(result.df, result.plot.df)
+  
+    years <- unique(species.df$year)
+    if (length(years) > 1)
+    {      
+      contrib.max <- max(unlist(lapply(years, FUN=function(x) {max((species.df[species.df$year == x,]$fishCount / sum(species.df[species.df$year == x,]$fishCount)) * 100)})))
+      sizeClass.range <- range(species.df$sizeClassLowerBound, species.df$sizeClassUpperBound)
+      #for each year
+      for(year.current in years) {
+        result.plot.df <- plotFct(species.df[species.df$year==year.current,], species.label, lims=c(sizeClass.range[1], sizeClass.range[2], 0, contrib.max))
+        result.df <- rbind(result.df, result.plot.df)
+      }
+      
+      #for each decade
+      species.df$decade <- species.df$year - (species.df$year %% 10)
+      decades <- unique(species.df$decade)
+      if (length(decades) > 1)
+      {
+        species.decade.df <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + school + decade, data=species.df, FUN=sum)
+        contrib.max <- max(unlist(lapply(decades, FUN=function(x) {max((species.decade.df[species.decade.df$decade == x,]$fishCount / sum(species.decade.df[species.decade.df$decade == x,]$fishCount)) * 100)})))
+        for(decade.current in decades) {
+          result.plot.df <- plotFct(species.df[species.df$decade==decade.current,], species.label, lims=c(sizeClass.range[1], sizeClass.range[2], 0, contrib.max))
+        }
+      }
+    }
+  }
+  return(result.plot.df)
+}
+
+####################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################
+
+Atlas_i10_RelativeSizeFrequenciesByDecade <- function(df, temporalAgg=10,
+                                                      yearAttributeName="year",
+                                                      speciesAttributeName="species",
+                                                      sizeClassLowerBoundAttributeName="class_low",
+                                                      sizeClassUpperBoundAttributeName="class_up",
+                                                      fishCountAttributeName="fish_count",
+                                                      withSparql=FALSE)
+{  
+  if (! require(ggplot2) | ! require(RColorBrewer)) {
+    stop("Missing library")
+  }
+  
+  if (missing(df)) {
+    stop("Input data frame not specified")
+  }
+  
+  if (temporalAgg < 2) {
+    stop("Invalid parameter value for temporalAgg, must be > 1")
+  }
+  
+  #check for input attributes
+  if(sum(names(df) == yearAttributeName) == 0) {
+    stop("Cannot found year attribute")
+  }
+  
+  if(sum(names(df) == speciesAttributeName) == 0) {
+    stop("Cannot found species attribute")
+  }
+    
+  if(sum(names(df) == sizeClassLowerBoundAttributeName) == 0) {
+    stop("Cannot found size class lower bound attribute")
+  }  
+  
+  if(sum(names(df) == sizeClassUpperBoundAttributeName) == 0) {
+    stop("Cannot found size class upper bound attribute")
+  }
+  
+  if(sum(names(df) == fishCountAttributeName) == 0) {
+    stop("Cannot found fish count attribute")
+  }  
+  
+  #format columns
+  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  df[, sizeClassLowerBoundAttributeName] <- as.numeric(df[, sizeClassLowerBoundAttributeName])    
+  df[, sizeClassUpperBoundAttributeName] <- as.numeric(df[, sizeClassUpperBoundAttributeName])    
+  df[, fishCountAttributeName] <- as.numeric(df[, fishCountAttributeName])    
+  
+  #rename columns
+  names(df)[which(names(df) == yearAttributeName)] <- "year"  
+  names(df)[which(names(df) == speciesAttributeName)] <- "species"
+  names(df)[which(names(df) == sizeClassLowerBoundAttributeName)] <- "sizeClassLowerBound"
+  names(df)[which(names(df) == sizeClassUpperBoundAttributeName)] <- "sizeClassUpperBound"
+  names(df)[which(names(df) == fishCountAttributeName)] <- "fishCount"
+  
+
+  #compute decades
+  df$decade <- df$year - (df$year %% temporalAgg)
+  decade.df <- aggregate(list(year=df$year), by=list(decade=df$decade), FUN=range)
+  decade.df$decade <- as.factor(decade.df$decade)
+  decade.df$label <- paste(decade.df$year[,1], "-", decade.df$year[,2], sep="")
+  
+  #setup the palette
+  my.colors <- rep(brewer.pal(nrow(decade.df), "Set1"), length.out=nrow(decade.df))
+  names(my.colors) <- decade.df$label
+  
+  #function to compute mean and median for frequency data
+  calculateMeanMedian <- function(LowerBound, UpperBound, Obs) {  
+    cumObs <- cumsum(Obs)
+    n_2 <- max(cumObs) / 2
+    row.mid <- findInterval(max(cumObs) / 2, cumObs) + 1
+    the.median <- LowerBound[row.mid] + ((UpperBound[row.mid] - LowerBound[row.mid]) / Obs[row.mid]) * (n_2 - (cumObs[row.mid] - Obs[row.mid]))
+    the.mean <- sum((LowerBound + (UpperBound - LowerBound) / 2) * Obs) / sum(Obs)
+    return(c(mean=the.mean, median=the.median))
+  }
+  
+  #define the resulr df  
+  result.df <- c()
+  
+  for (species.current in unique(df$species)) {
+
+          species.label <- species.current
+      species.URI <- species.current
+    
+    species.df <- df[df$species == species.current,]
+    
+    species.df.year.min <- min(species.df$year)
+    species.df.year.max <- max(species.df$year)
+      
+    species.df <- aggregate(fishCount ~ sizeClassLowerBound + sizeClassUpperBound + decade, data=species.df, FUN=sum)
+    species.df$decade <- factor(species.df$decade, levels=decade.df$decade, labels=decade.df$label)  
+    
+    #order data
+    species.df <- species.df[order(species.df$decade, species.df$sizeClassLowerBound),]
+    #compute mean and median by decade
+    median.df <- ddply(species.df, .(decade), function(x) calculateMeanMedian(x$sizeClassLowerBound, x$sizeClassUpperBound, x$fishCount))
+    
+    #compute sum and relative contribution
+    species.df <- merge(species.df, aggregate(list(sum=species.df$fishCount), by=list(decade=species.df$decade), FUN=sum))
+    species.df$relative <- species.df$fishCount / species.df$sum
+    
+    #detrmine a little space on the plot btw each class
+    
+    #build the plot
+    plot.result <- ggplot(data=species.df) + 
+      geom_rect(mapping=aes(fill=decade, order=decade, xmin = sizeClassLowerBound, xmax = sizeClassUpperBound, ymin = 0, ymax = relative), colour="grey25", show.legend = FALSE) +
+      facet_grid(decade ~ .) +
+      geom_vline(data=median.df, mapping=aes(xintercept=median), linetype="dashed", colour="grey25") +
+      geom_vline(data=median.df, mapping=aes(xintercept=mean), colour="grey25") +
+      scale_fill_manual(values=my.colors) +
+      labs(x="Size class (in cm). With mean (solid grey line) and median (dashed)", y="Relative contribution", title=paste(species.label, "size frequencies contribution"), fill=NA)
+    
+    #draw the plot
+    base_temp_file <- tempfile(pattern=paste("I10_", gsub(" ", "_", species.label), "_", as.character(species.df.year.min), "-", as.character(species.df.year.max), "_", sep=""))
+    plot_file_path <- paste(base_temp_file, ".png", sep="")
+    ggsave(filename=plot_file_path, plot=plot.result, dpi=100)
+    
+
+  }
+  return(plot.result)  
+}
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+
+### Select parameters to customize plots 1, 2, 3 and 4 (see [Github wiki](https://github.com/juldebar/IRDTunaAtlas/wiki))
+
+
+```{r}
+
+
+
+query_i9i10 <- ("select species, year, school, class_low, class_up, fish_count, data_count from tuna_atlas.mat_i9i10;")
+df_i9i10 = st_read(con, query = query_i9i10)
+year_i9i10 = unique(df_i9i10$year)
+species_i9i10 = unique(df_i9i10$species)
+
+
+
+  
+# selectInput widget
+
+selectInput("species_choice_i9i10", label = h3("Select species for  i9 and i10"), choices = species_i9i10, selected = "YFT", multiple = FALSE)
+selectInput("year_choice_i9i10", label = h3("Select year for i9 and i10"), choices = year_i9i10, selected = "1999",multiple = FALSE)
+# Input: Simple integer interval ----
+sliderInput("range", "Range:", min = 1950, max = 2021, value =  c(1995,2005))
+
+
+wkt <- reactiveVal() 
+
+# textOutput(wkt())
+
+renderPrint({ 
+  paste0("Your current selection: ", input$species_choice_i9i10," and ", input$year_choice_i9i10)
+  paste0("The area you have selected is (WKT format): ", wkt())
+})
+
+```
+
+
+
+### Select WKT on the map
+
+To be done : add all WMS layers of input datasets
+
+```{r}
+output$mymap <- renderLeaflet(
+leaflet() %>%
+addTiles() %>%
+# addPmToolbar(
+#   toolbarOptions = pmToolbarOptions(drawMarker = FALSE, position = "topright"),
+#   drawOptions = pmDrawOptions(snappable = FALSE, allowSelfIntersection = FALSE),
+#   editOptions = pmEditOptions(preventMarkerRemoval = TRUE, draggable = FALSE),
+#   cutOptions = pmCutOptions(snappable = FALSE, allowSelfIntersection = FALSE)
+# ) %>%
+    addDrawToolbar(
+        targetGroup = "draw",
+        editOptions = editToolbarOptions(
+            selectedPathOptions = selectedPathOptions()
+        )
+    )   %>% setView(lng =48, lat =-8, zoom = 5
+        ) %>% addWMSTiles(
+    # "http://thredds.oreme.org:8080/thredds/wms/MARBEC/Seychelles/global-reanalysis-phy-001-030-monthly_SEY_t55_199301-201906.nc",
+    "https://geoserver-sdi-lab.d4science.org/geoserver/sdilab_geoflow/ows?service=WMS",
+    layers = "global_catch_5deg_1m_ird_level0",
+        # layers = "thetao",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE), group ="Seatizen", attribution = "Seatizen WMS"
+  )  %>%
+    addLayersControl(
+        overlayGroups = c("draw"),
+        options = layersControlOptions(collapsed = FALSE)
+    ) 
+  
+)
+    leafletOutput('mymap')  
+    
+    
+        observe({
+              #use the draw_stop event to detect when users finished drawing
+            feature <- input$mymap_draw_new_feature
+            req(input$mymap_draw_stop)
+            print(feature)
+            polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+            # see  https://rstudio.github.io/leaflet/shiny.html
+            bb <- input$mymap_bounds 
+            geom_polygon <- input$mymap_draw_new_feature$geometry
+            # drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
+            geoJson <- geojsonio::as.json(feature)
+            # spdf <- geojsonio::geojson_sp(feature)
+            geom <- st_read(geoJson)
+            wkt(st_as_text(st_geometry(geom[1,])))
+            coord <- st_as_text(st_geometry(geom[1,]))
+            
+            north <- polygon_coordinates[[1]][[1]]
+            south <- polygon_coordinates[[2]][[1]]
+            east <- polygon_coordinates[[1]][[2]]
+            west <- polygon_coordinates[[2]][[2]]
+            
+            
+            if(is.null(polygon_coordinates))
+                return()
+            text<-paste("North ", north, "South ", east)
+            
+            mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(south,west,coord)
+            textOutput("wkt")
+        })
+
+# https://rdrr.io/github/rahulchauhan049/dashboard.experiment/src/R/mod_leaflet.R
+# https://stackoverflow.com/questions/44979900/how-to-download-polygons-drawn-in-leaflet-draw-as-geojson-file-from-r-shiny        
+```
+
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+
+
+### Plot 10 [Indicator I10 : Size frequencies by decade](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I10-:-Size-frequencies-by-decade)
+
+
+```{r}
+
+renderPlot({ 
+  
+# target_species <- "SKJ"
+# target_year = 1999
+# df_i10_filtered <- df_i9i10 %>% filter(year %in% target_year, species %in% target_species)
+df_i10_filtered <- df_i9i10 %>% filter(year %in% input$year_choice_i9i10, species %in% input$species_choice_i9i10)
+
+
+i10 <-  Atlas_i10_RelativeSizeFrequenciesByDecade(df=df_i10_filtered,
+                                                     temporalAgg=5,
+                                                     yearAttributeName="year",
+                                                     speciesAttributeName="species",
+                                                     sizeClassLowerBoundAttributeName="class_low",
+                                                     sizeClassUpperBoundAttributeName="class_up",
+                                                     fishCountAttributeName="fish_count")
+i10
+})
+
+
+```
+
+
+
+### Plot 9 [Indicator I9 : Size frequencies by school type](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I9-:-Size-frequencies-by-school-type)
+
+
+```{r}
+
+renderPlot({ 
+  
+# target_species <- c("BET","SKJ")
+# target_year <- c("2003","2004")
+# df_i9_filtered <- df_i9i10 %>% filter(year %in% target_year, species %in% target_species)
+df_i9_filtered <- df_i9i10 %>% filter(year %in% input$year_choice_i9i10, species %in% input$species_choice_i9i10)
+
+
+i9 <- Atlas_i9_RelativeSizeFrequenciesBySchoolType(df=df_i9_filtered,
+                                                   yearAttributeName="year",
+                                                   speciesAttributeName="species",
+                                                   schoolAttributeName="school",
+                                                   sizeClassLowerBoundAttributeName="class_low",
+                                                   sizeClassUpperBoundAttributeName="class_up",
+                                                   fishCountAttributeName="fish_count")
+i9
+})
+
+
+```
+

@@ -36,6 +36,7 @@ rm(list=ls())
 ##Database Identifiers:
 
 DRV=RPostgres::Postgres()
+
 con <- dbConnect(drv=DRV,  dbname = Dbname, host = Host , user=User, password=Password,port="5432")
 
 
@@ -325,9 +326,12 @@ Column {data-width=350}
 
 ```{r}
 
+wkt <- reactiveVal('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))') 
 
 
 query_i9i10 <- ("select species, year, school, class_low, class_up, fish_count, data_count from tuna_atlas.mat_i9i10;")
+# query_i9i10 <- paste0("select * FROM tuna_atlas.mat_i9i10_spatial WHERE ST_Within(geom,ST_GeomFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',4030));")
+# query_i9i10 <- ("select species, year, school, class_low, class_up, sum(fish_count) AS fish_count, count(data_count) AS data_count, ST_Collect(geom) whole_geom from tuna_atlas.mat_i9i10_spatial WHERE ST_Within(geom,ST_GeomFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',4030)) GROUP BY species, year, school, class_low, class_up ;")
 df_i9i10 = st_read(con, query = query_i9i10)
 year_i9i10 = unique(df_i9i10$year)
 species_i9i10 = unique(df_i9i10$species)
@@ -343,13 +347,15 @@ selectInput("year_choice_i9i10", label = h3("Select year for i9 and i10"), choic
 sliderInput("range", "Range:", min = 1950, max = 2021, value =  c(1995,2005))
 
 
-wkt <- reactiveVal() 
 
 # textOutput(wkt())
 
 renderPrint({ 
   paste0("Your current selection: ", input$species_choice_i9i10," and ", input$year_choice_i9i10)
   paste0("The area you have selected is (WKT format): ", wkt())
+  query_i9i10 <- paste0("select species, year, school, class_low, class_up, sum(fish_count) AS fish_count, count(data_count) AS data_count, ST_Collect(geom) whole_geom from tuna_atlas.mat_i9i10_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4030)) GROUP BY species, year, school, class_low, class_up ;")
+  paste0("The query : ", query_i9i10)
+
 })
 
 ```
@@ -440,19 +446,27 @@ Column {data-width=650}
 
 renderPlot({ 
   
-# target_species <- "SKJ"
-# target_year = 1999
-# df_i10_filtered <- df_i9i10 %>% filter(year %in% target_year, species %in% target_species)
-df_i10_filtered <- df_i9i10 %>% filter(year %in% input$year_choice_i9i10, species %in% input$species_choice_i9i10)
+target_species <- "SKJ"
+target_year = 1999
+df_i10_filtered <- df_i9i10 %>% filter(year > target_year, species %in% target_species)
+if(wkt()!='POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'){
+  df_i9i10 = st_read(con, query = paste0("select species, year, school, class_low, class_up, sum(fish_count) AS fish_count, count(data_count) AS data_count, ST_Collect(geom) whole_geom from tuna_atlas.mat_i9i10_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4030)) GROUP BY species, year, school, class_low, class_up ;"))
+  df_i10_filtered <- df_i9i10 %>% filter(year > input$year_choice_i9i10, species %in% input$species_choice_i9i10)
 
+}else{
+  
+df_i10_filtered <- df_i9i10 %>% filter(year > input$year_choice_i9i10, species %in% input$species_choice_i9i10)
 
-i10 <-  Atlas_i10_RelativeSizeFrequenciesByDecade(df=df_i10_filtered,
-                                                     temporalAgg=5,
-                                                     yearAttributeName="year",
-                                                     speciesAttributeName="species",
-                                                     sizeClassLowerBoundAttributeName="class_low",
-                                                     sizeClassUpperBoundAttributeName="class_up",
-                                                     fishCountAttributeName="fish_count")
+}
+  i10 <-  Atlas_i10_RelativeSizeFrequenciesByDecade(
+                                                    df=as.data.frame(df_i10_filtered),
+                                                    temporalAgg=3,
+                                                    yearAttributeName="year",
+                                                    speciesAttributeName="species",
+                                                    sizeClassLowerBoundAttributeName="class_low",
+                                                    sizeClassUpperBoundAttributeName="class_up",
+                                                    fishCountAttributeName="fish_count"
+                                                    )
 i10
 })
 

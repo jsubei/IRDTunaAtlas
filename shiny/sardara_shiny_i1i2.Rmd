@@ -1,0 +1,477 @@
+---
+title: "Sardara Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(dplyr)
+library(XML)
+library(DBI)
+library(RPostgres)
+library(RPostgreSQL)
+library(dplyr)
+library(leaflet)
+library(leaflet.extras)
+library(leafpm)
+library(mapedit)
+library(pacman)
+library(sf)
+library(sp)
+library(ggplot2)
+library(plyr)
+```
+
+```{r, include=FALSE}
+
+#######################
+##Database Identifiers:
+DRV=RPostgres::Postgres()
+# con <- dbConnect(drv=DRV,  dbname = Dbname, host = Host , user=User, password=Password,port="5432" )
+# codes_directory=codes_github_repository
+# query <- paste(readLines(paste0(codes_directory,"SQL/select_annotated_images_attributes.sql")), collapse=" ")
+
+####################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################
+
+Atlas_i1_SpeciesByOcean <- function(df, 
+                                    yearAttributeName="year", 
+                                    oceanAttributeName="ocean", 
+                                    speciesAttributeName="species",
+                                    valueAttributeName="value",
+                                    withSparql=FALSE)
+{
+  if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
+    stop("Missing library")
+  }
+  
+  if (missing(df)) {
+    stop("Input data frame not specified")
+  }
+  
+  #check for input attributes
+  if(sum(names(df) == yearAttributeName) == 0) {
+    stop("Cannot found year attribute")
+  }
+  
+  if(sum(names(df) == oceanAttributeName) == 0) {
+    stop("Cannot found ocean attribute")
+  }
+  
+  if(sum(names(df) == speciesAttributeName) == 0) {
+    stop("Cannot found species attribute")
+  }
+  
+  if(sum(names(df) == valueAttributeName) == 0) {
+    stop("Cannot found value attribute")
+  }  
+  
+  #format columns  
+  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  df[, oceanAttributeName] <- as.factor(df[, oceanAttributeName])
+  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])    
+  
+  #aggregate to cut other columns
+  df <- aggregate(x=df[, valueAttributeName], 
+                  by=list(df[, yearAttributeName], df[, oceanAttributeName], df[, speciesAttributeName]), 
+                  FUN=sum)
+  #rename columns
+  names(df) <- c("year", "ocean", "species", "value")
+  
+  #define the result df  
+  result.df <- c()
+  
+  #test if FAO usual ocean codes are used
+  if (length(intersect(levels(df$ocean), c("ATL", "IND", "PAC_E", "PAC_W"))) == length(levels(df$ocean))) {
+    df$ocean <- factor(df$ocean, levels=c("ATL", "IND", "PAC_E", "PAC_W"), labels=c("Atlantic O.", "Indian O.", "East Pacific O.", "West Pacific O."))
+  }
+  
+  #setup the palette
+  my.colors <- brewer.pal(length(levels(df$ocean)), "Set1")
+  names(my.colors) <- levels(df$ocean)
+  
+  #TODO : mcforeach ?
+  for (species.current in unique(df$species)) {
+    current.df <- df[df$species == species.current,]
+    
+    #aggregate values by years and ocean
+    aggData <- aggregate(value ~ ocean + year, data=current.df, sum)
+    
+    #keep only common time extent
+    max_year <- min(unlist(lapply(levels(aggData$ocean), function(o) {return(if(length(subset(aggData, ocean==o)$year) > 0) max(subset(aggData, ocean==o)$year) else NA)})), na.rm=TRUE)
+    min_year <- max(unlist(lapply(levels(aggData$ocean), function(o) {return(if(length(subset(aggData, ocean==o)$year) > 0) min(subset(aggData, ocean==o)$year) else NA)})), na.rm=TRUE)
+    aggData <- subset(aggData, year >= min_year & year <= max_year)
+    
+    #convert values from tons to thousand tons
+    aggData$value <- aggData$value / 1000
+    
+
+      species.label <- species.current
+      species.URI <- species.current
+    
+    #build the plot
+    resultPlot <- ggplot(aggData, aes(x=year, y=value, group=ocean)) + 
+      geom_area(aes(fill=ocean), position="stack") + 
+      geom_line(position="stack", color="grey20") + 
+      scale_fill_manual(name="Ocean", values=my.colors) +
+      xlab("Year") + ylab("Catches in thousand tons") + 
+      ggtitle(paste(species.label, "catches by Ocean")) +
+      theme(legend.position="bottom")
+    
+
+
+  }
+  return(resultPlot)
+}
+
+####################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################
+
+
+Atlas_i2_SpeciesByGear <- function(df, 
+                                   yearAttributeName="year", 
+                                   speciesAttributeName="species",
+                                   gearTypeAttributeName="gear",
+                                   valueAttributeName="value",
+                                   withSparql=FALSE)
+{
+  if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
+    stop("Missing library")
+  }
+  
+  if (missing(df)) {
+    stop("Input data frame not specified")
+  }
+  
+  #check for input attributeshttps://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I2-:-Annual-catches-by-gear
+  if(sum(names(df) == yearAttributeName) == 0) {
+    stop("Cannot found year attribute")
+  }
+  
+  if(sum(names(df) == speciesAttributeName) == 0) {
+    stop("Cannot found species attribute")
+  }
+  
+  if(sum(names(df) == gearTypeAttributeName) == 0) {
+    stop("Cannot found gear attribute")
+  }
+  
+  if(sum(names(df) == valueAttributeName) == 0) {
+    stop("Cannot found value attribute")
+  }  
+  
+  #format columns  
+  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
+  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
+  df[, gearTypeAttributeName] <- as.factor(df[, gearTypeAttributeName])
+  df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])    
+  
+  #aggregate to cut other columns
+  df <- aggregate(x=df[, valueAttributeName], 
+                  by=list(df[, yearAttributeName], df[, speciesAttributeName], df[, gearTypeAttributeName]), 
+                  FUN=sum)
+  #rename columns
+  names(df) <- c("year", "species", "gear_type", "value")
+    
+  #test if FAO usual gear codes are used
+  #if (length(intersect(levels(df$gear_type), c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"))) == length(levels(df$gear_type))) {
+  #  df$gear_type <- factor(df$gear_type, levels=c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"), labels=c("Baitboat", "Gillnet", "Longline", "Purse seine", "Unclass. art. Indian O.", "Unclass. art. Atl. O.", "Trol.", "Trap"))
+  #}
+  
+  #setup the palette
+  my.colors <- brewer.pal(length(levels(df$gear_type)), "Set1")
+  names(my.colors) <- levels(df$gear_type)
+  
+  #define the result
+  result.df <- c()
+  
+  #TODO : mcforeach ?
+  for (species.current in unique(df$species)) {
+    current.df <- df[df$species == species.current,]
+    
+    #aggregate values by years and gear type
+    aggData <- aggregate(value ~ gear_type + year, data=current.df, sum)
+    
+    #convert values from tons to thousand tons
+    aggData$value <- aggData$value / 1000
+    
+    #order factors levels by value
+    aggData$gear_type <- factor(aggData$gear_type, levels=rev(levels(reorder(aggData$gear_type, aggData$value))))
+      
+     
+    species.label <- species.current
+    species.URI <- species.current
+    
+    
+       #build the plot
+    resultPlot <- ggplot(aggData, aes(x=year, y=value, fill=gear_type, order=gear_type)) + 
+      geom_bar(stat="identity", width=0.8) + 
+      geom_bar(stat="identity", width=0.8, colour="grey20", show.legend=FALSE) + 
+      scale_fill_manual(name="Gear type", values=my.colors) +
+      xlab("Year") + ylab("Catches in thousand tons") + 
+      ggtitle(paste(species.label, "catches by gear type")) +
+      theme(legend.position="bottom")
+      
+  }
+
+return(resultPlot)
+
+}
+
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+
+### Select parameters to customize plots 1, 2, 3 and 4 (see [Github wiki](https://github.com/juldebar/IRDTunaAtlas/wiki))
+
+
+```{r}
+
+
+wkt <- reactiveVal('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))') 
+new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
+
+query_i1i2 <- ("select * from i1i2 ;")
+df_nominal <- st_read(con, query = query_i1i2)
+species = unique(df_nominal$species)
+gear_group = unique(df_nominal$gear_group)
+ocean = unique(df_nominal$ocean)
+
+# selectInput widget
+
+selectInput("species_choice", label = h3("Select species for i1, i2 and i3 "), choices = species, selected = "SKJ")
+selectInput("ocean_choice", label = h3("Select ocean for i1"), choices = ocean, selected = c("ICCAT","IOTC","IATTC"),multiple = TRUE)
+selectInput("gear_choice", label = h3("Select gear(s) for i2"), choices = gear_group, selected = "PS",multiple = TRUE)
+
+
+# textOutput(wkt())
+
+renderPrint({ 
+  paste0("Your current selection for i1 and i2: ", input$species_choice," and ", input$gear_choice," and ", input$ocean_choice)
+  query_i1i2 <- paste0("SELECT sum(value) as value, unit, ocean, gear_group, year, species, st_collect(geom) FROM public.i1i2_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY  unit, ocean, gear_group, year, species ;")
+})
+
+```
+
+
+
+### Select WKT on the map
+
+To be done : add all WMS layers of input datasets
+
+```{r}
+output$mymap <- renderLeaflet(
+leaflet() %>%
+addTiles() %>%
+# addPmToolbar(
+#   toolbarOptions = pmToolbarOptions(drawMarker = FALSE, position = "topright"),
+#   drawOptions = pmDrawOptions(snappable = FALSE, allowSelfIntersection = FALSE),
+#   editOptions = pmEditOptions(preventMarkerRemoval = TRUE, draggable = FALSE),
+#   cutOptions = pmCutOptions(snappable = FALSE, allowSelfIntersection = FALSE)
+# ) %>%
+    addDrawToolbar(
+        targetGroup = "draw",
+        editOptions = editToolbarOptions(
+            selectedPathOptions = selectedPathOptions()
+        )
+    )   %>% setView(lng =48, lat =-8, zoom = 5
+        ) %>% addWMSTiles(
+    # "http://thredds.oreme.org:8080/thredds/wms/MARBEC/Seychelles/global-reanalysis-phy-001-030-monthly_SEY_t55_199301-201906.nc",
+    "https://geoserver-sdi-lab.d4science.org/geoserver/sdilab_geoflow/ows?service=WMS",
+    layers = "global_catch_5deg_1m_ird_level0",
+        # layers = "thetao",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE), group ="Seatizen", attribution = "Seatizen WMS"
+  )  %>%
+    addLayersControl(
+        overlayGroups = c("draw"),
+        options = layersControlOptions(collapsed = FALSE)
+    ) 
+  
+)
+    leafletOutput('mymap')  
+    
+    
+        observe({
+              #use the draw_stop event to detect when users finished drawing
+            feature <- input$mymap_draw_new_feature
+            req(input$mymap_draw_stop)
+            print(feature)
+            polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+            # see  https://rstudio.github.io/leaflet/shiny.html
+            bb <- input$mymap_bounds 
+            geom_polygon <- input$mymap_draw_new_feature$geometry
+            # drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
+            geoJson <- geojsonio::as.json(feature)
+            # spdf <- geojsonio::geojson_sp(feature)
+            geom <- st_read(geoJson)
+            wkt(st_as_text(st_geometry(geom[1,])))
+            new_wkt <- st_as_text(st_geometry(geom[1,]))
+            
+            north <- polygon_coordinates[[1]][[1]]
+            south <- polygon_coordinates[[2]][[1]]
+            east <- polygon_coordinates[[1]][[2]]
+            west <- polygon_coordinates[[2]][[2]]
+            
+            
+            if(is.null(polygon_coordinates))
+                return()
+            text<-paste("North ", north, "South ", east)
+            
+            mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(south,west,new_wkt)
+            textOutput("wkt")
+        })
+
+        
+#             
+#         observe({
+#           click<-input$mymap_click
+#             polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+#             # wkt <- st_as_text(polygon_coordinates)
+#             # see  https://rstudio.github.io/leaflet/shiny.html
+#             # bb <- input$mymap_bounds 
+#             
+#             north <- polygon_coordinates[[1]][[1]]
+#             south <- polygon_coordinates[[1]][[1]]
+#             east <- polygon_coordinates[[1]][[1]]
+#             west <- polygon_coordinates[[1]][[1]]
+#             
+#             
+#             if(is.null(click))
+#                 return()
+# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(north,south, "toto")
+#         })
+        
+        
+      # #get the coordinates of the polygon
+      # polygon_coordinates <- 
+      #   input$mymap_draw_new_feature$geometry$coordinates[[1]]
+    
+    # observeEvent(input$mymap_draw_new_feature,{
+    #     # feature <- input$mymap_draw_new_feature
+    #     polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+    #     text<-paste("Lattitude ","Lo")
+    #     mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(polygon_coordinates[[1]][[1]], polygon_coordinates[[2]][[1]])
+    # })
+
+#         observe({
+#             click<-input$mymap_click
+#             if(is.null(click))
+#                 return()
+#             text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng)
+#             text2<-paste("You've selected point ", text)
+# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(click$lng, click$lat, text)
+#     output$Click_text<-renderText({
+#       text2
+#     })
+#             
+#         })
+#     
+    
+  #   
+  #   output$rastersum <- renderText({
+  #   #use the draw_stop event to detect when users finished drawing
+  #   req(input$mymap_draw_stop)
+  # 
+  #   # get the coordinates of the polygon and make SpatialPolygons object
+  #   polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+  # 
+  #   drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
+  #   sp <- SpatialPolygons(list(Polygons(list(drawn_polygon),"drawn_polygon")))
+  # 
+  #   # set coords as latlong then transform to leaflet projection
+  #   proj4string(sp) <- LL
+  #   polyre <- spTransform(sp, leaf.proj)
+  # 
+  #   e <- extract(r,polyre)
+  #   sum(unlist(e),na.rm=T)
+  # 
+  # })
+
+# https://rdrr.io/github/rahulchauhan049/dashboard.experiment/src/R/mod_leaflet.R
+# https://stackoverflow.com/questions/44979900/how-to-download-polygons-drawn-in-leaflet-draw-as-geojson-file-from-r-shiny        
+```
+
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+
+### Plot 1 [Indicator I1 : Annual catches by ocean](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I1-%3A-Annual-catches-by-ocean)
+
+
+```{r}
+
+renderPlot({ 
+#unique(df_nominal$species)
+# nrow(df_nominal)
+# colnames(df_nominal)
+# unique(df_nominal$ocean)
+
+# Setting parameters (hard coded here) with selectInput widget
+
+if(wkt()!=new_wkt){
+  df_nominal = st_read(con, query = paste0("SELECT sum(value) as value, unit, ocean, gear_group, year, species, st_collect(geom) FROM public.i1i2_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY  unit, ocean, gear_group, year, species ;"))
+}
+  #Filtering input dataset with selected parameters
+
+df_i1 <- df_nominal %>% filter(species %in% input$species_choice,ocean %in% input$ocean_choice) 
+
+
+i1 <- Atlas_i1_SpeciesByOcean(as.data.frame(df_i1), 
+                         yearAttributeName="year", 
+                         oceanAttributeName="ocean", 
+                         speciesAttributeName="species", 
+                         valueAttributeName="value")
+i1
+})
+
+
+
+
+```
+
+### Plot 2 [Indicator I2 : Annual catches by gear](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I2-:-Annual-catches-by-gear)
+
+
+```{r}
+
+
+renderPlot({
+
+# target_species <- c("SKJ")
+# target_gear <- c("PS")
+
+#Filtering input dataset with selected parameters
+# df_i2 <- df_nominal %>% filter(gear_group %in% target_gear,species %in% target_species) %>% dplyr::rename(gear_type=gear_group)
+  
+  
+if(wkt()!=new_wkt){
+  df_nominal = st_read(con, query = paste0("SELECT sum(value) as value, unit, ocean, gear_group, year, species, st_collect(geom) FROM public.i1i2_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY  unit, ocean, gear_group, year, species ;"))
+}
+  #Filtering input dataset with selected parameters
+
+df_i2 <- df_nominal %>% filter(gear_group %in% input$gear_choice,species %in% input$species_choice) %>% dplyr::rename(gear_type=gear_group)
+
+i2 <- Atlas_i2_SpeciesByGear(as.data.frame(df_i2),
+                             yearAttributeName="year",
+                                    speciesAttributeName="species",
+                                    valueAttributeName="value",
+                                   gearTypeAttributeName="gear_type",
+                                    withSparql=FALSE)
+i2
+})
+
+
+
+```
+

@@ -24,6 +24,7 @@ library(pacman)
 library(sf)
 library(sp)
 library(ggplot2)
+library(plotly)
 library(plyr)
 ```
 
@@ -34,12 +35,7 @@ library(plyr)
 rm(list=ls())
 ########################
 ##Database Identifiers:
-
-DRV=RPostgres::Postgres()
-
-con <- dbConnect(drv=DRV,  dbname = Dbname, host = Host , user=User, password=Password,port="5432")
-
-
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credtentials.R")
 
 ####################################################################################################################################################################################################################################
 ####################################################################################################################################################################################################################################
@@ -444,11 +440,11 @@ Column {data-width=650}
 
 ```{r}
 
-renderPlot({ 
+output$plot10 <- renderPlotly({ 
   
-target_species <- "SKJ"
-target_year = 1999
-df_i10_filtered <- df_i9i10 %>% filter(year > target_year, species %in% target_species)
+# target_species <- "SKJ"
+# target_year = 1999
+# df_i10_filtered <- df_i9i10 %>% filter(year > target_year, species %in% target_species)
 if(wkt()!='POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'){
   df_i9i10 = st_read(con, query = paste0("select species, year, school, class_low, class_up, sum(fish_count) AS fish_count, count(data_count) AS data_count, ST_Collect(geom) whole_geom from tuna_atlas.mat_i9i10_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4030)) GROUP BY species, year, school, class_low, class_up ;"))
   df_i10_filtered <- df_i9i10 %>% filter(year > input$year_choice_i9i10, species %in% input$species_choice_i9i10)
@@ -467,9 +463,10 @@ df_i10_filtered <- df_i9i10 %>% filter(year > input$year_choice_i9i10, species %
                                                     sizeClassUpperBoundAttributeName="class_up",
                                                     fishCountAttributeName="fish_count"
                                                     )
-i10
 })
 
+
+plotlyOutput("plot10")
 
 ```
 
@@ -480,7 +477,7 @@ i10
 
 ```{r}
 
-renderPlot({ 
+output$plot9 <- renderPlotly({ 
   
 # target_species <- c("BET","SKJ")
 # target_year <- c("2003","2004")
@@ -495,9 +492,9 @@ i9 <- Atlas_i9_RelativeSizeFrequenciesBySchoolType(df=df_i9_filtered,
                                                    sizeClassLowerBoundAttributeName="class_low",
                                                    sizeClassUpperBoundAttributeName="class_up",
                                                    fishCountAttributeName="fish_count")
-i9
 })
 
+plotlyOutput("plot9")
 
 ```
 

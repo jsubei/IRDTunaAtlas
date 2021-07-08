@@ -1,0 +1,250 @@
+---
+title: "Sardara Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(dplyr)
+library(XML)
+library(DBI)
+library(RPostgres)
+library(RPostgreSQL)
+library(dplyr)
+library(leaflet)
+library(leaflet.extras)
+library(leafpm)
+library(mapedit)
+library(pacman)
+library(sf)
+library(sp)
+library(ggplot2)
+library(plyr)
+```
+
+```{r, include=FALSE}
+
+#######################
+##Database Identifiers:
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credtentials.R")
+source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i4_SpeciesMonthByOcean.R")
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+
+### Select parameters to customize plots 1, 2, 3 and 4 (see [Github wiki](https://github.com/juldebar/IRDTunaAtlas/wiki))
+
+
+```{r}
+
+
+wkt <- reactiveVal('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))') 
+new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
+
+
+query_i4 <- "select species, year, month, ocean, value from public.i4 ;"
+df_i4 <- st_read(con, query=query_i4)
+species = unique(df_i4$species)
+year = unique(df_i4$year)
+
+# selectInput widget
+
+selectInput("species_choice", label = h3("Select species for i4 "), choices = species, selected = c("SKJ","YFT","BET"),multiple = TRUE)
+selectInput("year_choice", label = h3("Select year for i4"), choices = year, selected = c("2000","2001","2002"),multiple = TRUE)
+
+
+# textOutput(wkt())
+
+renderPrint({ 
+  paste0("Your current selection for i4: ", input$species_choice," and ",input$year_choice)
+  query_i4 <- paste0("SELECT species, ocean, year, month, sum(value) as value, unit, st_collect(geom) FROM public.i4_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species, ocean, year, month,unit ;")
+})
+
+```
+
+
+
+### Select WKT on the map
+
+To be done : add all WMS layers of input datasets
+
+```{r}
+output$mymap <- renderLeaflet(
+leaflet() %>%
+addTiles() %>%
+# addPmToolbar(
+#   toolbarOptions = pmToolbarOptions(drawMarker = FALSE, position = "topright"),
+#   drawOptions = pmDrawOptions(snappable = FALSE, allowSelfIntersection = FALSE),
+#   editOptions = pmEditOptions(preventMarkerRemoval = TRUE, draggable = FALSE),
+#   cutOptions = pmCutOptions(snappable = FALSE, allowSelfIntersection = FALSE)
+# ) %>%
+    addDrawToolbar(
+        targetGroup = "draw",
+        editOptions = editToolbarOptions(
+            selectedPathOptions = selectedPathOptions()
+        )
+    )   %>% setView(lng =48, lat =-8, zoom = 5
+        ) %>% addWMSTiles(
+    # "http://thredds.oreme.org:8080/thredds/wms/MARBEC/Seychelles/global-reanalysis-phy-001-030-monthly_SEY_t55_199301-201906.nc",
+    "https://geoserver-sdi-lab.d4science.org/geoserver/sdilab_geoflow/ows?service=WMS",
+    layers = "global_catch_5deg_1m_ird_level0",
+        # layers = "thetao",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE), group ="Seatizen", attribution = "Seatizen WMS"
+  )  %>%
+    addLayersControl(
+        overlayGroups = c("draw"),
+        options = layersControlOptions(collapsed = FALSE)
+    ) 
+  
+)
+    leafletOutput('mymap')  
+    
+    
+        observe({
+              #use the draw_stop event to detect when users finished drawing
+            feature <- input$mymap_draw_new_feature
+            req(input$mymap_draw_stop)
+            print(feature)
+            polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+            # see  https://rstudio.github.io/leaflet/shiny.html
+            bb <- input$mymap_bounds 
+            geom_polygon <- input$mymap_draw_new_feature$geometry
+            # drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
+            geoJson <- geojsonio::as.json(feature)
+            # spdf <- geojsonio::geojson_sp(feature)
+            geom <- st_read(geoJson)
+            wkt(st_as_text(st_geometry(geom[1,])))
+            new_wkt <- st_as_text(st_geometry(geom[1,]))
+            
+            north <- polygon_coordinates[[1]][[1]]
+            south <- polygon_coordinates[[2]][[1]]
+            east <- polygon_coordinates[[1]][[2]]
+            west <- polygon_coordinates[[2]][[2]]
+            
+            
+            if(is.null(polygon_coordinates))
+                return()
+            text<-paste("North ", north, "South ", east)
+            
+            mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(south,west,new_wkt)
+            textOutput("wkt")
+        })
+
+        
+#             
+#         observe({
+#           click<-input$mymap_click
+#             polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+#             # wkt <- st_as_text(polygon_coordinates)
+#             # see  https://rstudio.github.io/leaflet/shiny.html
+#             # bb <- input$mymap_bounds 
+#             
+#             north <- polygon_coordinates[[1]][[1]]
+#             south <- polygon_coordinates[[1]][[1]]
+#             east <- polygon_coordinates[[1]][[1]]
+#             west <- polygon_coordinates[[1]][[1]]
+#             
+#             
+#             if(is.null(click))
+#                 return()
+# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(north,south, "toto")
+#         })
+        
+        
+      # #get the coordinates of the polygon
+      # polygon_coordinates <- 
+      #   input$mymap_draw_new_feature$geometry$coordinates[[1]]
+    
+    # observeEvent(input$mymap_draw_new_feature,{
+    #     # feature <- input$mymap_draw_new_feature
+    #     polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+    #     text<-paste("Lattitude ","Lo")
+    #     mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(polygon_coordinates[[1]][[1]], polygon_coordinates[[2]][[1]])
+    # })
+
+#         observe({
+#             click<-input$mymap_click
+#             if(is.null(click))
+#                 return()
+#             text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng)
+#             text2<-paste("You've selected point ", text)
+# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(click$lng, click$lat, text)
+#     output$Click_text<-renderText({
+#       text2
+#     })
+#             
+#         })
+#     
+    
+  #   
+  #   output$rastersum <- renderText({
+  #   #use the draw_stop event to detect when users finished drawing
+  #   req(input$mymap_draw_stop)
+  # 
+  #   # get the coordinates of the polygon and make SpatialPolygons object
+  #   polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
+  # 
+  #   drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
+  #   sp <- SpatialPolygons(list(Polygons(list(drawn_polygon),"drawn_polygon")))
+  # 
+  #   # set coords as latlong then transform to leaflet projection
+  #   proj4string(sp) <- LL
+  #   polyre <- spTransform(sp, leaf.proj)
+  # 
+  #   e <- extract(r,polyre)
+  #   sum(unlist(e),na.rm=T)
+  # 
+  # })
+
+# https://rdrr.io/github/rahulchauhan049/dashboard.experiment/src/R/mod_leaflet.R
+# https://stackoverflow.com/questions/44979900/how-to-download-polygons-drawn-in-leaflet-draw-as-geojson-file-from-r-shiny        
+```
+
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+
+
+### Plot 4 [Indicator I4 : Catches by month and by ocean](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I4-:-Catches-by-month-and-by-ocean)
+
+
+```{r}
+renderPlot({
+
+# https://mrjoh3.github.io/2018/12/26/shiny-image-gallery-examples/
+# https://mrjoh3.github.io/p/shiny-image-gallery-examples/
+
+
+if(wkt()!=new_wkt){
+  df_i4 = st_read(con, query =  paste0("SELECT species, ocean, year, month, sum(value) as value, unit, st_collect(geom) FROM public.i4_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species, ocean, year, month, unit ;"))
+}
+  #Filtering input dataset with selected parameters
+
+df_i4_filtered <- df_i4 %>% filter(year %in% input$year_choice, species %in% input$species_choice) 
+# df_i4_filtered <- df_i4 %>% filter(year %in% input$year_choice, ocean %in% input$ocean_choice, species %in% input$species_choice) 
+
+i4 <- Atlas_i4_SpeciesMonthByOcean(df=as.data.frame(df_i4_filtered), 
+                                          oceanAttributeName="ocean", 
+                                          yearAttributeName="year", 
+                                          monthAttributeName="month",
+                                          speciesAttributeName="species", 
+                                          valueAttributeName="value",
+                                   withSparql=FALSE
+                                      )
+    
+i4
+
+})
+
+
+```
+

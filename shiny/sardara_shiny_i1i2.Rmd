@@ -24,15 +24,16 @@ library(pacman)
 library(sf)
 library(sp)
 library(ggplot2)
+library(plotly)
 library(plyr)
 ```
 
 ```{r, include=FALSE}
 
 #######################
-##Database Identifiers:
-DRV=RPostgres::Postgres()
-# con <- dbConnect(drv=DRV,  dbname = Dbname, host = Host , user=User, password=Password,port="5432" )
+##Database Identifiers: tunaatlas / db-tunaatlas
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credtentials.R")
+
 # codes_directory=codes_github_repository
 # query <- paste(readLines(paste0(codes_directory,"SQL/select_annotated_images_attributes.sql")), collapse=" ")
 
@@ -124,7 +125,11 @@ Atlas_i1_SpeciesByOcean <- function(df,
       ggtitle(paste(species.label, "catches by Ocean")) +
       theme(legend.position="bottom")
     
+# Turn it interactive with ggplotly
+ resultPlot<- ggplotly(resultPlot)
 
+# resultPlot <- plot_ly(x = aggData$year, y = aggData$value, type="scatter", mode="markers", fill = "tozeroy")
+# resultPlot <- add_trace(p, x = year, y = var3, type="scatter", mode="markers", fill = "tonexty")
 
   }
   return(resultPlot)
@@ -236,9 +241,8 @@ Column {data-width=350}
 
 ```{r}
 
-
-wkt <- reactiveVal('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))') 
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
+wkt <- reactiveVal(new_wkt) 
 
 query_i1i2 <- ("select * from i1i2 ;")
 df_nominal <- st_read(con, query = query_i1i2)
@@ -248,15 +252,16 @@ ocean = unique(df_nominal$ocean)
 
 # selectInput widget
 
-selectInput("species_choice", label = h3("Select species for i1, i2 and i3 "), choices = species, selected = "SKJ")
-selectInput("ocean_choice", label = h3("Select ocean for i1"), choices = ocean, selected = c("ICCAT","IOTC","IATTC"),multiple = TRUE)
-selectInput("gear_choice", label = h3("Select gear(s) for i2"), choices = gear_group, selected = "PS",multiple = TRUE)
+selectInput("species_choice", label = h3("Select species for i1, i2 and i3 "), choices = species,  selected = c("SKJ","BET","BFT", "YFT"),multiple = TRUE)
+selectInput("ocean_choice", label = h3("Select ocean for i1"), choices = ocean, selected = c("ICCAT","IOTC","IATTC", "CCSBT"),multiple = TRUE)
+selectInput("gear_choice", label = h3("Select gear(s) for i2"), choices = gear_group, selected = c("PS","BB"),multiple = TRUE)
 
 
 # textOutput(wkt())
 
 renderPrint({ 
   paste0("Your current selection for i1 and i2: ", input$species_choice," and ", input$gear_choice," and ", input$ocean_choice)
+  paste0("The area you have selected is (WKT format): ", wkt())
   query_i1i2 <- paste0("SELECT sum(value) as value, unit, ocean, gear_group, year, species, st_collect(geom) FROM public.i1i2_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY  unit, ocean, gear_group, year, species ;")
 })
 
@@ -272,12 +277,12 @@ To be done : add all WMS layers of input datasets
 output$mymap <- renderLeaflet(
 leaflet() %>%
 addTiles() %>%
-# addPmToolbar(
-#   toolbarOptions = pmToolbarOptions(drawMarker = FALSE, position = "topright"),
-#   drawOptions = pmDrawOptions(snappable = FALSE, allowSelfIntersection = FALSE),
-#   editOptions = pmEditOptions(preventMarkerRemoval = TRUE, draggable = FALSE),
-#   cutOptions = pmCutOptions(snappable = FALSE, allowSelfIntersection = FALSE)
-# ) %>%
+addPmToolbar(
+  toolbarOptions = pmToolbarOptions(drawMarker = FALSE, position = "topright"),
+  drawOptions = pmDrawOptions(snappable = FALSE, allowSelfIntersection = FALSE),
+  editOptions = pmEditOptions(preventMarkerRemoval = TRUE, draggable = FALSE),
+  cutOptions = pmCutOptions(snappable = FALSE, allowSelfIntersection = FALSE)
+) %>%
     addDrawToolbar(
         targetGroup = "draw",
         editOptions = editToolbarOptions(
@@ -330,74 +335,6 @@ addTiles() %>%
             textOutput("wkt")
         })
 
-        
-#             
-#         observe({
-#           click<-input$mymap_click
-#             polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-#             # wkt <- st_as_text(polygon_coordinates)
-#             # see  https://rstudio.github.io/leaflet/shiny.html
-#             # bb <- input$mymap_bounds 
-#             
-#             north <- polygon_coordinates[[1]][[1]]
-#             south <- polygon_coordinates[[1]][[1]]
-#             east <- polygon_coordinates[[1]][[1]]
-#             west <- polygon_coordinates[[1]][[1]]
-#             
-#             
-#             if(is.null(click))
-#                 return()
-# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(north,south, "toto")
-#         })
-        
-        
-      # #get the coordinates of the polygon
-      # polygon_coordinates <- 
-      #   input$mymap_draw_new_feature$geometry$coordinates[[1]]
-    
-    # observeEvent(input$mymap_draw_new_feature,{
-    #     # feature <- input$mymap_draw_new_feature
-    #     polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-    #     text<-paste("Lattitude ","Lo")
-    #     mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(polygon_coordinates[[1]][[1]], polygon_coordinates[[2]][[1]])
-    # })
-
-#         observe({
-#             click<-input$mymap_click
-#             if(is.null(click))
-#                 return()
-#             text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng)
-#             text2<-paste("You've selected point ", text)
-# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(click$lng, click$lat, text)
-#     output$Click_text<-renderText({
-#       text2
-#     })
-#             
-#         })
-#     
-    
-  #   
-  #   output$rastersum <- renderText({
-  #   #use the draw_stop event to detect when users finished drawing
-  #   req(input$mymap_draw_stop)
-  # 
-  #   # get the coordinates of the polygon and make SpatialPolygons object
-  #   polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-  # 
-  #   drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
-  #   sp <- SpatialPolygons(list(Polygons(list(drawn_polygon),"drawn_polygon")))
-  # 
-  #   # set coords as latlong then transform to leaflet projection
-  #   proj4string(sp) <- LL
-  #   polyre <- spTransform(sp, leaf.proj)
-  # 
-  #   e <- extract(r,polyre)
-  #   sum(unlist(e),na.rm=T)
-  # 
-  # })
-
-# https://rdrr.io/github/rahulchauhan049/dashboard.experiment/src/R/mod_leaflet.R
-# https://stackoverflow.com/questions/44979900/how-to-download-polygons-drawn-in-leaflet-draw-as-geojson-file-from-r-shiny        
 ```
 
 
@@ -411,7 +348,7 @@ Column {data-width=650}
 
 ```{r}
 
-renderPlot({ 
+output$plot1 <- renderPlotly({ 
 #unique(df_nominal$species)
 # nrow(df_nominal)
 # colnames(df_nominal)
@@ -432,9 +369,9 @@ i1 <- Atlas_i1_SpeciesByOcean(as.data.frame(df_i1),
                          oceanAttributeName="ocean", 
                          speciesAttributeName="species", 
                          valueAttributeName="value")
-i1
 })
 
+plotlyOutput("plot1")
 
 
 
@@ -446,7 +383,7 @@ i1
 ```{r}
 
 
-renderPlot({
+output$plot2 <- renderPlotly({ 
 
 # target_species <- c("SKJ")
 # target_gear <- c("PS")
@@ -468,9 +405,9 @@ i2 <- Atlas_i2_SpeciesByGear(as.data.frame(df_i2),
                                     valueAttributeName="value",
                                    gearTypeAttributeName="gear_type",
                                     withSparql=FALSE)
-i2
 })
 
+plotlyOutput("plot2")
 
 
 ```

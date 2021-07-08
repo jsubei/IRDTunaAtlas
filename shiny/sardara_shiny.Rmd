@@ -1044,28 +1044,29 @@ i2
 ```{r}
 
 # https://plotly.com/r/maps-sf/
-  
-renderPlot({
+# https://ggplot2.tidyverse.org/reference/ggsf.html
+output$plot8 <- renderPlotly({ 
 
-target_species <- c("BET","YFT","SKJ")
-target_year <- c("2003","2004")
-df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% target_year, species %in% target_species)
-# df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i6i7i8, species %in% input$species_choice_i8)
+# target_species <- c("BET","YFT","SKJ")
+# target_year <- c("2003","2004")
+# df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% target_year, species %in% target_species)
+df_i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i6i7i8, species %in% input$species_choice_i8)
+# colnames(df_i6i7i8)
 
-df_i8_filtered <- as(df_i6i7i8_filtered, "Spatial")
-
-i8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df_i8_filtered,
-                                             targetedSpecies="YFT",
-                                             geomIdAttributeName="geom_id",
-                                             yearAttributeName="year",
-                                             speciesAttributeName="species",
-                                             valueAttributeName="value",
-                          withSparql=FALSE
-                          )
+# df_i8_filtered <- as(df_i6i7i8_filtered, "Spatial")
+i8 <-  plot_geo(df_i8_filtered)
+# i8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df_i8_filtered,
+#                                              targetedSpecies="YFT",
+#                                              geomIdAttributeName="geom_id",
+#                                              yearAttributeName="year",
+#                                              speciesAttributeName="species",
+#                                              valueAttributeName="value",
+#                           withSparql=FALSE
+#                           )
     
-i8
 
 })
+plotlyOutput("plot8")
 
 
 ```

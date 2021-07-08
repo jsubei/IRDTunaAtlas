@@ -1042,6 +1042,9 @@ i2
 ### Plot 8 [IIndicator I8 : Catches relative contribution over other species](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I8-:-Catches-relative-contribution-over-other-species)
 
 ```{r}
+
+# https://plotly.com/r/maps-sf/
+  
 renderPlot({
 
 target_species <- c("BET","YFT","SKJ")

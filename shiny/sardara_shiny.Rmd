@@ -748,8 +748,10 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
       }
     }
   }
-  
-  return(result.plot.df)    
+  # resultPlot<- ggplotly(result.plot.df)
+  resultPlot<- result.plot.df
+  return(resultPlot)  
+  return()    
 }
 
 ```
@@ -1076,7 +1078,7 @@ plotlyOutput("plot8")
 
 
 ```{r}
-renderPlot({
+output$plot7 <- renderPlotly({ 
 
 df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_i3, species %in% input$species_choice) 
 df_i7_filtered <- as(df_i6i7i8_filtered, "Spatial")
@@ -1093,6 +1095,7 @@ i7
 
 })
 
+plotlyOutput("plot7")
 
 ```
 

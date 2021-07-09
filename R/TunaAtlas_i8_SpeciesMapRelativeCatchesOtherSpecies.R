@@ -108,8 +108,8 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
     return(resultPlot)
   }
   
-  species.label <- species
-  species.URI <- species
+  species.label <- targetedSpecies
+  species.URI <- targetedSpecies
   
   #define the result df  
   result.df <- c()

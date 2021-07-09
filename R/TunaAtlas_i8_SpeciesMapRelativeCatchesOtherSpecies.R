@@ -139,5 +139,4 @@ Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
   # resultPlot<- ggplotly(result.plot.df)
   resultPlot<- result.plot.df
   return(resultPlot)  
-  return()    
 }

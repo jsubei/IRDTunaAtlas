@@ -1,6 +1,7 @@
 #Taha IMZILEN, JULIEN BARDE UPDATE 2021
 #####This Generic script allow to transform Tuna Atlas data (stored in SARDARA) to NetCDF respecting a naming conventions described in this guidelines (url below):
 ## Guidelines Doc (Naming conventions): https://docs.google.com/document/d/1pS7X3bP669nX0Ikk45fTaE5bL-mR5CgMx-J1_sfAPJI/edit?usp=sharing
+# https://pjbartlein.github.io/REarthSysSci/netCDF.html#reshaping-from-raster-to-rectangular
 
 ########################
 rm(list=ls())

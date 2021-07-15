@@ -20,7 +20,6 @@ library(leaflet)
 library(leaflet.extras)
 library(leafpm)
 library(mapedit)
-library(pacman)
 library(sf)
 library(sp)
 library(plotly)
@@ -32,11 +31,27 @@ library(plyr)
 #######################
 ##Database Identifiers:
 DRV=RPostgres::Postgres()
-source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i6_SpeciesMap.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i7_SpeciesMapRelativeCatches.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i8_SpeciesMapRelativeCatchesOtherSpecies.R")
+
+## server side code
+function(input, output, session) {
+  output$table <- DT::renderDataTable({
+    # query <- sqlInterpolate(ANSI(),"SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM i6i7i8 WHERE species IN ('?species') AND year IN ('?year');",
+    #             species =paste0(input$year_choice_i6i7,collapse="','"), year = paste0(input$year_choice_i6i7,collapse="','"))
+    
+    df_i6i7 = st_read(con, 
+                      query =  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i6i7i8,collapse="','"),"') AND year IN ('",paste0(input$year_choice_i6i7,collapse="','"),"');")
+                      )
+    
+    outp <- dbGetQuery(pool, query)
+    ret <- DT::datatable(outp)
+    return(ret)
+  })
+}
 ```
 
 Column {data-width=350}
@@ -51,11 +66,14 @@ Column {data-width=350}
 
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
 wkt <- reactiveVal(new_wkt) 
-target_species <- c("YFT","BET","SKJ")
-target_year <- c(seq(1:10)+1994)
+target_species_i8<- c("YFT","BET","SKJ")
+target_species_i6i7<- c("YFT")
+# target_year <- c(seq(1:10)+1994)
+target_year<- c(2000)
+target_year_i8 <- c(1999,2000)
 
 
-query_i6i7i8 <- paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM i6i7i8 WHERE species IN ('",paste0(target_species,collapse="','"),"') AND year IN ('",paste0(target_year,collapse="','"),"');")
+query_i6i7i8 <- paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM i6i7i8 WHERE species IN ('",paste0(target_species_i8,collapse="','"),"') AND year IN ('",paste0(target_year,collapse="','"),"');")
 df_i6i7i8 = st_read(con, query = query_i6i7i8)
 year_i6i7i8 = unique(df_i6i7i8$year)
 species_i6i7i8 = unique(df_i6i7i8$species)
@@ -63,15 +81,26 @@ species_i6i7i8 = unique(df_i6i7i8$species)
   
 # selectInput widget
 
-selectInput("species_i6i7i8", label = h3("Select species for i8"), choices = species_i6i7i8, selected = target_species, multiple = TRUE)
-selectInput("year_choice_i6i7i8", label = h3("Select year for i8"), choices = year_i6i7i8, selected = target_year,multiple = TRUE)
+selectInput("species_i6i7i8", label = h3("Select species for i8 (at least two species):"), choices = species_i6i7i8, selected = target_species_i8, multiple = TRUE)
+selectInput("year_choice_i8", label = h3("Select year for i8 (if multiple years, generates one map per year):"), choices = year_i6i7i8, selected = target_year_i8,multiple = TRUE)
+
+selectInput("species_i6i7i8", label = h3("Select species for  i6, i7"), choices = species_i6i7i8, selected = target_species_i6i7, multiple = FALSE)
+selectInput("year_choice_i6i7", label = h3("Select year for  i6, i7"), choices = year_i6i7i8, selected = target_year, multiple = FALSE)
 
 
 # textOutput(wkt())
 
 renderPrint({ 
   paste0("The area you have selected is (WKT format): ", wkt())
+  query_i6i7i8 <-  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i6i7i8,collapse="','"),"') AND year IN ('",paste0(input$year_choice_i8,collapse="','"),"');")
+
 })
+
+# renderDataTable(
+#   
+# )
+
+
 
 ```
 
@@ -141,15 +170,21 @@ addTiles() %>%
             
             mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(south,west,coord)
             textOutput("wkt")
+            
+            if(wkt()!=new_wkt){
+  df_i6i7i8 = st_read(con, 
+                      query =  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i6i7i8,collapse="','"),"') AND year IN ('",paste0(input$year_choice_i6i7,collapse="','"),"');")
+  )
+            }
+            
         })
+        
+        
 
 ```
 
-
-
 Column {data-width=650}
 -----------------------------------------------------------------------
-
 
 ### Plot 8 [IIndicator I8 : Catches relative contribution over other species](https://github.com/juldebar/IRDTunaAtlas/wiki/Indicator-I8-:-Catches-relative-contribution-over-other-species)
 
@@ -159,14 +194,21 @@ Column {data-width=650}
 # https://ggplot2.tidyverse.org/reference/ggsf.html
 output$plot8 <- renderPlotly({ 
 
+if(wkt()!=new_wkt){
+  df_i8 = st_read(con, 
+                      query =  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i6i7i8,collapse="','"),"') AND year IN ('",paste0(input$year_choice_i8,collapse="','"),"');")
+                  )
+}else{
+  df_i8=df_i6i7i8
+}
+  
 
-df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% target_year, species %in% target_species)
-df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i6i7i8, species %in% input$species_i6i7i8) 
-
-df_i8_filtered <- as(df_i6i7i8_filtered, "Spatial")
+# df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% target_year, species %in% target_species)
+# df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i8, species %in% input$species_i6i7i8) 
+df_i8_filtered <- as(df_i8, "Spatial")
 
 i8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df_i8_filtered,
-                                             targetedSpecies=target_species[1],
+                                             targetedSpecies=input$species_i6i7i8[1],
                                              geomIdAttributeName="geom_id",
                                              yearAttributeName="year",
                                              speciesAttributeName="species",
@@ -188,10 +230,26 @@ plotlyOutput("plot8")
 
 
 ```{r}
-output$plot7 <- renderPlotly({ 
+output$plot7 <- renderPlotly({
 
-df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i6i7i8, species %in% input$species_i6i7i8) 
-df_i7_filtered <- as(df_i6i7i8_filtered, "Spatial")
+  
+  if(wkt()!=new_wkt){
+                  
+    df_i6i7 = st_read(con, 
+                      query =  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i6i7i8,collapse="','"),"') AND year IN ('",paste0(input$year_choice_i6i7,collapse="','"),"');")
+                      )
+}else{
+  df_i6i7=df_i6i7i8
+}
+  
+  
+# df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i8, species %in% input$species_i6i7i8) 
+
+  
+#Filtering input dataset with selected parameters
+
+# df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i6i7, species %in% input$species_i6i7i8) 
+df_i7_filtered <- as(df_i6i7, "Spatial")
 
 i7 <-  Atlas_i7_SpeciesMapRelativeCatches(df=df_i7_filtered, 
                               geomIdAttributeName="geom_id",
@@ -201,7 +259,7 @@ i7 <-  Atlas_i7_SpeciesMapRelativeCatches(df=df_i7_filtered,
                           withSparql=FALSE
                           )
     
-i7
+# i7
 
 })
 
@@ -216,8 +274,26 @@ plotlyOutput("plot7")
 ```{r}
 output$plot6 <- renderPlotly({ 
 
-df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i6i7i8, species %in% input$species_i6i7i8) 
-df_i6_filtered <- as(df_i6i7i8_filtered, "Spatial")
+  
+  if(wkt()!=new_wkt){
+                  
+    df_i6i7 = st_read(con, 
+                      query =  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i6i7i8,collapse="','"),"') AND year IN ('",paste0(input$year_choice_i6i7,collapse="','"),"');")
+                      )
+}else{
+  df_i6i7=df_i6i7i8
+}
+    
+# if(wkt()!=new_wkt){
+#   df_i6i7i8 = st_read(con, 
+#                       query =  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i6i7i8,collapse="','"),"') AND year IN ('",paste0(input$year_choice_i6i7,collapse="','"),"');")
+#   )
+# }else{
+#   df_i6i7 <- df_i6i7i8
+# }
+  
+# df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_choice_i6i7, species %in% input$species_i6i7i8) 
+df_i6_filtered <- as(df_i6i7, "Spatial")
 
 i6 <- Atlas_i6_SpeciesMap(df=df_i6_filtered,
                           geomIdAttributeName="geom_id",

@@ -1,5 +1,5 @@
 ---
-title: "Sardara Dashboard"
+title: "IRD Tuna Atals Dashboard: sardara database connection"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -32,728 +32,16 @@ library(plyr)
 #######################
 ##Database Identifiers:
 DRV=RPostgres::Postgres()
-source(file = "~/Desktop/CODES/IRDTunaAtlas/credtentials.R")
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i1_SpeciesByOcean.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i2_SpeciesByGear.R")
+source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i3_SpeciesYearByGearMonth.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i4_SpeciesMonthByOcean.R")
+source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i6_SpeciesMap.R")
+source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i7_SpeciesMapRelativeCatches.R")
+source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i8_SpeciesMapRelativeCatchesOtherSpecies.R")
 ####################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################
-      
-        
-        
-Atlas_i3_SpeciesYearByGearMonth <- function(df, 
-                                            yearAttributeName="year", 
-                                            monthAttributeName="month", 
-                                            speciesAttributeName="species",
-                                            gearTypeAttributeName="gear_type",
-                                            valueAttributeName="value",
-                                            meanPrev5YearsAttributeName="mean_prev_5_years",
-                                            stddevPrev5YearsAttributeName="stddev_prev_5_years",
-                                            withSparql=FALSE)
-{
-  if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
-    stop("Missing library")
-  }
-  
-  if (missing(df)) {
-    stop("Input data frame not specified")
-  }
-  
-  #check for input attributes
-  if(sum(names(df) == yearAttributeName) == 0) {
-    stop("Cannot found year attribute")
-  }
-  
-  if(sum(names(df) == monthAttributeName) == 0) {
-    stop("Cannot found month attribute")
-  }
-  
-  if(sum(names(df) == speciesAttributeName) == 0) {
-    stop("Cannot found species attribute")
-  }
-  
-  if(sum(names(df) == gearTypeAttributeName) == 0) {
-    stop("Cannot found gear attribute")
-  }
-  
-  if(sum(names(df) == valueAttributeName) == 0) {
-    stop("Cannot found value attribute")
-  }  
-  
-  if(sum(names(df) == meanPrev5YearsAttributeName) == 0) {
-    stop("Cannot found mean for previous years attribute")
-  }
-  
-  if(sum(names(df) == stddevPrev5YearsAttributeName) == 0) {
-    stop("Cannot found std_dev for previous years attribute")
-  }
-  
-  #format columns  
-  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
-  df[, monthAttributeName] <- as.numeric(df[, monthAttributeName])
-  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
-  df[, gearTypeAttributeName] <- as.factor(df[, gearTypeAttributeName])
-  df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])
-  df[, meanPrev5YearsAttributeName] <- as.numeric(df[, meanPrev5YearsAttributeName])
-  df[, stddevPrev5YearsAttributeName] <- as.numeric(df[, stddevPrev5YearsAttributeName])
-  
-  #rename columns
-  names(df)[which(names(df) == yearAttributeName)] <- "year"
-  names(df)[which(names(df) == monthAttributeName)] <- "month"  
-  names(df)[which(names(df) == speciesAttributeName)] <- "species"
-  names(df)[which(names(df) == gearTypeAttributeName)] <- "gear_type"
-  names(df)[which(names(df) == valueAttributeName)] <- "value"
-  names(df)[which(names(df) == meanPrev5YearsAttributeName)] <- "mean_prev_5_years"
-  names(df)[which(names(df) == stddevPrev5YearsAttributeName)] <- "stddev_prev_5_years"
-  
-  #from std deviation to variance, and root square the sum of variances
-  fct <- function(vec)
-  {
-    var <- vec * vec
-    var <- sum(var)
-    return(sqrt(var))
-  }
-  
-  #test if FAO usual gear codes are used
-  if (length(intersect(levels(df$gear_type), c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"))) == length(levels(df$gear_type))) {
-   df$gear_type <- factor(df$gear_type, levels=c("BB", "GILL", "LL", "PS", "OTHER_I", "OTHER_A", "TROL", "TRAP"), labels=c("Baitboat", "Gillnet", "Longline", "Purse seine", "Unclass. art. Indian O.", "Unclass. art. Atl. O.", "Trol.", "Trap"))
-  }
-  
-  #setup the palette
-  my.colors <- brewer.pal(length(levels(df$gear_type)), "Set1")
-  names(my.colors) <- levels(df$gear_type)
-  
-  #define the result
-  result.df <- c()
-  
-  #for each species
-  for (species.current in unique(df$species)) {
-    species.label <- species.current
-    species.URI <- species.current
-    #for each year
-    for (year.current in unique(df[df$species == species.current,]$year)) {
-      current.df <- df[df$species == species.current & df$year == year.current,]
-      
-      if (! all(table(current.df$month) == 1)) {
-        if (all(is.na(current.df$stddev_prev_5_years))) {
-          stddev.agg <- cbind(month=unique(current.df$month), stddev_prev_5_years=NA)
-        } else {
-          stddev.agg <- aggregate(stddev_prev_5_years ~ month, data=current.df, fct)
-        }
-        
-        if (all(is.na(current.df$mean_prev_5_years))) {
-          mean.agg <- cbind(month=unique(current.df$month), mean_prev_5_years=NA)
-        } else {
-          mean.agg <- aggregate(mean_prev_5_years ~ month, data=current.df, sum)
-        }
-        
-        dfPrev5Years <- merge(mean.agg, stddev.agg)            
-        
-      } else {
-        dfPrev5Years <- current.df
-      }
-      #order gear factor levels by value
-      current.df$gear_type <- factor(current.df$gear_type, levels=rev(levels(reorder(current.df$gear_type, current.df$value))))
-      #set proper month label
-      current.df$month <- factor(month.abb[current.df$month], levels=levels(reorder(month.abb[current.df$month], current.df$month)))
-      dfPrev5Years$month <- factor(month.abb[dfPrev5Years$month], levels=levels(reorder(month.abb[dfPrev5Years$month], dfPrev5Years$month)))
-      #build the plot
-      resultPlot <- ggplot() +
-        geom_bar(data=current.df,
-              mapping=aes(x=month, y=value, fill=gear_type, order=gear_type),
-              stat="identity") + 
-        geom_line(data=dfPrev5Years,
-              mapping=aes(x=month, y=mean_prev_5_years, group=1),
-              stat="identity") + 
-        geom_errorbar(data=dfPrev5Years,
-              mapping=aes(x=month, ymax=mean_prev_5_years + stddev_prev_5_years, ymin=mean_prev_5_years - stddev_prev_5_years), 
-              width=0.25, 
-              color="dimgray",
-              stat="identity") + 
-        scale_fill_manual(name="Gear type", values=my.colors) +
-        xlab("Month") + ylab("Catches in tons") + 
-        ggtitle(paste(species.label, "monthly catches by gear type on", year.current))
-      
-    }
-
-
-  }
-  
-  return(resultPlot)
-}
-
-
-####################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################
-
-
-Atlas_i4_SpeciesMonthByOcean <- function(df, 
-                                         oceanAttributeName="ocean",
-                                         yearAttributeName="year", 
-                                         monthAttributeName="month", 
-                                         speciesAttributeName="species",                                         
-                                         valueAttributeName="value",
-                                         withSparql=FALSE)
-{
-  if (! require(XML) | ! require(ggplot2) | ! require(RColorBrewer)) {
-    stop("Missing library")
-  }
-  
-  if (missing(df)) {
-    stop("Input data frame not specified")
-  }
-  
-  #check for input attributes
-  if(sum(names(df) == oceanAttributeName) == 0) {
-    stop("Cannot found ocean attribute")
-  }
-  
-  if(sum(names(df) == yearAttributeName) == 0) {
-    stop("Cannot found year attribute")
-  }
-  
-  if(sum(names(df) == monthAttributeName) == 0) {
-    stop("Cannot found month attribute")
-  }
-  
-  if(sum(names(df) == speciesAttributeName) == 0) {
-    stop("Cannot found species attribute")
-  }
-  
-  if(sum(names(df) == valueAttributeName) == 0) {
-    stop("Cannot found value attribute")
-  }  
-  
-  #format columns
-  df[, oceanAttributeName] <- as.factor(df[, oceanAttributeName])
-  df[, yearAttributeName] <- as.numeric(df[, yearAttributeName])
-  df[, monthAttributeName] <- as.numeric(df[, monthAttributeName])
-  df[, speciesAttributeName] <- as.factor(df[, speciesAttributeName])
-  df[, valueAttributeName] <- as.numeric(df[, valueAttributeName])    
-  
-  #aggregate to cut other columns
-  df <- aggregate(x=df[, valueAttributeName], 
-                  by=list(df[, oceanAttributeName], df[, yearAttributeName], df[, monthAttributeName], df[, speciesAttributeName]), 
-                  FUN=sum)
-  #rename columns
-  names(df) <- c("ocean", "year", "month", "species", "value")
-  
-  #setup month factor
-  df$month <- factor(df$month, labels=month.name)
-  
-  #test if FAO usual gear codes are used
-  if (length(intersect(levels(df$ocean), c("ATL", "IND", "PAC_E", "PAC_W"))) == length(levels(df$ocean))) {
-    df$ocean <- factor(df$ocean, levels=c("ATL", "IND", "PAC_E", "PAC_W"), labels=c("Atlantic O.", "Indian O.", "East Pacific O.", "West Pacific O."))
-  }
-  
-  #setup the palette
-  my.colors <- brewer.pal(length(levels(df$ocean)), "Set1")
-  names(my.colors) <- levels(df$ocean)  
-  
-  #define the resulr df  
-  result.df <- c()
-  
-  for (species.current in unique(df$species)) {
-
-      species.label <- species.current
-      species.URI <- species.current
-    
-    
-    species.df <- df[df$species == species.current,]
-    
-    #compute the decade
-    species.df$decade <- species.df$year - (species.df$year %% 10)
-    decades.factor <- sort(unique(species.df$decade))
-    
-    species.df$decade <- factor(species.df$decade, 
-                                levels=decades.factor,
-                                labels=unlist(lapply(X=decades.factor, FUN=function(dec) paste(min(species.df[species.df$decade == dec,]$year), "-", max(species.df[species.df$decade == dec,]$year), sep=""))))
-    for (decade.current in unique(species.df$decade)) {
-      current.df <- species.df[species.df$decade == decade.current,]
-  
-      #aggregate values by years and month
-      valuesSum <- aggregate(value ~ year + month, data=current.df, FUN=sum)
-      names(valuesSum) <- c("year", "month", "valuesSum")
-      mergedDf <- merge(current.df, valuesSum)
-      
-      #build the plot
-      #pie plot
-      resultPlot <- ggplot(data=mergedDf, mapping=aes(x=valuesSum/2, fill=ocean, y=value, width=valuesSum)) + 
-        facet_grid(facets=year ~ month) + 
-        geom_bar(aes(order = ocean), position="fill", stat="identity") + 
-        scale_fill_manual(name="Ocean", values=my.colors) +
-        coord_polar(theta="y") + 
-        theme(axis.text.y=element_text(size=6), axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + 
-        labs(title=paste(species.label, "monthly catches by ocean for", decade.current))
-      
-      #bar plot
-      #resultPlot <- ggplot(data=mergedDf) + facet_grid(facets=year ~ month) + geom_bar(mapping=aes(x=ocean, y=value, fill=ocean), stat="identity") + theme(axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + labs(title="Montly catches by ocean")
-      
-      #draw the plot
-      tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.label), "_", as.character(decade.current), "_", sep=""))
-      plot.filepath <- paste(tempfile.base, ".png", sep="")
-      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
-      
-   
-    }
-    
-    #if multiple decade we produce a graph by decade
-    if (length(unique(species.df$decade)) > 1) {
-      #aggregate values by decade and month
-      valuesSum <- aggregate(value ~ decade + month, data=species.df, FUN=sum)
-      names(valuesSum) <- c("decade", "month", "valuesSum")
-      values <- aggregate(value ~ decade + month + ocean, data=species.df, FUN=sum)
-      mergedDf <- merge(values, valuesSum)
-      
-      #build the plot
-      #pie plot
-      resultPlot <- ggplot(data=mergedDf, mapping=aes(x=valuesSum/2, fill=ocean, y=value, width=valuesSum)) + 
-        facet_grid(facets=decade ~ month) + 
-        geom_bar(aes(order = ocean), position="fill", stat="identity") + 
-        scale_fill_manual(name="Ocean", values=my.colors) +
-        coord_polar(theta="y") + 
-        theme(axis.text.y=element_text(size=6), axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + 
-        labs(title=paste(species.label, "monthly catches by ocean and by decade"))
-      
-      #draw the plot
-      tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.current), "_byDecade_", sep=""))
-      #plot_file_path <- paste(tempfile.base, ".png", sep="")
-      plot.filepath <- paste(tempfile.base, ".png", sep="")
-      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
-      
-     
-    }
-  }
-  
-  return(resultPlot)
-}
-
-
-
-####################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################
-
-
-
-Atlas_i6_SpeciesMap <- function(df,
-                                geomIdAttributeName="geom_id",
-                                yearAttributeName="year", 
-                                speciesAttributeName="species",                                         
-                                valueAttributeName="value",
-                                withSparql=FALSE)
-{
-   if (! require(maps)) {
-     stop("Missing library")
-   }
-  
-  #check inputs
-  if (class(df) != "SpatialPolygonsDataFrame")
-  {
-    stop(paste("Bad geometrical feature type, must be a SpatialPolygonsDataFrame"))
-  }
-    
-  if(sum(names(df) == geomIdAttributeName) == 0) {
-    stop("Cannot found geom id attribute")
-  }
-  
-  if(sum(names(df) == yearAttributeName) == 0) {
-    stop("Cannot found year attribute")
-  }
-  
-  if(sum(names(df) == speciesAttributeName) == 0) {
-    stop("Cannot found species attribute")
-  }
-  
-  if(sum(names(df) == valueAttributeName) == 0) {
-    stop("Cannot found value attribute")
-  }
-  
-  #format columns
-  df@data[, geomIdAttributeName] <- as.character(df@data[, geomIdAttributeName])
-  df@data[, yearAttributeName] <- as.numeric(df@data[, yearAttributeName])
-  df@data[, speciesAttributeName] <- as.factor(df@data[, speciesAttributeName])
-  df@data[, valueAttributeName] <- as.numeric(df@data[, valueAttributeName])
-
-  #rename columns
-  names(df)[which(names(df) == geomIdAttributeName)] <- "geom_id"
-  names(df)[which(names(df) == yearAttributeName)] <- "year"  
-  names(df)[which(names(df) == speciesAttributeName)] <- "species"
-  names(df)[which(names(df) == valueAttributeName)] <- "value"
-
-
-  plotFct <- function(subDf, species.label, lims) {
-    # subDf  <- species.df[species.df$decade==decade.current,]
-    #aggregate values by 5° CWP square
-    aggData <- aggregate(value ~ geom_id, data=subDf, sum)      
-
-    #create a spatial df object from
-    aggSp <- SpatialPolygons(species.df[match(aggData$geom_id, species.df$geom_id),]@polygons, proj4string=CRS("+init=epsg:4326"))
-    aggSpdf <- SpatialPolygonsDataFrame(Sr=aggSp, data=aggData, match.ID=FALSE)
-    
-    names(aggSpdf)[names(aggSpdf) == "geom_id"] <- "id"
-    aggSpdf.fortify <- ggplot2::fortify(aggSpdf, region="id")
-    class(aggSpdf.fortify)
-    aggSpdf.df <- plyr::join(aggSpdf.fortify, aggSpdf@data, by="id")
-    
-    world.df <-  ggplot2::fortify(maps::map("world", plot = FALSE, fill = TRUE))
-    
-    if (missing(lims)) {
-      lims <- range(aggSpdf.df$value, na.rm=TRUE)
-    }
-    
-    if (min(subDf$year) == max(subDf$year)) {
-      my.title <- paste(species.label , " catches 5x5° for ",  min(subDf$year), sep="")
-    } else {
-      my.title <- paste(species.label , " catches 5x5° for ",  min(subDf$year), "-",  max(subDf$year), sep="")
-    }
-    
-    resultPlot <- ggplot2::ggplot() +
-      ggplot2::geom_polygon(data=aggSpdf.df, mapping=ggplot2::aes(x = long, y = lat, fill=value, group=group)) +
-       ggplot2::scale_fill_continuous(low="yellow", high="blue", na.value="grey25", name="Catches in k. tons", limits=lims, 
-                          guide=guide_colourbar(direction="horizontal", 
-                                             title.position="top",
-                                             label.position="bottom",
-                                              barwidth=20)) +
-      geom_path(data=world.df, mapping=ggplot2::aes(x=long, y=lat, group=group), colour="grey25") +
-      coord_equal() +
-      theme(legend.position="bottom", axis.title.x=element_blank(), axis.title.y=element_blank()) +
-      labs(title=my.title)
-    
-    #draw the plot
-    base_temp_file <- tempfile(pattern=paste("I6_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
-    ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
-    return(resultPlot)
-  }
-  
-  #define the resulr df  
-  result.df <- c()
-  
-  #convert values from tons to thousand tons
-  df$value <- df$value / 1000
-  
-  #fisrt subset by species
-  for (species.current in unique(df$species)) {
-    
-
-      species.label <- species.current
-      species.URI <- species.current
-    
-    species.df <- df[df$species == species.current,]
-    
-    #plot for all the period
-    result.plot.df <- plotFct(species.df, species.label)
-    result.df <- rbind(result.df, result.plot.df)
-    
-    #for each year
-    if (length(unique(species.df$year)) > 1)
-    {
-      for(year.current in unique(species.df$year)) {
-        result.plot.df <- plotFct(species.df[species.df$year==year.current,], species.label)
-        result.df <- rbind(result.df, result.plot.df)
-      }
-        
-      #for each decade
-      species.df$decade <- species.df$year - (species.df$year %% 10)
-      if (length(unique(species.df$decade)) > 1)
-      {
-        for(decade.current in unique(species.df$decade)) {
-         result.plot.df <- plotFct(species.df[species.df$decade==decade.current,], species.label)
-         result.df <- rbind(result.df, result.plot.df)
-        }
-      }
-    }
-  }
-
-  # return(result.df)
-  return(result.plot.df)
-}
-
-
-
-
-####################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################
-
-
-Atlas_i7_SpeciesMapRelativeCatches <- function(df,
-                                               geomIdAttributeName="geom_id",
-                                               yearAttributeName="year", 
-                                               speciesAttributeName="species",                                         
-                                               valueAttributeName="value",
-                                               withSparql=FALSE)
-{
-
-  #check inputs
-  if (class(df) != "SpatialPolygonsDataFrame")
-  {
-    stop(paste("Bad geometrical feature type, must be a SpatialPolygonsDataFrame"))
-  }
-  
-  if(sum(names(df) == geomIdAttributeName) == 0) {
-    stop("Cannot found geom id attribute")
-  }
-  
-  if(sum(names(df) == yearAttributeName) == 0) {
-    stop("Cannot found year attribute")
-  }
-  
-  if(sum(names(df) == speciesAttributeName) == 0) {
-    stop("Cannot found species attribute")
-  }
-  
-  if(sum(names(df) == valueAttributeName) == 0) {
-    stop("Cannot found value attribute")
-  }
-  
-  #format columns
-  df@data[, geomIdAttributeName] <- as.character(df@data[, geomIdAttributeName])
-  df@data[, yearAttributeName] <- as.numeric(df@data[, yearAttributeName])
-  df@data[, speciesAttributeName] <- as.factor(df@data[, speciesAttributeName])
-  df@data[, valueAttributeName] <- as.numeric(df@data[, valueAttributeName])
-  
-  #rename columns
-  names(df)[which(names(df) == geomIdAttributeName)] <- "geom_id"
-  names(df)[which(names(df) == yearAttributeName)] <- "year"  
-  names(df)[which(names(df) == speciesAttributeName)] <- "species"
-  names(df)[which(names(df) == valueAttributeName)] <- "value"
-    
-  plotFct <- function(subDf, species.label, lims) {
-    #aggregate values by 5° CWP square
-    aggData <- aggregate(value ~ geom_id, data=subDf, sum)      
-    #transform value of each square in percentage of total catches value
-    aggData$value <- aggData$value / sum(aggData$value) * 100
-    #create a spatial df object from
-    aggSp <- SpatialPolygons(species.df[match(aggData$geom_id, species.df$geom_id),]@polygons, proj4string=CRS("+init=epsg:4326"))
-    aggSpdf <- SpatialPolygonsDataFrame(Sr=aggSp, data=aggData, match.ID=FALSE)
-    
-    names(aggSpdf)[names(aggSpdf) == "geom_id"] <- "id"
-    aggSpdf.fortify <- fortify(aggSpdf, region="id")
-    aggSpdf.df <- join(aggSpdf.fortify, aggSpdf@data, by="id")
-    
-    world.df <-  fortify(maps::map("world", plot = FALSE, fill = TRUE))
-    
-    if (missing(lims)) {
-      lims <- range(aggSpdf.df$value)
-    }
-    
-    if (min(subDf$year) == max(subDf$year)) {
-      my.title <- paste(species.label , " catches 5x5° square contribution / total catches for ",  min(subDf$year), sep="")
-    } else {
-      my.title <- paste(species.label , " catches 5x5° square contribution / total catches for ",  min(subDf$year), "-",  max(subDf$year), sep="")
-    }
-    
-    resultPlot <- ggplot() +
-      geom_polygon(data=aggSpdf.df, mapping=aes(x = long, y = lat, fill=value, group=group)) +
-      scale_fill_continuous(low="yellow", high="blue", na.value="grey25", name="Contribution (%)", limits=lims, 
-                            guide=guide_colourbar(direction="horizontal", 
-                                                  title.position="top",
-                                                  label.position="bottom",
-                                                  barwidth=20)) +
-      geom_path(data=world.df, mapping=aes(x=long, y=lat, group=group), colour="grey25") +
-      coord_equal() +
-      theme(legend.position="bottom", axis.title.x=element_blank(), axis.title.y=element_blank()) +
-      labs(title=my.title)
-    
-    #draw the plot
-    base_temp_file <- tempfile(pattern=paste("I7_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
-    ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
-
-    return(resultPlot)
-    # return(c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
-  }
-  
-  #define the resulr df  
-  result.df <- c()
-  
-  
-  #fisrt subset by species
-  for (species.current in unique(df$species)) {
-
-    
-      species.label <- species.current
-      species.URI <- species.current
-    
-    species.df <- df[df$species == species.current,]
-    
-    #plot for all the period
-    result.plot.df <- plotFct(species.df, species.label)
-    result.df <- rbind(result.df, result.plot.df)
-        
-    if (length(unique(species.df$year)) > 1)
-    {
-      #for each year
-      for(year.current in unique(species.df$year)) {
-        result.plot.df <- plotFct(species.df[species.df$year==year.current,], species.label)
-        result.df <- rbind(result.df, result.plot.df)
-      }
-      
-      #for each decade
-      species.df$decade <- species.df$year - (species.df$year %% 10)
-      if (length(unique(species.df$decade)) > 1)
-      {
-        for(decade.current in unique(species.df$decade)) {
-          result.plot.df <- plotFct(species.df[species.df$decade==decade.current,], species.label)
-          result.df <- rbind(result.df, result.plot.df)
-        }
-      }
-    }
-  }
-  
-  return(result.plot.df)
-}
-
-
-####################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################
-
- 
-Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies <- function(df, targetedSpecies,
-                                                           geomIdAttributeName="geom_id",
-                                                           yearAttributeName="year", 
-                                                           speciesAttributeName="species",                                         
-                                                           valueAttributeName="value",
-                                                           withSparql=FALSE)
-{
-  require(maps)
-  
-  if (missing(targetedSpecies)) {
-    stop("Missing target species")
-  }
-  
-  #check inputs
-  if (class(df) != "SpatialPolygonsDataFrame")
-  {
-    stop(paste("Bad geometrical feature type, must be a SpatialPolygonsDataFrame"))
-  }
-  
-  if(sum(names(df) == geomIdAttributeName) == 0) {
-    stop("Cannot found geom id attribute")
-  }
-  
-  if(sum(names(df) == yearAttributeName) == 0) {
-    stop("Cannot found year attribute")
-  }
-  
-  if(sum(names(df) == speciesAttributeName) == 0) {
-    stop("Cannot found species attribute")
-  }
-  
-  if(sum(names(df) == valueAttributeName) == 0) {
-    stop("Cannot found value attribute")
-  }
-  
-  #format columns
-  df@data[, geomIdAttributeName] <- as.character(df@data[, geomIdAttributeName])
-  df@data[, yearAttributeName] <- as.numeric(df@data[, yearAttributeName])
-  df@data[, speciesAttributeName] <- as.factor(df@data[, speciesAttributeName])
-  df@data[, valueAttributeName] <- as.numeric(df@data[, valueAttributeName])
-  
-  #rename columns
-  names(df)[which(names(df) == geomIdAttributeName)] <- "geom_id"
-  names(df)[which(names(df) == yearAttributeName)] <- "year"  
-  names(df)[which(names(df) == speciesAttributeName)] <- "species"
-  names(df)[which(names(df) == valueAttributeName)] <- "value"
-    
-  #check if there is only one species
-  if (length(unique(df@data[, speciesAttributeName])) < 2) {
-    stop("Less than two species found in input data")
-  }
-  
-  #check if targeted species is in the data
-  if (all(is.na(match(unique(df@data[, speciesAttributeName]), targetedSpecies)))) {
-    stop(paste("Targeted species not found in the dataset"))
-  }
-    
-  plotFct <- function(subDf, species.targeted, species.label, lims) {
-    
-    #aggregate values by 5° CWP square and species
-    aggData <- aggregate(value ~ geom_id + species, data=subDf, sum)    
-    #aggregate values by 5° CWP square only
-    aggDataAllSpecies <- aggregate(value ~ geom_id, data=aggData, sum)          
-    #merge data
-    aggData <- merge(aggData, aggDataAllSpecies, by="geom_id")    
-    #keep only data for the selected species
-    aggData <- aggData[aggData$species == species.targeted, ]    
-    #transform value of each square in percentage of total catches value
-    aggData$value <- aggData$value.x / aggData$value.y * 100    
-    #create a spatial df object from
-    aggSp <- SpatialPolygons(subDf[match(aggData$geom_id, subDf$geom_id),]@polygons, proj4string=CRS("+init=epsg:4326"))
-    aggSpdf <- SpatialPolygonsDataFrame(Sr=aggSp, data=aggData, match.ID=FALSE)    
-    
-    names(aggSpdf)[names(aggSpdf) == "geom_id"] <- "id"
-    aggSpdf.fortify <- fortify(aggSpdf, region="id")
-    aggSpdf.df <- join(aggSpdf.fortify, aggSpdf@data, by="id")
-    
-    world.df <-  fortify(maps::map("world", plot = FALSE, fill = TRUE))
-    
-    if (missing(lims)) {
-      lims <- range(aggSpdf.df$value)
-    }
-    
-    if (min(subDf$year) == max(subDf$year)) {
-      my.title <- paste(species.label , " Catches 5x5° contribution / all species for ",  min(subDf$year), sep="")
-    } else {
-      my.title <- paste(species.label , " Catches 5x5° contribution / all species for ",  min(subDf$year), "-",  max(subDf$year), sep="")
-    }
-    
-    resultPlot <- ggplot() +
-      geom_polygon(data=aggSpdf.df, mapping=aes(x = long, y = lat, fill=value, group=group)) +
-      scale_fill_continuous(low="yellow", high="blue", na.value="grey25", name="Contribution (%)", limits=lims, 
-                            guide=guide_colourbar(direction="horizontal", 
-                                                  title.position="top",
-                                                  label.position="bottom",
-                                                  barwidth=20)) +      
-      geom_path(data=world.df, mapping=aes(x=long, y=lat, group=group), colour="grey25") +
-      coord_equal() +
-      theme(legend.position="bottom", axis.title.x=element_blank(), axis.title.y=element_blank()) +
-      labs(title=my.title)
-    
-    #draw the plot
-    base_temp_file <- tempfile(pattern=paste("I8_", gsub(" ", "_", species.label), "_", as.character(min(subDf$year)), "-", as.character(max(subDf$year)), "_", sep=""))
-    plot_file_path <- paste(base_temp_file, ".png", sep="")
-    # ggsave(filename=plot_file_path, plot=resultPlot, dpi=100)
-    
-    # return(c(plot.file.path=plot_file_path, rdf.file.path=rdf_file_path))
-    return(resultPlot)
-  }
-  
-    species.label <- species
-    species.URI <- species
-  
-  #define the result df  
-  result.df <- c()
-  
-  #plot for all the period
-  result.plot.df <- plotFct(df, targetedSpecies, species.label)
-  result.df <- rbind(result.df, result.plot.df)
-  
-  if (length(unique(df$year)) > 1)
-  {
-    #for each year
-    for(year.current in unique(df$year)) {
-      result.plot.df <- plotFct(df[df$year==year.current,], targetedSpecies, species.label)
-      result.df <- rbind(result.df, result.plot.df)
-    }
-    
-    #for each decade
-    df$decade <- df$year - (df$year %% 10)
-    if (length(unique(df$decade)) > 1)
-    {
-      for(decade.current in unique(df$decade)) {
-        result.plot.df <- plotFct(df[df$decade==decade.current,], targetedSpecies, species.label)
-        result.df <- rbind(result.df, result.plot.df)
-      }
-    }
-  }
-  # resultPlot<- ggplotly(result.plot.df)
-  resultPlot<- result.plot.df
-  return(resultPlot)  
-  return()    
-}
-
 ```
 
 Column {data-width=350}
@@ -895,74 +183,6 @@ addTiles() %>%
             textOutput("wkt")
         })
 
-        
-#             
-#         observe({
-#           click<-input$mymap_click
-#             polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-#             # wkt <- st_as_text(polygon_coordinates)
-#             # see  https://rstudio.github.io/leaflet/shiny.html
-#             # bb <- input$mymap_bounds 
-#             
-#             north <- polygon_coordinates[[1]][[1]]
-#             south <- polygon_coordinates[[1]][[1]]
-#             east <- polygon_coordinates[[1]][[1]]
-#             west <- polygon_coordinates[[1]][[1]]
-#             
-#             
-#             if(is.null(click))
-#                 return()
-# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(north,south, "toto")
-#         })
-        
-        
-      # #get the coordinates of the polygon
-      # polygon_coordinates <- 
-      #   input$mymap_draw_new_feature$geometry$coordinates[[1]]
-    
-    # observeEvent(input$mymap_draw_new_feature,{
-    #     # feature <- input$mymap_draw_new_feature
-    #     polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-    #     text<-paste("Lattitude ","Lo")
-    #     mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(polygon_coordinates[[1]][[1]], polygon_coordinates[[2]][[1]])
-    # })
-
-#         observe({
-#             click<-input$mymap_click
-#             if(is.null(click))
-#                 return()
-#             text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng)
-#             text2<-paste("You've selected point ", text)
-# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(click$lng, click$lat, text)
-#     output$Click_text<-renderText({
-#       text2
-#     })
-#             
-#         })
-#     
-    
-  #   
-  #   output$rastersum <- renderText({
-  #   #use the draw_stop event to detect when users finished drawing
-  #   req(input$mymap_draw_stop)
-  # 
-  #   # get the coordinates of the polygon and make SpatialPolygons object
-  #   polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-  # 
-  #   drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
-  #   sp <- SpatialPolygons(list(Polygons(list(drawn_polygon),"drawn_polygon")))
-  # 
-  #   # set coords as latlong then transform to leaflet projection
-  #   proj4string(sp) <- LL
-  #   polyre <- spTransform(sp, leaf.proj)
-  # 
-  #   e <- extract(r,polyre)
-  #   sum(unlist(e),na.rm=T)
-  # 
-  # })
-
-# https://rdrr.io/github/rahulchauhan049/dashboard.experiment/src/R/mod_leaflet.R
-# https://stackoverflow.com/questions/44979900/how-to-download-polygons-drawn-in-leaflet-draw-as-geojson-file-from-r-shiny        
 ```
 
 
@@ -1017,8 +237,8 @@ plotlyOutput("plot1")
 
 ```{r}
 
-
-renderPlot({ 
+output$plot2 <- renderPlotly({ 
+# renderPlot({ 
 
 target_species <- c("SKJ")
 target_gear <- c("PS")
@@ -1033,8 +253,9 @@ i2 <- Atlas_i2_SpeciesByGear(df_i2,yearAttributeName="year",
                                     valueAttributeName="value",
                                    gearTypeAttributeName="gear_type",
                                     withSparql=FALSE)
-i2
+# i2
 })
+plotlyOutput("plot2")
 
 
 
@@ -1091,8 +312,6 @@ i7 <-  Atlas_i7_SpeciesMapRelativeCatches(df=df_i7_filtered,
                           withSparql=FALSE
                           )
     
-i7
-
 })
 
 plotlyOutput("plot7")
@@ -1104,7 +323,7 @@ plotlyOutput("plot7")
 
 
 ```{r}
-renderPlot({
+output$plot6 <- renderPlotly({ 
 
 df_i6i7i8_filtered <- df_i6i7i8 %>% filter(year %in% input$year_i3, species %in% input$species_choice) 
 df_i6_filtered <- as(df_i6i7i8_filtered, "Spatial")
@@ -1117,9 +336,8 @@ i6 <- Atlas_i6_SpeciesMap(df=df_i6_filtered,
                           withSparql=FALSE
                           )
     
-i6
-
 })
+plotlyOutput("plot6")
 
 
 ```
@@ -1130,7 +348,8 @@ i6
 
 
 ```{r}
-renderPlot({
+# renderPlot({
+output$plot4 <- renderPlotly({ 
 
 df_i4_filtered <- df_i4 %>% filter(year %in% input$year_i3, ocean %in% input$ocean_choice, species %in% input$species_choice) 
 
@@ -1143,10 +362,11 @@ i4 <- Atlas_i4_SpeciesMonthByOcean(df=df_i4_filtered,
                                    withSparql=FALSE
                                       )
     
-i4
+# i4
 
 })
 
+plotlyOutput("plot4")
 
 ```
 
@@ -1161,7 +381,8 @@ i4
 
 # Setting parameters (hard coded here) with selectInput widget
 
-renderPlot({
+# renderPlot({
+output$plot3 <- renderPlotly({ 
 
 # df_i3_filtered <- df_i3 %>% filter(gear_group %in% input$gear_choice,species %in% input$species_choice) %>% rename(gear_type=gear_group)
 # df_i3_filtered <- df_i3 %>% filter(year %in% target_year, gear_type %in% target_gear, species %in% target_species) 
@@ -1177,10 +398,9 @@ i3 <- Atlas_i3_SpeciesYearByGearMonth(df=df_i3_filtered,
                                       stddevPrev5YearsAttributeName="stddev_prev_5_years",
                                       withSparql=FALSE
                                       )
-    
 i3
-
 })
 
+plotlyOutput("plot3")
 
 ```

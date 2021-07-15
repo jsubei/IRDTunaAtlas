@@ -32,17 +32,14 @@ library(plyr)
 
 #######################
 ##Database Identifiers: tunaatlas / db-tunaatlas
-source(file = "~/Desktop/CODES/IRDTunaAtlas/credtentials.R")
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 
 codes_github_repository <- "https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/"
 codes_directory=codes_github_repository
 # query <- paste(readLines(paste0(codes_directory,"SQL/select_annotated_images_attributes.sql")), collapse=" ")
 
 ####################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i1_SpeciesByOcean.R")
-####################################################################################################################################################################################################################################
-####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i2_SpeciesByGear.R")
 
 ```

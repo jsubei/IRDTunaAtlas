@@ -25,13 +25,14 @@ library(sf)
 library(sp)
 library(ggplot2)
 library(plyr)
+library(plotly)
 ```
 
 ```{r, include=FALSE}
 
 #######################
 ##Database Identifiers:
-source(file = "~/Desktop/CODES/IRDTunaAtlas/credtentials.R")
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i4_SpeciesMonthByOcean.R")
 ```
 
@@ -64,7 +65,7 @@ selectInput("year_choice", label = h3("Select year for i4"), choices = year, sel
 
 renderPrint({ 
   paste0("Your current selection for i4: ", input$species_choice," and ",input$year_choice)
-  query_i4 <- paste0("SELECT species, ocean, year, month, sum(value) as value, unit, st_collect(geom) FROM public.i4_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species, ocean, year, month,unit ;")
+  query_i4 <- paste0("SELECT species, ocean, year, month, sum(value) as value, unit, st_collect(geom) FROM public.i4_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species, ocean, year, month,unit;")
 })
 
 ```
@@ -136,75 +137,7 @@ addTiles() %>%
             mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(south,west,new_wkt)
             textOutput("wkt")
         })
-
-        
-#             
-#         observe({
-#           click<-input$mymap_click
-#             polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-#             # wkt <- st_as_text(polygon_coordinates)
-#             # see  https://rstudio.github.io/leaflet/shiny.html
-#             # bb <- input$mymap_bounds 
-#             
-#             north <- polygon_coordinates[[1]][[1]]
-#             south <- polygon_coordinates[[1]][[1]]
-#             east <- polygon_coordinates[[1]][[1]]
-#             west <- polygon_coordinates[[1]][[1]]
-#             
-#             
-#             if(is.null(click))
-#                 return()
-# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(north,south, "toto")
-#         })
-        
-        
-      # #get the coordinates of the polygon
-      # polygon_coordinates <- 
-      #   input$mymap_draw_new_feature$geometry$coordinates[[1]]
-    
-    # observeEvent(input$mymap_draw_new_feature,{
-    #     # feature <- input$mymap_draw_new_feature
-    #     polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-    #     text<-paste("Lattitude ","Lo")
-    #     mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(polygon_coordinates[[1]][[1]], polygon_coordinates[[2]][[1]])
-    # })
-
-#         observe({
-#             click<-input$mymap_click
-#             if(is.null(click))
-#                 return()
-#             text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng)
-#             text2<-paste("You've selected point ", text)
-# mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(click$lng, click$lat, text)
-#     output$Click_text<-renderText({
-#       text2
-#     })
-#             
-#         })
-#     
-    
-  #   
-  #   output$rastersum <- renderText({
-  #   #use the draw_stop event to detect when users finished drawing
-  #   req(input$mymap_draw_stop)
-  # 
-  #   # get the coordinates of the polygon and make SpatialPolygons object
-  #   polygon_coordinates <- input$mymap_draw_new_feature$geometry$coordinates[[1]]
-  # 
-  #   drawn_polygon <- Polygon(do.call(rbind,lapply(polygon_coordinates,function(x){c(x[[1]][1],x[[2]][1])})))
-  #   sp <- SpatialPolygons(list(Polygons(list(drawn_polygon),"drawn_polygon")))
-  # 
-  #   # set coords as latlong then transform to leaflet projection
-  #   proj4string(sp) <- LL
-  #   polyre <- spTransform(sp, leaf.proj)
-  # 
-  #   e <- extract(r,polyre)
-  #   sum(unlist(e),na.rm=T)
-  # 
-  # })
-
-# https://rdrr.io/github/rahulchauhan049/dashboard.experiment/src/R/mod_leaflet.R
-# https://stackoverflow.com/questions/44979900/how-to-download-polygons-drawn-in-leaflet-draw-as-geojson-file-from-r-shiny        
+   
 ```
 
 
@@ -218,6 +151,8 @@ Column {data-width=650}
 
 
 ```{r}
+
+# renderPlotly({
 renderPlot({
 
 # https://mrjoh3.github.io/2018/12/26/shiny-image-gallery-examples/
@@ -240,10 +175,11 @@ i4 <- Atlas_i4_SpeciesMonthByOcean(df=as.data.frame(df_i4_filtered),
                                           valueAttributeName="value",
                                    withSparql=FALSE
                                       )
-    
-i4
-
+i4    
 })
+
+# plotlyOutput("plot4")
+
 
 
 ```

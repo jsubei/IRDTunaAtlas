@@ -40,7 +40,7 @@
 
 TunaAtlas_database_to_NetCDF <- function(df){
   
-  
+  res_dimensions_and_variables <- df  
 ########################
 #Used Packages:
 #######################

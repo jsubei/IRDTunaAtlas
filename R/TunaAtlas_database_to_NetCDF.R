@@ -40,7 +40,8 @@
 
 TunaAtlas_database_to_NetCDF <- function(df){
   
-  res_dimensions_and_variables <- df  
+res_dimensions_and_variables <- df  
+res_dimensions_and_variables$geom_wkt <- st_as_text(res_dimensions_and_variables$geom_wkt)
 ########################
 #Used Packages:
 #######################
@@ -101,6 +102,7 @@ res_dimensions_and_variables <- aggregate(res_dimensions_and_variables[variables
 head(res_dimensions_and_variables)
 vars <-res_dimensions_and_variables[[variables]]
 geom_wkt <- res_dimensions_and_variables$geom_wkt
+class(geom_wkt)
 
 # year <-res_dimensions_and_variables$year
 # if(t_resolution=="month"){month <- res_dimensions_and_variables$month}
@@ -147,8 +149,6 @@ box <- bbox(sptest)
 
 dateVector1 <- sort(unique((res_dimensions_and_variables$time_start)))
 # dateVector1 <- sort(unique((res_dimensions_and_variables$year)))
-
-class(dateVector1)
 dateVector <- julian(x=as.numeric(format(dateVector1,'%m')),d=as.numeric(format(dateVector1,'%d')),y=as.numeric(format(dateVector1,'%Y')),origin.=c(month = 1, day = 1, year = 1950))
 
 
@@ -218,6 +218,8 @@ varXd <- ncvar_def(name=variables, units=unite, dim=listDims, missval=nonAvailab
 netCDF_CF_filename <- paste("SARDARA_",variables,"_",paste(dimensions,collapse = "-"),"_",sp_resolution,"deg_",t_resolution,'D',dateVector1[1],"_",dateVector1[length(dateVector1)],".nc",sep="")
 nc <- nc_create(netCDF_CF_filename,list(varproj,varXd))
 cat("netCDF File created")
+
+
 
 ######################################################################
 ##### ADD VALUES TO VARIABLES  ##########
@@ -317,7 +319,8 @@ for(indD in 1: length(dimensions)){
   if(!is.na(loc)){
     ncatt_put(nc,dimensions[indD],"flag_values",paste((meaningValue$ref[[loc]]),collapse = ","))
     ncatt_put(nc,dimensions[indD],"flag_meanings",paste(gsub(" ","_",as.character(meaningValue$values[[loc]])),collapse=" "))
-    ncatt_put(nc,dimensions[indD],"valid_range",paste(c(min(meaningValue$ref[[loc]]),max(meaningValue$ref[[loc]])),collapse = ","))}
+    ncatt_put(nc,dimensions[indD],"valid_range",paste(c(min(meaningValue$ref[[loc]]),max(meaningValue$ref[[loc]])),collapse = ","))
+    }
 }
 
 

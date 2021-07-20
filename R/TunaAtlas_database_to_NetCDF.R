@@ -35,13 +35,16 @@
 #   addRasterImage(r, colors = color_pal, opacity = .7) %>%
 #   addLegend(pal = color_pal, values = values(r),
 #             title = "Les captures de thon") 
-
+# query <-"SELECT species, country AS flag, value AS v_catch, count, ST_asText(geom) AS geom_wkt, (year || '-01-01') AS time_start, (year || '-12-31') AS time_end FROM public.i6i7i8 WHERE species IN ('YFT') AND year IN ('1999');"
+# # query <- paste0("SELECT species, country AS flag, value AS v_catch, count, ST_asText(geom) AS geom_wkt, year AS time_start, year AS time_end FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i8,collapse="','"),"') AND year IN ('",paste0(input$year_i8,collapse="','"),"');")
+# # query <- paste0("SELECT species, country AS flag, value, value AS v_catch, geom, DATE(year || '-01-01') AS time_start, DATE(year || '-12-31') AS time_end FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) AND species IN ('",paste0(input$species_i8,collapse="','"),"') AND year IN ('",paste0(input$year_i8,collapse="','"),"');")
+# df <- as.data.frame(st_read(con, query = query))
 
 
 TunaAtlas_database_to_NetCDF <- function(df){
   
 res_dimensions_and_variables <- df  
-res_dimensions_and_variables$geom_wkt <- st_as_text(res_dimensions_and_variables$geom_wkt)
+# res_dimensions_and_variables$geom_wkt <- st_as_text(res_dimensions_and_variables$geom_wkt)
 ########################
 #Used Packages:
 #######################
@@ -149,7 +152,7 @@ box <- bbox(sptest)
 
 dateVector1 <- sort(unique((res_dimensions_and_variables$time_start)))
 # dateVector1 <- sort(unique((res_dimensions_and_variables$year)))
-dateVector <- julian(x=as.numeric(format(dateVector1,'%m')),d=as.numeric(format(dateVector1,'%d')),y=as.numeric(format(dateVector1,'%Y')),origin.=c(month = 1, day = 1, year = 1950))
+dateVector <- julian(x=as.numeric(format(as.Date(dateVector1),'%m')),d=as.numeric(format(as.Date(dateVector1),'%d')),y=as.numeric(format(as.Date(dateVector1),'%Y')),origin=c(month = 1, day = 1, year = 1950))
 
 
 ##### SPATIAL DIMENSION  ##########
@@ -264,7 +267,7 @@ gridDimInd <- gridDimInd[,ncol(gridDimInd):1]
 
 ####
 ######
-num_time <- julian(x=as.numeric(format(res_dimensions_and_variables$time_start,'%m')),d=as.numeric(format(res_dimensions_and_variables$time_start,'%d')),y=as.numeric(format(res_dimensions_and_variables$time_start,'%Y')),origin.=c(month = 1, day = 1, year = 1950))
+num_time <- julian(x=as.numeric(format(as.Date(res_dimensions_and_variables$time_start),'%m')),d=as.numeric(format(as.Date(res_dimensions_and_variables$time_start),'%d')),y=as.numeric(format(as.Date(res_dimensions_and_variables$time_start),'%Y')),origin.=c(month = 1, day = 1, year = 1950))
 res_dimensions_and_variables$num_time <- num_time
 numLayer=1
 gridDim <- as.data.frame(gridDim)

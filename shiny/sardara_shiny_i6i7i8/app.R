@@ -28,11 +28,9 @@ source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
 wkt <- reactiveVal(new_wkt) 
-target_species<- c("YFT","BFT")
+# target_species<- c("YFT","BFT")
 # target_year <- c(seq(1:10)+1994)
-target_year <- c(1999,2000)
-# target_year_i8 <- c(1999,2000)
-target_flag <- c("331","747")
+# target_flag <- c("331","747")
 
 # query_i6i7i8 =  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",new_wkt,"',4326)) AND species IN ('",paste0(target_species,collapse="','"),"') AND country IN ('",paste0(target_flag,collapse="','"),"') AND year IN ('",paste0(target_year,collapse="','"),"');")
 query_i6i7i8 =  paste0("SELECT ogc_fid, geom_id, geom, year, species, country, value, count FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",new_wkt,"',4326));")
@@ -264,7 +262,7 @@ server <- function(input, output, session) {
 
         df_i8_filtered <- as(df_i8, "Spatial")
         i8 <- Atlas_i8_SpeciesMapRelativeCatchesOtherSpecies(df=df_i8_filtered,
-                                                             targetedSpecies=target_species[1],
+                                                             targetedSpecies=input$species_i6i7i8,
                                                              geomIdAttributeName="geom_id",
                                                              yearAttributeName="year",
                                                              speciesAttributeName="species",

@@ -24,7 +24,6 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtl
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
 ####################################################################################################################################################################################################################################
 DRV=RPostgres::Postgres()
-con <- dbConnect(drv=DRV, dbname="tunaatlas_210715", user="tunaatlas_u", password="21c0551e7ed2911", host="localhost")
 # source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 

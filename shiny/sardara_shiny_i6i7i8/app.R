@@ -111,6 +111,10 @@ ui <- fluidPage(
               textOutput("sql_query")
             ),
             tabPanel(
+              title = "Your Map Plotted",
+              plotOutput("plotmap")
+            ),
+            tabPanel(
                 title = "Your filters",
                 textOutput("selected_var")
             )
@@ -221,9 +225,18 @@ server <- function(input, output, session) {
     #     )
     # })
     
+    output$plotmap <- renderPlot({
+
+      # https://r-spatial.github.io/sf/articles/sf5.html
+      df <- st_read(con, query = sql_query())
+      plot(st_geometry(df),col = sf.colors(12, categorical = TRUE), border = 'grey', 
+           axes = TRUE)
+      # plot(df)
+    })
     
     output$mymap <- renderLeaflet({
-        df <- data() %>% filter(species %in% input$species_i6i7i8)
+        df <- as.data.frame(st_read(con, query = sql_query())) %>% mutate(time_start = ISOdate(year, 1, 1), time_end = ISOdate(year, 12,31)) %>% dplyr::select (-c(ogc_fid, geom_id,geom,count,year)) %>%  dplyr::rename(v_catch=value,flag=country)  %>% filter(species %in% input$species_i6i7i8)
+        # df <- data() %>% filter(species %in% input$species_i6i7i8)
         netCDF_file <- TunaAtlas_database_to_NetCDF(df)
         centroid <- st_union(st_as_sfc(df$geom_wkt)) %>% st_convex_hull()   %>% st_centroid()
         lat_centroid <- st_coordinates(centroid)[2]

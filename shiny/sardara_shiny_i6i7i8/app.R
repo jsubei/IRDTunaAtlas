@@ -257,9 +257,12 @@ server <- function(input, output, session) {
       # 
       # color_pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(df$value),
       #                           na.color = "transparent")
-      
+      pal <- colorNumeric(
+        palette = "YlGnBu",
+        domain = df$value
+      )
       # brewer.pal(7, "OrRd")
-      pal_fun <- colorQuantile("YlOrRd", NULL, n = 10)
+      pal_fun <- colorQuantile(   "YlOrRd", NULL, n = 10)
       
       # https://r-spatial.github.io/sf/articles/sf5.html
       map_leaflet <- leaflet()  %>%    addPolygons(data = df,
@@ -269,8 +272,16 @@ server <- function(input, output, session) {
                                                    fillColor = ~pal_fun(value),
                                                    fill = TRUE, 
                                                    fillOpacity = 0.8,
-                                                   color = "") %>%
+                                                   smoothFactor = 0.5,
+                                                   # color = ~pal(value)      
+                                                   ) %>%
         addProviderTiles("Esri.OceanBasemap")
+       # %>%  addLegend("bottomright", 
+       #            # colors = colorQuantile("YlOrRd", NULL, n = 10), 
+       #            pal = pal, values = ~value,
+       #            # labFormat = labelFormat(prefix = "$"),
+       #            # labels = paste0("up to ", format(df$values[-1], digits = 2)),
+       #            title = "Captures de thons")
       })
     
 

@@ -1,4 +1,5 @@
 library(shiny)
+library(geojsonio)
 library(plyr)
 library(dplyr)
 library(DBI)
@@ -25,8 +26,8 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spd
 ####################################################################################################################################################################################################################################
 DRV=RPostgres::Postgres()
 # source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
-
 
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
 wkt <- reactiveVal(new_wkt) 
@@ -81,10 +82,18 @@ ui <- fluidPage(
         #     leafletOutput('mymap')
         # ),
         tabsetPanel(
+          tabPanel(
+            title = "Map Postgis Vector / SF data",
+            leafletOutput('overviewmap', width = "50%", height = 600)
+          ),
             tabPanel(
-                title = "Map data",
+                title = "Map NetCDF data",
                 leafletOutput('mymap', width = "50%", height = 600)
             ),
+          tabPanel(
+            title = "Your Map Plotted",
+            plotOutput("plotmap")
+          ),
             tabPanel(
               title = "Plot indicator 6",
               plotlyOutput("plot6")
@@ -108,10 +117,6 @@ ui <- fluidPage(
             tabPanel(
               title = "Your SQL query",
               textOutput("sql_query")
-            ),
-            tabPanel(
-              title = "Your Map Plotted",
-              plotOutput("plotmap")
             ),
             tabPanel(
                 title = "Your filters",
@@ -228,10 +233,48 @@ server <- function(input, output, session) {
 
       # https://r-spatial.github.io/sf/articles/sf5.html
       df <- st_read(con, query = sql_query())
+      
       plot(st_geometry(df),col = sf.colors(12, categorical = TRUE), border = 'grey', 
            axes = TRUE)
       # plot(df)
     })
+    
+    
+    output$overviewmap <- renderLeaflet({
+      
+      df <- st_read(con, query = sql_query())
+      
+      # pal <- colorBin(
+      #   palette = "viridis",
+      #   domain = df$value,
+      #   reverse = TRUE,
+      #   # Echelle avec des quantiles sinon Paris prend toute la place...
+      #   bins = quantile(
+      #     domain = df$value,
+      #     probs = seq(0, 1, by = 0.2))
+      # )
+      # df <- st_read(con, query = "SELECT *  FROM public.i6i7i8 WHERE species='YFT' and year ='2000';")
+      # 
+      # color_pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(df$value),
+      #                           na.color = "transparent")
+      
+      # brewer.pal(7, "OrRd")
+      pal_fun <- colorQuantile("YlOrRd", NULL, n = 10)
+      
+      # https://r-spatial.github.io/sf/articles/sf5.html
+      map_leaflet <- leaflet()  %>%    addPolygons(data = df,
+                                                   # label = ~species,
+                                                   label = ~value,
+                                                   popup = ~paste0("Captures de",species,": ", round(value), " tonnes(t) et des brouettes"),
+                                                   fillColor = ~pal_fun(value),
+                                                   fill = TRUE, 
+                                                   fillOpacity = 0.8,
+                                                   color = "") %>%
+        addProviderTiles("Esri.OceanBasemap")
+      })
+    
+
+    
     
     output$mymap <- renderLeaflet({
         df <- as.data.frame(st_read(con, query = sql_query())) %>% mutate(time_start = ISOdate(year, 1, 1), time_end = ISOdate(year, 12,31)) %>% dplyr::select (-c(ogc_fid, geom_id,geom,count,year)) %>%  dplyr::rename(v_catch=value,flag=country)  %>% filter(species %in% input$species_i6i7i8)

@@ -21,5 +21,5 @@
            FROM metadata.metadata
           WHERE metadata.identifier = 'codelist_mapping_isscfg_revision_1_geargroup_tunaatlas'::text)) OR gear_mapping.gear_mapping_id_from = 0) AND (species_mapping.id_metadata = (( SELECT metadata.id_metadata
            FROM metadata.metadata
-          WHERE metadata.identifier = 'codelist_mapping_species_asfis_speciesgroup_tunaatlas'::text)) OR species_mapping.species_mapping_id_from = 0) AND tab.id_metadata = 199
+          WHERE metadata.identifier = 'codelist_mapping_species_asfis_speciesgroup_tunaatlas'::text)) OR species_mapping.species_mapping_id_from = 0) AND tab.id_metadata = 309 
   GROUP BY unit_labels.codesource_unit, source_labels.codesource_source, geargroup_label.codesource_gear, "time".year, species_labels.codesource_species, area_labels.geom;

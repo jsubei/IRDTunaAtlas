@@ -26,13 +26,15 @@ library(sp)
 library(ggplot2)
 library(plotly)
 library(plyr)
+library(streamgraph)
 ```
 
 ```{r, include=FALSE}
 
 #######################
 ##Database Identifiers: tunaatlas / db-tunaatlas
-source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 
 codes_github_repository <- "https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/"
 codes_directory=codes_github_repository
@@ -220,6 +222,11 @@ i2 <- Atlas_i2_SpeciesByGear(as.data.frame(df_i2),
 })
 
 plotlyOutput("plot2")
+
+
+
+
+
 
 
 ```

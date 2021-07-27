@@ -5,6 +5,7 @@
 --SELECT
 --	 distinct st_astext(geom)  AS wkt
 --FROM (
+
 	SELECT 
 		row_number() OVER () AS ogc_fid,
 		fact.id_area AS geom_id,
@@ -13,7 +14,7 @@
 		"time".year AS year,
 --		fact.id_species  AS species,
 		species_labels.codesource_species AS species,
-		fact.id_flag  AS country,
+		flag_labels.codesource_flag AS country,
 		sum(fact.value) AS value,
 		count(fact.value) AS count 
 		
@@ -42,7 +43,7 @@
 --      	"time".year <= 2005::numeric 
         	
 	GROUP BY 
-		fact.id_area, geom, "time".year, species_labels.codesource_species, fact.id_flag
+		fact.id_area, geom, "time".year, species_labels.codesource_species, flag_labels.codesource_flag
 		-- fact.id_area, geom_wkt, "time".year, species_labels.codesource_species, fact.id_species, fact.id_flag
 		
 		

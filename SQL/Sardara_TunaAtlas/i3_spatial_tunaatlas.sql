@@ -29,7 +29,7 @@
              LEFT JOIN species.species_mapping ON species_mapping.species_mapping_id_from = tab.id_species
              LEFT JOIN species.species_labels speciesgroup_label ON speciesgroup_label.id_species = species_mapping.species_mapping_id_to
           WHERE "time".year::numeric <= 2005::numeric
-          GROUP BY "time".year, "time".month, species_labels.codesource_species, geargroup_label.codesource_gear,area_labels.id_area) sub_qry3
+          GROUP BY "time".year, "time".month, species_labels.codesource_species, geargroup_label.codesource_gear,area_labels.id_area,area_labels.geom) sub_qry3
           
      JOIN ( SELECT subsub.reference_year AS year,
             subsub.month,

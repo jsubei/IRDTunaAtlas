@@ -16,6 +16,8 @@ library(raster)
 library(maps)
 library(ggplot2)
 library(XML)
+library(streamgraph)
+library(viridis)
 
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i1_SpeciesByOcean.R")
@@ -81,11 +83,21 @@ ui <- fluidPage(
       ),
       tabPanel(
         title = "Plot indicator 1",
+        # plotlyOutput("plot1")
         plotlyOutput("plot1")
+      ),
+      tabPanel(
+        title = "Streamgraph indicator 1",
+        # plotlyOutput("plot1")
+        streamgraphOutput("plot1_streamgraph")
       ),
       tabPanel(
         title = "Plot indicator 2",
         plotlyOutput("plot2")
+      ),
+      tabPanel(
+        title = "Streamgraph indicator 2",
+        streamgraphOutput("plot2_streamgraph")
       ),
       tabPanel(
         title = "Browse i1 data",
@@ -160,12 +172,15 @@ server <- function(input, output, session) {
   
   
   output$DTi1 <- renderDT({
-    this <- data() %>% filter(species %in% input$year)
+    # this <- data() %>% filter(year %in% input$year)
+    this <- data() %>% filter(year %in% input$year) %>% group_by(ocean,year,species) %>% summarise(value = sum(value))
   })
   
   
   output$DTi2 <- renderDT({
     this <- data()
+    this <- data() %>% filter(year %in% input$year) %>% filter(gear_group %in% input$gear) %>% group_by(year,gear_group,species)   %>% summarise(value = sum(value))  %>% dplyr::rename(gear_type=gear_group)
+    
   })
   
   
@@ -185,12 +200,16 @@ server <- function(input, output, session) {
     # brewer.pal(7, "OrRd")
     pal_fun <- colorQuantile(   "YlOrRd", NULL, n = 10)
     
+    qpal <- colorQuantile(rev(viridis::viridis(10)),
+                          df$value, n=10)
+    
     # https://r-spatial.github.io/sf/articles/sf5.html
     map_leaflet <- leaflet()  %>%  
       addPolygons(data = df,
                                                  label = ~value,
                                                  popup = ~paste0("Captures de",species,": ", round(value), " tonnes(t) et des brouettes"),
-                                                 fillColor = ~pal_fun(value),
+                                                 # fillColor = ~pal_fun(value),
+                                                 fillColor = ~qpal(value),
                                                  fill = TRUE,
                                                  fillOpacity = 0.8,
                                                  smoothFactor = 0.5
@@ -253,24 +272,41 @@ server <- function(input, output, session) {
   
   output$plot1 <- renderPlotly({
     
+    df_i1 <- data() %>% filter(year %in% input$year) %>% group_by(ocean,year,species) %>% summarise(value = sum(value))  # %>% filter(species %in% input$species_i6i7i8)
     
+    # i1 <- Atlas_i1_SpeciesByOcean(as.data.frame(df_i1), 
+    #                               yearAttributeName="year", 
+    #                               oceanAttributeName="ocean", 
+    #                               speciesAttributeName="species", 
+    #                               valueAttributeName="value")
     
+
+    i1 <- df_i1 %>%
+        ggplot(aes(x=year, y=value, fill=ocean, text=ocean)) +
+        geom_area( ) +
+        theme(legend.position="none") +
+        ggtitle("Popularity of American names in the previous 30 years") +
+        theme(legend.position="none")
+
+      # Turn it interactive
+      i1 <- ggplotly(i1, tooltip="text")
+
     
-    df_i1 = data()  # %>% filter(species %in% input$species_i6i7i8)
+  })
+  
+  output$plot1_streamgraph <- renderStreamgraph({
     
+    df_i1 <- data() %>% filter(year %in% input$year) %>% group_by(ocean,year,species) %>% summarise(value = sum(value)) # %>% filter(species %in% input$species_i6i7i8)
     
-    i1 <- Atlas_i1_SpeciesByOcean(as.data.frame(df_i1), 
-                                  yearAttributeName="year", 
-                                  oceanAttributeName="ocean", 
-                                  speciesAttributeName="species", 
-                                  valueAttributeName="value")
-    
+    streamgraph(df_i1, key="ocean", value="value", date="year", height="300px", width="1000px", offset="zero", interpolate="linear") %>% 
+      # streamgraph("name", "n", "year", offset="zero", interpolate="linear") %>%
+      sg_legend(show=TRUE, label="I=RFMO - names: ")
   })
   
   output$plot2 <- renderPlotly({ 
     
-
-    df_i2 = data() %>% filter(gear_group %in% input$gear) %>% dplyr::rename(gear_type=gear_group)
+ 
+    df_i2 = data() %>% filter(year %in% input$year) %>% filter(gear_group %in% input$gear) %>% group_by(year,gear_group,species)   %>% summarise(value = sum(value))  %>% dplyr::rename(gear_type=gear_group)
     
     
     i2 <- Atlas_i2_SpeciesByGear(as.data.frame(df_i2),
@@ -279,8 +315,18 @@ server <- function(input, output, session) {
                                  valueAttributeName="value",
                                  gearTypeAttributeName="gear_type",
                                  withSparql=FALSE)
+  i2 
   })
   
+  
+  
+  output$plot2_streamgraph<- renderStreamgraph({ 
+    df_i2 =  data() %>% filter(year %in% input$year) %>% filter(gear_group %in% input$gear) %>% group_by(year,gear_group,species)   %>% summarise(value = sum(value))  %>% dplyr::rename(gear_type=gear_group) %>% 
+      streamgraph("gear_type", "value", "year", offset="zero", interpolate="step") %>%
+      sg_axis_x(1, "year", "%Y") %>%
+      sg_fill_brewer("PuOr") %>%
+      sg_legend(show=TRUE, label="I=RFMO - names: ")
+  })
   
   
   

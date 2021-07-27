@@ -15,10 +15,9 @@ library(sp)
 require(raster)
 require(ncdf4)
 library(leaflet)
-
+library(chron)
 # require(IndicatorsForFisheries)
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
-# source('/home/taha/Projets/SARDARA_NC/wkt2spdf.r') # require(IndicatorsForFisheries)
 ########################
 #Database requests:
 #######################
@@ -27,18 +26,21 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spd
 # group by year, month,species,gear,flag, geom_wkt"
 
 ##Database Identifiers: tunaatlas / db-tunaatlas
-source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 
 # query<-"SELECT species,schooltype,gear,flag,catchtype,time_start,time_end,v_catch,ST_asText(geom) AS geom_wkt FROM tunaatlas_ird.global_catch_tunaatlasird_5deg_1m_1950_01_01_2016_01_01_l0 where catchunit IN ('MT','MTNO')"
+# , EXTRACT(YEAR FROM time_start) as year,EXTRACT(MONTH FROM time_end) as month
+# query<-"SELECT species,schooltype,gear,flag,catchtype,time_start,time_end,value AS v_catch,geom_wkt AS geom_wkt
+# FROM fact_tables.global_catch_5deg_1m_firms_level0
+# WHERE unit IN ('t')  AND species IN ('ALB') AND gear='09.32' AND flag='TWN' AND extract(year from time_start) > 2000 AND extract(year from time_start) < 2002
+# ORDER BY time_start ASC"
 
-query<-"SELECT species,schooltype,gear,flag,catchtype,time_start,time_end,value AS v_catch,geom_wkt AS geom_wkt
-FROM fact_tables.global_catch_5deg_1m_firms_level0
-WHERE unit IN ('t')  AND species IN ('ALB') AND gear='09.32' AND flag='TWN' AND extract(year from time_start) > 2000 AND extract(year from time_start) < 2002
-ORDER BY time_start ASC"
+query<-"SELECT ST_asText(geom) AS geom_wkt, DATE(year || '-01-01') AS time_start, DATE(year || '-12-31') AS time_end, species, country as flag, value AS v_catch FROM public.i6i7i8
+WHERE species IN ('YFT') AND country IN ('747') AND year > 2000
+;"
 
-# query<-"SELECT ogc_fid, geom_id, geom, ST_asText(geom) AS geom_wkt, year, species, country as flag, value AS v_catch, count FROM public.i6i7i8 
-# WHERE species IN ('YFT') AND country in('747') AND year > 2000 AND year < 2002 
-# ;"
+# query<-"SELECT* FROM public.i6i7i8 LIMIT 100;"
 
 res_dimensions_and_variables<-dbGetQuery(con,query)
 head(res_dimensions_and_variables)
@@ -46,6 +48,11 @@ nrow(res_dimensions_and_variables)
 unique(res_dimensions_and_variables$year)
 unique(res_dimensions_and_variables$species)
 unique(res_dimensions_and_variables$flag)
+
+# res_dimensions_and_variables$time <- as.Date((df$time))
+# res_dimensions_and_variables$year <- as.numeric(format(res_dimensions_and_variables$year, "%Y"))
+# res_dimensions_and_variables$month <- as.numeric(format(df$time, "%m"))
+# res_dimensions_and_variables$day <- as.numeric(format(df$time, "%d"))
 
 ########################
 #Script parameters:
@@ -55,17 +62,27 @@ sp_resolution=5   # 1 or 5 (deg)
 variables ='v_catch'   # One Variable // to do: combinations of these variables : catches, effort and size_class
 dimensions= "all"  # combinations of these dimensions : species, flag, gear, ...! all for to include all dimensions and empty "" 
 
+
+
 t_resolution <- as.numeric(diff(c(as.Date(res_dimensions_and_variables$time_start[1]),as.Date(res_dimensions_and_variables$time_end[1])),unit='day'))
-##################
-##aggregate data:
-##################
-aggBy <- c("geom_wkt","time_start")
+# t_resolution <- as.numeric(diff(c(as.Date(origin=Sys.Date(),res_dimensions_and_variables$year[1]),as.Date(origin=Sys.Date(),res_dimensions_and_variables$year[1])),unit='day'))
 # switch (t_resolution,
 #         'year' = aggBy <- c(aggBy,'year'),
 #         'month' = aggBy <- c(aggBy,c('year','month')))
 
-if(tolower(dimensions)=='all' ){dimensions <- names(res_dimensions_and_variables)[-which( names(res_dimensions_and_variables) %in% c('v_catch','geom_wkt','time_start','time_end'))]}
-if(nchar(dimensions[1]) != 0 & dimensions[1]!='all' ){aggBy <- c(aggBy,dimensions)}
+##################
+##aggregate data:
+##################
+aggBy <- c("geom_wkt","time_start")
+# aggBy <- c("geom_wkt","year")
+
+if(tolower(dimensions)=='all' ){
+  # dimensions <- names(res_dimensions_and_variables)[-which( names(res_dimensions_and_variables) %in% c('v_catch','geom_wkt','year'))]
+  dimensions <- names(res_dimensions_and_variables)[-which( names(res_dimensions_and_variables) %in% c('v_catch','geom_wkt','time_start','time_end'))]
+}
+if(nchar(dimensions[1]) != 0 & dimensions[1]!='all' ){
+  aggBy <- c(aggBy,dimensions)
+  }
 
 
 switch (variables,
@@ -84,9 +101,7 @@ geom_wkt <- res_dimensions_and_variables$geom_wkt
 
 #####test exact box:
 test <- data.frame(wkt=unique(geom_wkt),id=1:length(unique(geom_wkt)))
-source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
 sptest <- wkt2spdf(df = test,wkt_col_name = 'wkt',id_col_name = 'id')
-
 box <- bbox(sptest)
 
 ##################
@@ -124,7 +139,9 @@ box <- bbox(sptest)
 # dateVector <- sort(unique(as.numeric(dateVector)))
 
 dateVector1 <- sort(unique((res_dimensions_and_variables$time_start)))
-library(chron)
+# dateVector1 <- sort(unique((res_dimensions_and_variables$year)))
+
+class(dateVector1)
 dateVector <- julian(x=as.numeric(format(dateVector1,'%m')),d=as.numeric(format(dateVector1,'%d')),y=as.numeric(format(dateVector1,'%Y')),origin.=c(month = 1, day = 1, year = 1950))
 
 

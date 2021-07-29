@@ -72,7 +72,7 @@ The input data are expected to be updated on a yearly basis by FAO and IRD. This
 
 Several resources proved invaluable when building this app, including:
 - IRD original Tuna Atlas written by Alain Fonteneau [tutorial by Florianne Verkroost](https://www.documentation.ird.fr/hor/fdi:010012425) on building interactive maps;
-- The [PDF atlas](https://horizon.documentation.ird.fr/exl-doc/pleins_textes/divers11-03/010012425.pdf) ;
+- The first version of the IRD Tuna Atlas has been published by alain Fonteneau as a [pdf document available here](https://horizon.documentation.ird.fr/exl-doc/pleins_textes/divers11-03/010012425.pdf) ;
 
 
 
@@ -82,7 +82,7 @@ This notebook has been written and executed on https://blue-cloud-jupyterhub.d4s
 
 It uses data provided by Fishereries Atlas VRE
 
-first version of IRD Tuna Atlas has been published by alain Fonteneau  and is available here (pdf format) : https://horizon.documentation.ird.fr/exl-doc/pleins_textes/divers11-03/010012425.pdf 
+
 
 
 ## Funding

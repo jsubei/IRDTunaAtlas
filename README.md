@@ -65,7 +65,7 @@ The input data are expected to be updated on a yearly basis by FAO and IRD. This
   -- a second version has been set up in 2015 by Paul Taconet, Emmanuel Chassot, Julien Barde 
  - **IRD legacy R code**: the current R code is mainly coming from 
   -- a translation in R of previous Fortran code (Alain and Viveca Fonteneau) achived by Julien Trollet
-  -- the packaging of previous R code within a workflow: Paul Taconet, Emmanuel Chassot, Julien Barde. See Paul Taconet github repositories [rtunaatlas](https://github.com/ptaconet/rtunaatlas) and [rtunaatlas\_scripts]https://github.com/ptaconet/rtunaatlas_scripts)
+  -- the packaging of previous R code within a workflow: Paul Taconet, Emmanuel Chassot, Julien Barde. See Paul Taconet github repositories [rtunaatlas](https://github.com/ptaconet/rtunaatlas) and [rtunaatlas_scripts](https://github.com/ptaconet/rtunaatlas_scripts)
  - **IRD and FAO/FIRMS Tuna Atlas update** to manage previous IRD workflow with geoflow and related package to manage OGC standards (provided by Emmanuel Blondel)
 
 ## Other resources

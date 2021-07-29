@@ -56,7 +56,7 @@ Shiny apps  have been set up to help newcomers to explore easily the data by usi
 
 These Shiny apps have been developped and executed in the [Fisheries Atlas VRE](https://) which contains a RStudio server and a shiny proxy server to host these apps.  A screenshot of the a Shiny app is provided below.
 
-![Shiny app interface example](outputs/Shiny_app_i8_TunaAtlas)
+![Shiny app interface example](outputs/Shiny_app_i8_TunaAtlas.png)
 
 ## Updates
 

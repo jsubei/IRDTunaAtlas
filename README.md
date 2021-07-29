@@ -16,7 +16,7 @@ This github page contains the code which:
  - transforms input data to generates maps and plots: R functions or scripts,
  - packages maps and charts within either dynamic reports, shiny apps, jupyter notebooks...
 
-Input data are obtained from a spatial data infrastructure currently hosted within a [Fisheries Atlas VRE](https://) of the Blue Cloud H2020 project.
+Input data are obtained from a spatial data infrastructure currently hosted within a [Fisheries Atlas VRE](https://blue-cloud.d4science.org/) of the Blue Cloud H2020 project.
 
 
 ## Analysis code
@@ -38,13 +38,16 @@ An example of function outputs is provided below:
 
 
 
-## Jupyer notebooks
+## Jupyter notebooks
 
 Jupyer notebooks have been set up to help newcomers execute and customize the analysis code
 
-These notebooks have been developped and executed in the [Fisheries Atlas VRE](https://) which contains a JupyerHub server. A screenshot of a Jupyer notebook is provided below.
+These notebooks are available on this github repo [eg Jupyer notebook example for indicators i6, i7 and i8](https://github.com/juldebar/IRDTunaAtlas/blob/master/jupyter_notebook/sardara_notebook_i6i7i8.ipynb)
+and have been developped and executed in the [Fisheries Atlas VRE](https://blue-cloud.d4science.org/) which contains a JupyerHub server. A screenshot of a Jupyer notebook is provided below.
 
-![Jupyer notebook interface example](outputs/www/html/tmp/SpeciesByYearByMonthByGear/default/I3_BET_2005.png)
+![Jupyer notebook interface example](outputs/jupyter_notebook_example_i6i7i_BlueCloud.png)
+
+
 
 
 ## Shiny interface
@@ -64,6 +67,27 @@ The input data are expected to be updated on a yearly basis by FAO and IRD. This
 Several resources proved invaluable when building this app, including:
 - IRD original Tuna Atlas written by Alain Fonteneau [tutorial by Florianne Verkroost](https://www.documentation.ird.fr/hor/fdi:010012425) on building interactive maps;
 - The [PDF atlas](https://horizon.documentation.ird.fr/exl-doc/pleins_textes/divers11-03/010012425.pdf) ;
+
+
+
+
+
+It can be used as a documentation of underlying processes used by the related shiny app  https://github.com/juldebar/IRDTunaAtlas/blob/master/shiny/sardara_shiny_i6i7i8.Rmd
+
+This notebook has been written and executed on https://blue-cloud-jupyterhub.d4science.org/ 
+
+It uses data provided by Fishereries Atlas VRE
+
+first version of IRD Tuna Atlas has been published by alain Fonteneau  and is available here (pdf format) : https://horizon.documentation.ird.fr/exl-doc/pleins_textes/divers11-03/010012425.pdf 
+
+
+## Funding
+This work received funding from:
+ - IRD
+ - iMarine FP7 project
+ - BlueBridge H2020 project
+ - BlueCloud H2020 project
+
 
 ## Authors
 Julien Barde, Norbert Billet, Taha Imzilen, Paul Taconet, UMR MARBEC...

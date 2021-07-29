@@ -88,13 +88,13 @@ It uses data provided by Fishereries Atlas VRE
 ## Funding
 This work received funding from:
  - IRD
- -[iMarine FP7 project](http://www.i-marine.eu/)
- -[BlueBridge H2020 project](https://www.bluebridge-vres.eu/):BlueBRIDGE receives funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No. 675680
- -[Blue Cloud H2020 project](https://www.blue-cloud.org/): Blue-Cloud has received funding from the European Union's Horizon programme call BG-07-2019-2020, topic: [A] 2019 - Blue Cloud services, Grant Agreement n.862409. The views and opinions expressed in this website are the sole responsibility of the author and do not necessarily reflect the views of the European Commission.
+ - [iMarine FP7 project](http://www.i-marine.eu/)
+ - [BlueBridge H2020 project](https://www.bluebridge-vres.eu/):BlueBRIDGE receives funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No. 675680
+ - [Blue Cloud H2020 project](https://www.blue-cloud.org/): Blue-Cloud has received funding from the European Union's Horizon programme call BG-07-2019-2020, topic: [A] 2019 - Blue Cloud services, Grant Agreement n.862409. The views and opinions expressed in this website are the sole responsibility of the author and do not necessarily reflect the views of the European Commission.
 
 
 ## Authors
-Julien Barde, Norbert Billet, Taha Imzilen, Paul Taconet, UMR MARBEC...
+Multiple contributors have been helping building this repository: Julien Barde, Norbert Billet, Emmanuel Chassot, Taha Imzilen, Paul Taconet, UMR MARBEC...
 
 
 ## Contact

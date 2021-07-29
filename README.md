@@ -16,7 +16,7 @@ This github page contains the code which:
  - transforms input data to generates maps and plots: R functions or scripts,
  - packages maps and charts within either dynamic reports, shiny apps, jupyter notebooks...
 
-Input data are obtained from a spatial data infrastructure currently hosted within a [Fisheries Atlas VRE](https://blue-cloud.d4science.org/) of the [Blue Cloud H2020 project](https://www.blue-cloud.org/).
+Input data are obtained from a spatial data infrastructure currently hosted within the [Fisheries Atlas VRE](https://blue-cloud.d4science.org/) of the [Blue Cloud H2020 project](https://www.blue-cloud.org/).
 
 
 ## Analysis code
@@ -33,7 +33,7 @@ Key elements of the analysis code are a set of indicators originally drafted by 
 - *[Indicator I10 : Size frequencies by decade](https://github.com/jsubei/IRDTunaAtlas/wiki/Indicator-I10-:-Size-frequencies-by-decade)*
 - *[Indicator I11 : Catches by country](https://github.com/jsubei/IRDTunaAtlas/wiki/Indicator-I11-:-Catches-by-country)*
 
-An example of function outputs is provided below:
+An example of function outputs is provided below (eg Indicator I3 : Catches by gear and by month):
 ![ggplot function output example](outputs/www/html/tmp/SpeciesByYearByMonthByGear/default/I3_BET_2005.png)
 
 Some of the SQL queries used to extract data are also shared in this github repository.
@@ -41,12 +41,12 @@ Some of the SQL queries used to extract data are also shared in this github repo
 
 ## Jupyter notebooks
 
-Jupyer notebooks have been set up to help newcomers execute and customize the analysis code. The jupyter notebboks are meant to help users making use of previous R analysis code.
+Jupyter notebooks have been set up to help newcomers execute and customize the analysis code. The jupyter notebooks are meant to help users making use of previous R analysis code.
 
-These notebooks are available on this github repo [eg Jupyer notebook example for indicators i6, i7 and i8](https://github.com/juldebar/IRDTunaAtlas/blob/master/jupyter_notebook/sardara_notebook_i6i7i8.ipynb)
-and have been developped and executed in the [Fisheries Atlas VRE](https://blue-cloud.d4science.org/) which contains a JupyerHub server. A screenshot of a Jupyer notebook is provided below.
+These notebooks are available on this github repo [eg Jupyter notebook example for indicators i6, i7 and i8](https://github.com/juldebar/IRDTunaAtlas/blob/master/jupyter_notebook/sardara_notebook_i6i7i8.ipynb)
+and have been developped and executed in the [Fisheries Atlas VRE](https://blue-cloud.d4science.org/) which contains a JupyterHub server. A screenshot of a Jupyter notebook is provided below.
 
-![Jupyer notebook interface example](outputs/jupyter_notebook_example_i6i7i_BlueCloud.png)
+![Jupyter notebook interface example](outputs/jupyter_notebook_example_i6i7i_BlueCloud.png)
 
 ## Shiny apps
 
@@ -60,13 +60,13 @@ These Shiny apps have been developped and executed in the [Fisheries Atlas VRE](
 ## Updates
 
 The input data are expected to be updated on a yearly basis by FAO and IRD. This update is managed by a set of dedicated scripts:
- - IRD legacy SQL code: the persistent storage of data is ensured by a PostgreSQL / Postgis database / multi-dimensionnal data warehouse
+ - **IRD legacy SQL code**: the persistent storage of data is ensured by a PostgreSQL / Postgis database / multi-dimensionnal data warehouse
   -- first version has been set up by Jean Jacques Lechauve in early 2000's
   -- a second version has been set up in 2015 by Paul Taconet, Emmanuel Chassot, Julien Barde 
- - IRD legacy R code: the current R code is mainly coming from 
+ - **IRD legacy R code**: the current R code is mainly coming from 
   -- a translation in R of previous Fortran code (Alain and Viveca Fonteneau) achived by Julien Trollet
   -- the packaging of previous R code within a workflow: Paul Taconet, Emmanuel Chassot, Julien Barde. See Paul Taonet github repositories [rtunaatlas](https://github.com/ptaconet/rtunaatlas) and [rtunaatlas_scripts]https://github.com/ptaconet/rtunaatlas_scripts)
- - IRD and FAO/FIRMS Tuna Atlas update to manage previous IRD workflow with geoflow and related package to manage OGC standards (provided by Emmanuel Blondel)
+ - **IRD and FAO/FIRMS Tuna Atlas update** to manage previous IRD workflow with geoflow and related package to manage OGC standards (provided by Emmanuel Blondel)
 
 ## Other resources
 

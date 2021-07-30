@@ -388,7 +388,7 @@ server <- function(input, output, session) {
                     chartdata =as_data_frame(toto)[,-c(1:3)], type = "pie",
                     # showLabels = TRUE,
                     # layerId = as.character(1:nrow(franconia)),
-                    colorPalette = colors2,
+                    colorPalette = d3.schemeCategory10,
                     legend = TRUE,legendPosition = "bottomright")
     # map_leaflet
   })

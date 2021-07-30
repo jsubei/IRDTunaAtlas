@@ -45,7 +45,7 @@ Jupyter notebooks have been set up to help newcomers execute and customize the a
 These notebooks are available on this github repo [eg Jupyter notebook example for indicators i6, i7 and i8](https://github.com/juldebar/IRDTunaAtlas/blob/master/jupyter_notebook/sardara_notebook_i6i7i8.ipynb)
 and have been developped and executed in the [Fisheries Atlas VRE](https://blue-cloud.d4science.org/) which contains a [JupyterHub server](https://blue-cloud-jupyterhub.d4science.org/). A screenshot of a Jupyter notebook is provided below.
 
-![Jupyter notebook interface example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/jupyter_notebook_example_i6i7i_BlueCloud.png)
+![Jupyter notebook interface example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/jupyter_notebook_example_i6i7i_BlueCloud.png width=500px)
 
 This notebook can be used as a documentation of underlying processes also used by the [related shiny app](https://github.com/juldebar/IRDTunaAtlas/blob/master/shiny/sardara_shiny_i6i7i8.Rmd)
 

@@ -24,7 +24,7 @@ library(tidyr)
 
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i6_SpeciesMap.R")
-source("/home/julien/Desktop/CODES/IRDTunaAtlas/R/Atlas_i11_CatchesByCountry.R")
+source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i11_CatchesByCountry.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
 ####################################################################################################################################################################################################################################
 source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")

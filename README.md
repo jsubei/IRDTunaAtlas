@@ -33,8 +33,7 @@ Key elements of the analysis code are a set of indicators originally drafted by 
 - *[Indicator I11 : Catches by country](https://github.com/jsubei/IRDTunaAtlas/wiki/Indicator-I11-:-Catches-by-country)*
 
 An example of function outputs is provided below (eg Indicator I3 : Catches by gear and by month):
-![ggplot function output example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/www/html/tmp/SpeciesByYearByMonthByGear/default/I3_BET_2005.png  =500x)
-
+![ggplot function output example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/www/html/tmp/SpeciesByYearByMonthByGear/default/I3_BET_2005.png width=500px)
 Some of the SQL queries used to extract data are also shared in this github repository.
 
 
@@ -57,7 +56,7 @@ Shiny apps  have been set up to help newcomers to explore easily the data by usi
 
 These Shiny apps have been developped and executed in the [Fisheries Atlas VRE](https://) which contains a RStudio server for developpers and a shiny proxy server to host these apps.  A screenshot of the a Shiny app is provided below.
 
-![Shiny app interface example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/Shiny_app_i8_TunaAtlas.png =500x)
+![Shiny app interface example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/Shiny_app_i8_TunaAtlas.png width=500px)
 
 ## Updates
 

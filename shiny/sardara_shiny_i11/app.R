@@ -1,4 +1,5 @@
 library(shiny)
+library(shinyWidgets)
 library(geojsonio)
 library(plyr)
 library(dplyr)
@@ -21,11 +22,14 @@ library(viridis)
 library(mapplots)
 library(reshape)
 library(tidyr)
+library(streamgraph)
 
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i6_SpeciesMap.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i11_CatchesByCountry.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
+
+
 ####################################################################################################################################################################################################################################
 source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 # source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
@@ -51,13 +55,14 @@ ui <- fluidPage(
   titlePanel("Tuna Atlas: indicateurs cartographiques i11"),
   navbarPage(title="TunaAtlas", 
              tabPanel("Interactive",
-                      
-                      leafletOutput('mymap', width = "60%", height = 1500),
+                      div(class="outer",
+                          tags$head(includeCSS("https://raw.githubusercontent.com/eparker12/nCoV_tracker/master/styles.css")),
+                      leafletOutput("mymap", width="100%", height="100%"),
                       
                       
                       # Shiny versions prior to 0.11 should use class = "modal" instead.
                       absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                    draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
+                                    draggable = TRUE, top = 200, left = "auto", right = 20, bottom = "auto",
                                     width = 1000, height = "auto",
                                     
                                     h2("Select filters to customize indicators"),
@@ -88,20 +93,66 @@ ui <- fluidPage(
                                     ),
                                     actionButton("resetWkt", "Reset WKT to global"),
                                     plotOutput(outputId = "plot_species")
+                                    
+                                    # actionButton("resetWkt", "Reset WKT to global"),
+                                    # plotOutput(outputId = "plot_species")
                                     # plotlyOutput("plot6", height = 200)
+                                    # plotOutput("cumulative_plot", height="130px", width="100%")
                                     
                       ),
-                      
-             ),
-             tabPanel("Indicator 11",
-                      imageOutput("plot11", height = 1200)
+                      absolutePanel(id = "logo", class = "card", bottom = 15, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
+                                    tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='89',width='108')))
+                      )
              ),
              tabPanel("Interactive Indicator 11",
-                      # hr(),
-                      # textOutput("sql_query"),
-                      hr(),
-                      leafletOutput('map_i11', width = "60%", height = 1500)
+                      div(class="outer",
+                          tags$head(includeCSS("https://raw.githubusercontent.com/eparker12/nCoV_tracker/master/styles.css")),
+                          # leafletOutput('map_i11', width = "60%", height = 1500),
+                          leafletOutput("map_i11", width="100%", height="100%"),
+                          
+                                        
+                          absolutePanel(id = "controls", class = "panel panel-default",
+                                        top = 200, left = "auto", width = 400, fixed=TRUE,
+                                        draggable = TRUE, height = "auto",
+                                        
+                                        # h3(textOutput("sql_query"), align = "right"),
+                                        plotOutput("plot1_streamgraph", height=300, width="100%"),
+                                        # h4(textOutput("sars_reactive_death_count"), align = "right"),
+                                        # h6(textOutput("sars_clean_date_reactive"), align = "right"),
+                                        # h6(textOutput("sars_reactive_country_count"), align = "right"),
+                                        # plotOutput("sars_epi_curve", height="130px", width="100%"),
+                                        # plotOutput("sars_cumulative_plot", height="130px", width="100%"),
+                                        span(("Rate of catch according to the flag of the fishing fleet"),align = "left", style = "font-size:80%"),
+                                        tags$br(),
+                                        span(("Circles in the grid shows the detail of this rate for a spefic square of the grid"),align = "left", style = "font-size:80%")
+                                        
+                                        # sliderTextInput("sars_plot_date",
+                                        #                 label = h5("Select mapping date"),
+                                        #                 choices = format(unique(sars_cases$date), "%d %b %y"),
+                                        #                 # selected = format(sars_max_date, "%d %b %y"),
+                                        #                 grid = FALSE,
+                                        #                 animate=animationOptions(interval = 3000, loop = FALSE))
+                          ),
+                          
+                          absolutePanel(id = "logo", class = "card", bottom = 15, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
+                                        tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='178',width='216'))),
+                          
+                          absolutePanel(id = "logo", class = "card", bottom = 15, left = 20, width = 30, fixed=TRUE, draggable = FALSE, height = "auto",
+                                        actionButton("twitter_share", label = "", icon = icon("twitter"),style='padding:5px',
+                                                     onclick = sprintf("window.open('%s')", 
+                                                                       "https://twitter.com/intent/tweet?text=%20@LSHTM_Vaccines%20outbreak%20mapper&url=https://bit.ly/2uBvnds&hashtags=coronavirus")))
+                      )
              ),
+             
+             tabPanel("ggplot Indicator 11",
+                      imageOutput("plot11", height = 1200)
+             ),
+             # tabPanel("Interactive Indicator 11",
+             #          # hr(),
+             #          # textOutput("sql_query"),
+             #          hr(),
+             #          leafletOutput('map_i11', width = "60%", height = 1500)
+             # ),
              tabPanel("Data explorer",
                       # hr(),
                       # textOutput("sql_query"),
@@ -109,10 +160,10 @@ ui <- fluidPage(
                       DT::dataTableOutput("DTi11")
              ),
              navbarMenu("More",
-                        tabPanel(
-                          title = "Your SQL query",
-                          textOutput("sql_query")
-                        ),
+                        # tabPanel(
+                        #   title = "Your SQL query",
+                        #   textOutput("sql_query")
+                        # ),
                         tabPanel("About",
                                  fluidRow(
                                    column(6,
@@ -283,6 +334,27 @@ server <- function(input, output, session) {
   })
   
   
+
+  
+  output$plot1_streamgraph <- renderPlot({
+    
+    df_i1 = st_read(con, query = paste0("SELECT species, year, count(species), sum(value) AS value FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species,year ORDER BY count;")) %>% filter (count>mean(count))
+    # df_i1 = st_read(con, query = paste0("SELECT species, year, count(species), sum(value) FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",new_wkt,"',4326)) GROUP BY species,year ORDER BY count;")) %>% filter (count>mean(count))
+    # df_i1=as_data_frame(df_i1)
+    # streamgraph(df_i1, key="species",value="value", date="year", height="300px", width="1000px", offset="zero", interpolate="linear")
+    value=as.vector(as.integer(df_i1$value))
+    g1 = ggplot(df_i1, aes(x = df_i1$year, y = value, colour = df_i1$species)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
+      # geom_bar(position="stack", stat="identity") +
+      ylab("Catches in Tons") + xlab("Date") + theme_bw() +
+      scale_colour_manual(values=c(value)) +
+      # scale_y_continuous(labels = function(l) {trans = l / 1000; paste0(trans, "kT")}) +
+      theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10),
+            plot.margin = margin(5, 12, 5, 5))
+    g1
+    # 
+  })
+  
+  
   output$plot_species<- renderPlot({ 
     df_i2 = st_read(con, query = paste0("SELECT species, count(species), sum(value) FROM public.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species ORDER BY count;")) %>% filter (count>mean(count))
     i1 <-  barplot(as.vector(as.integer(df_i2$count)),names.arg=df_i2$species, xlab="species",ylab="count")
@@ -314,7 +386,7 @@ server <- function(input, output, session) {
                     # showLabels = TRUE,
                     # layerId = as.character(1:nrow(franconia)),
                     colorPalette = colors2,
-                    legend = TRUE)
+                    legend = TRUE,legendPosition = "bottomright")
     # map_leaflet
   })
   

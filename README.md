@@ -33,12 +33,12 @@ Key elements of the analysis code are a set of indicators originally drafted by 
 - *[Indicator I11 : Catches by country](https://github.com/jsubei/IRDTunaAtlas/wiki/Indicator-I11-:-Catches-by-country)*
 
 An example of function outputs is provided below (eg Indicator I3 : Catches by gear and by month):
-![ggplot function output example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/www/html/tmp/SpeciesByYearByMonthByGear/default/I3_BET_2005.png)
+![ggplot function output example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/www/html/tmp/SpeciesByYearByMonthByGear/default/I3_BET_2005.png  =500x)
 
 Some of the SQL queries used to extract data are also shared in this github repository.
 
 
-##  [Jupyter notebooks](https://github.com/juldebar/IRDTunaAtlas/tree/master/jupyter_notebook)
+##  [Jupyter notebooks](https://github.com/juldebar/IRDTunaAtlas/tree/master/jupyter_notebook =500x)
 
 Jupyter notebooks have been set up to help newcomers execute and customize the analysis code. The jupyter notebooks are meant to help users making use of previous R analysis code.
 
@@ -47,7 +47,7 @@ and have been developped and executed in the [Fisheries Atlas VRE](https://blue-
 
 ![Jupyter notebook interface example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/jupyter_notebook_example_i6i7i_BlueCloud.png)
 
-Thhis notebook can be used as a documentation of underlying processes also used by the [related shiny app](https://github.com/juldebar/IRDTunaAtlas/blob/master/shiny/sardara_shiny_i6i7i8.Rmd)
+This notebook can be used as a documentation of underlying processes also used by the [related shiny app](https://github.com/juldebar/IRDTunaAtlas/blob/master/shiny/sardara_shiny_i6i7i8.Rmd)
 
 
 ## [Shiny apps](https://github.com/juldebar/IRDTunaAtlas/tree/master/shiny)
@@ -57,7 +57,7 @@ Shiny apps  have been set up to help newcomers to explore easily the data by usi
 
 These Shiny apps have been developped and executed in the [Fisheries Atlas VRE](https://) which contains a RStudio server for developpers and a shiny proxy server to host these apps.  A screenshot of the a Shiny app is provided below.
 
-![Shiny app interface example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/Shiny_app_i8_TunaAtlas.png)
+![Shiny app interface example](https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/outputs/Shiny_app_i8_TunaAtlas.png =500x)
 
 ## Updates
 
@@ -73,7 +73,7 @@ The input data are expected to be updated on a yearly basis by FAO and IRD. This
 ## Other resources
 
 Several resources proved invaluable when building this app, including:
-- [IRD original Tuna Atlas](https://www.documentation.ird.fr/hor/fdi:010012425) created by Alain Fontenea;
+- [IRD original Tuna Atlas](https://www.documentation.ird.fr/hor/fdi:010012425) created by Alain Fonteneau.
 - The first version of the IRD Tuna Atlas has been published by alain Fonteneau as a [pdf document available here](https://horizon.documentation.ird.fr/exl-doc/pleins_textes/divers11-03/010012425.pdf) ;
 
 

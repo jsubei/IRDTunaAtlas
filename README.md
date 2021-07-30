@@ -37,7 +37,7 @@ An example of function outputs is provided below (eg Indicator I3 : Catches by g
 Some of the SQL queries used to extract data are also shared in this github repository.
 
 
-##  [Jupyter notebooks](https://github.com/juldebar/IRDTunaAtlas/tree/master/jupyter_notebook =500x)
+##  [Jupyter notebooks](https://github.com/juldebar/IRDTunaAtlas/tree/master/jupyter_notebook)
 
 Jupyter notebooks have been set up to help newcomers execute and customize the analysis code. The jupyter notebooks are meant to help users making use of previous R analysis code.
 

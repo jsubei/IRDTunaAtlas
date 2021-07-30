@@ -96,7 +96,6 @@ ui <- fluidPage(
                                     
                                     # actionButton("resetWkt", "Reset WKT to global"),
                                     # plotOutput(outputId = "plot_species")
-                                    # plotlyOutput("plot6", height = 200)
                                     # plotOutput("cumulative_plot", height="130px", width="100%")
                                     
                       ),
@@ -117,11 +116,15 @@ ui <- fluidPage(
                                         
                                         # h3(textOutput("sql_query"), align = "right"),
                                         plotOutput("plot1_streamgraph", height=300, width="100%"),
-                                        # h4(textOutput("sars_reactive_death_count"), align = "right"),
+                                        plotOutput("pie_map_i11", height = 200),
                                         # h6(textOutput("sars_clean_date_reactive"), align = "right"),
                                         # h6(textOutput("sars_reactive_country_count"), align = "right"),
                                         # plotOutput("sars_epi_curve", height="130px", width="100%"),
                                         # plotOutput("sars_cumulative_plot", height="130px", width="100%"),
+                                        sliderInput("range", "Range:",
+                                                    min = min(target_year), max = max(target_year),
+                                                    value = c(min(target_year),max(target_year))
+                                                    ),
                                         span(("Rate of catch according to the flag of the fishing fleet"),align = "left", style = "font-size:80%"),
                                         tags$br(),
                                         span(("Circles in the grid shows the detail of this rate for a spefic square of the grid"),align = "left", style = "font-size:80%")
@@ -390,6 +393,21 @@ server <- function(input, output, session) {
     # map_leaflet
   })
   
+  output$pie_map_i11 <- renderPlot({
+    
+    df_i11_map <- data() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value)) # %>% top_n(3)
+
+        colors2 <- c("#3093e5","#3000e5", "#fcba50"," #dd0e34", "#4e9c1e")
+        
+        # Basic piechart
+        i11_map <-   ggplot(df_i11_map, aes(x="", y=value, fill=country)) +
+          geom_bar(stat="identity", width=1) +
+          coord_polar("y", start=0)
+        
+        i11_map
+        
+
+  })
   
   
   output$plot11 <- renderImage({

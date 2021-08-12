@@ -24,7 +24,10 @@ library(reshape)
 library(tidyr)
 library(streamgraph)
 library(RColorBrewer)
+library(glue)
 
+# pending issue with st_union
+# https://keen-swartz-3146c4.netlify.app/sf.html
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i6_SpeciesMap.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i11_CatchesByCountry.R")
@@ -37,9 +40,12 @@ source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 global_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
 wkt <- reactiveVal(global_wkt) 
 metadata <- reactiveVal() 
-data <- reactiveVal() 
-data_i11 <- reactiveVal() 
-centroid <- reactiveVal() 
+# data <- reactiveVal() 
+# data_i11 <- reactiveVal() 
+# data_pie_map<- reactiveVal() 
+# centroid <- reactiveVal() 
+
+
 
 target_species <- dbGetQuery(con, "SELECT DISTINCT(species) FROM fact_tables.i6i7i8 ORDER BY species;")
 target_year <- dbGetQuery(con, "SELECT DISTINCT(year) FROM fact_tables.i6i7i8 ORDER BY year;")
@@ -241,33 +247,66 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE)
 
   
-  sql_query_metadata <- eventReactive(input$submit, {
-    # paste0("SELECT  ogc_fid, geom_id, geom, year, species, country, value, count,ST_asText(geom) AS geom_wkt FROM fact_tables.i6i7i8 
-    paste0("SELECT geom, species, SUM(value) as value, ST_asText(geom) AS geom_wkt  FROM fact_tables.i6i7i8 
-           WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))
-                      AND species IN ('",paste0(input$species,collapse="','"),"')
-                      AND country IN ('",paste0(input$country,collapse="','"),"')
-                      AND year IN ('",paste0(input$year,collapse="','"),"') 
-           GROUP BY species,geom_wkt, geom 
-           ORDER BY species,geom_wkt DESC 
-           ;")
-  },
-  ignoreNULL = FALSE)
-  
-  
   sql_query <- eventReactive(input$submit, {
-    # paste0("SELECT  geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, ST_area(geom) AS area FROM fact_tables.i6i7i8 
-    # paste0("SELECT  ogc_fid, geom_id, geom, year, species, country, value, count,ST_asText(geom) AS geom_wkt FROM fact_tables.i6i7i8
-    paste0("SELECT   geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8
-           WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))
-                      AND species IN ('",paste0(input$species,collapse="','"),"')
-                      AND country IN ('",paste0(input$country,collapse="','"),"')
-                      AND year IN ('",paste0(input$year,collapse="','"),"') 
+    query <- glue::glue_sql(
+      "SELECT   geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8
+           WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326))
+                      AND species IN ({species_name*})
+                      AND country IN ({country_name*})
+                      AND year IN ({year_name*})
            GROUP BY species, country,geom_id, geom_wkt, geom , year
-           ORDER BY species,country DESC 
-           ")
+           ORDER BY species,country DESC",
+      wkt = wkt(),
+      species_name = input$species,
+      country_name = input$country,
+      year_name = input$year,
+      .con = con)
   },
   ignoreNULL = FALSE)
+  
+  sql_query_metadata <- eventReactive(input$submit, {
+    paste0("SELECT species, country, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, country, geom") 
+  },
+  ignoreNULL = FALSE)
+  
+  
+  data <- eventReactive(input$submit, {
+    # req(input$species)
+    # req(input$country)
+    # req(input$year)
+    outp <- st_read(con, query = sql_query())
+    outp
+  },
+  ignoreNULL = FALSE)
+
+  
+  metadata <- reactive({
+    st_read(con, query = paste0("SELECT species, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, geom")) 
+  })  
+  
+    data_pie_map <- reactive({
+      # st_read(con, query = paste0("SELECT species, country, geom, sum(value) AS value FROM(SELECT geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND species IN ('YFT') AND country IN ('EUESP', 'EUFRA', 'JPN', 'TWN') AND year IN ('2010') GROUP BY species, country,geom_id, geom_wkt, geom , year ORDER BY species,country DESC) AS foo GROUP BY species, country, geom"))
+      st_read(con, query = paste0("SELECT species, country, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, country, geom"))  %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
+})
+    
+    data_time_serie <- reactive({
+      st_read(con, query = paste0("SELECT species, year, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, year, geom")) 
+    })
+    
+    data_pie_chart_country <- reactive({
+      st_read(con, query = paste0("SELECT country, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY country"))
+    })
+    
+    
+  centroid <- eventReactive(input$submit, {
+    st_read(con, query = paste0("SELECT st_centroid(St_convexhull(st_collect(geom))) FROM  (",sql_query(),") AS foo;"))
+  },
+  ignoreNULL = FALSE)
+  
+  # observeEvent(sql_query(), {
+  #   centroid(st_read(con, query = paste0("SELECT st_centroid(St_convexhull(st_collect(geom))) FROM  (",sql_query(),") AS foo;")))
+  # },
+  # ignoreInit = FALSE)
   
   # metadata <- eventReactive(input$submit, {
   #   st_read(con, query = sql_query_metadata())
@@ -281,19 +320,11 @@ server <- function(input, output, session) {
   # },
   # ignoreNULL = FALSE)
   
-  observeEvent(sql_query(), {
-    data(st_read(con, query = sql_query()))
-  },
-  ignoreInit = FALSE)
+  # observeEvent(sql_query(), {
+  #   data(st_read(con, query = sql_query()))
+  # },
+  # ignoreInit = FALSE)
   
-
-  
-  observeEvent(sql_query(), {
-    centroid(st_read(con, query = paste0("SELECT st_centroid(St_convexhull(st_collect(geom))) FROM  (",sql_query(),") AS foo;")) )
-    lat_centroid <- st_coordinates(centroid())[2]
-    lon_centroid <- st_coordinates(centroid())[1]
-  },
-  ignoreInit = FALSE)
   
   # observeEvent(data(), {
   #   # metadata(st_read(con, query = sql_query_metadata()))
@@ -364,7 +395,7 @@ server <- function(input, output, session) {
   
   
   output$DT <- renderDT({
-    this <- data()  %>% st_drop_geometry()
+     data()  %>% st_drop_geometry()
     # dplyr::select(species,country,value,geom_wkt)
       # dplyr::select(-c(geom))
     # as_data_frame(toto)[-c(1:3,ncol(as_data_frame(toto)))]
@@ -372,7 +403,11 @@ server <- function(input, output, session) {
   
   
   output$DTi11 <- renderDT({
-    this <- data() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value))
+    # this <- data() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value))
+    # toto <- st_read(con, query = "SELECT geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',4326)) AND species IN ('YFT') AND country IN ('EUESP','EUFRA','JPN','TWN') AND year IN ('2010','2011') GROUP BY species, country,geom_id, geom_wkt, geom , year ORDER BY species,country DESC") %>% group_by(species,country,geom_id) %>% summarise(value = sum(value))  %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
+    
+    data_pie_map()  %>% st_drop_geometry()
+    
   }) 
   
   
@@ -383,10 +418,12 @@ server <- function(input, output, session) {
     # df <-st_read(con, query = "SELECT geom, year, species, country, value, ST_asText(geom) AS geom_wkt, ST_area(geom) AS area FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',4326)) AND species IN ('SKJ') AND country IN ('EUESP','JPN','TWN') AND year IN ('2014') ORDER BY area DESC LIMIT 500;") %>% group_by(species,geom_wkt) %>% summarise(value = sum(value))
     # df <- metadata() %>% group_by(species,geom_wkt,area) %>% summarise(value = sum(value)) # %>% mutate(area=sf::st_area(st_as_sfc(geom_wkt)))  %>% filter(area>25)
     # df <- metadata() 
-    df <- data()  %>% group_by(species,geom_wkt) %>% summarise(value = sum(value))
+    # df <- data()  %>% group_by(species,geom_id) %>% summarise(value = sum(value))
+    df <- metadata()
     # df <- st_read(con, query = query) %>% group_by(country,year,species,geom_wkt) %>% summarise(value = sum(value))  # %>% filter(species %in% input$species_i6i7i8)
     
-
+    lat_centroid <- st_coordinates(centroid())[2]
+    lon_centroid <- st_coordinates(centroid())[1]
     
     # brewer.pal(7, "OrRd")
     # pal <- colorNumeric(palette = "YlGnBu",domain = df$value)
@@ -418,6 +455,7 @@ server <- function(input, output, session) {
       # setView(lng =48, lat =-8, zoom = 5
       setView(lng = lon_centroid, lat =lat_centroid, zoom = 3
       ) %>%
+      clearBounds() %>%
       addLayersControl(
         overlayGroups = c("draw"),
         options = layersControlOptions(collapsed = FALSE)
@@ -476,7 +514,8 @@ server <- function(input, output, session) {
       
     
     # test_data$grp = sapply(st_equals(test_data), max)
-    toto <- data() %>% group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
+    # toto <- data() %>% group_by(species,country,geom_id) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
+    toto <- data_pie_map()
     
     # toto <- st_read(con, query = "SELECT geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, ST_area(geom) AS area FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',4326)) AND species IN ('SKJ') AND country IN ('OMN','NAM','BRA','AGO','CPV','USA','JPN','MEX','BRB','EUPRT','UNK','ECU','SHN','MYS','MAR','COL','MDV') AND year IN ('2013','2014','2015','2016','2017','2018','2019') GROUP BY area,species, country,geom_wkt, geom ORDER BY area,species,country DESC ;")  %>% 
     #   spread(country, value, fill=0)  %>% mutate(total = sum(across(any_of(c('OMN','NAM','BRA','AGO','CPV','USA','JPN','MEX','BRB','EUPRT','UNK','ECU','SHN','MYS','MAR','COL','MDV')))))  %>% filter (total>mean(total))
@@ -498,13 +537,15 @@ server <- function(input, output, session) {
     
     
     # https://r-spatial.github.io/sf/articles/sf5.html
-    map_leaflet <- leaflet() %>%  setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%  
-      addLayersControl(baseGroups = c("minicharts"), overlayGroups = c("background")) %>% 
-      addMinicharts(lng = st_coordinates(st_centroid(toto))[, "X"],
-                    lat = st_coordinates(st_centroid(toto))[, "Y"],
+    map_leaflet <- leaflet() %>%  setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
+      clearBounds() %>%   
+      addLayersControl(baseGroups = c("minicharts"), overlayGroups = c("background")) %>%
+      addMinicharts(lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
+                    lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
                     # chartdata = as_data_frame(subset(toto, select = -c(species,geom_wkt))), type = "pie",
-                    chartdata = as_data_frame(toto)[-c(1:3,ncol(as_data_frame(toto)))], type = "pie",
-                    # chartdata = as_data_frame(toto)[-c(1:3,ncol(as_data_frame(toto)))],
+                    # chartdata = as_data_frame(toto)[-c(1:4,ncol(as_data_frame(toto)))], type = "pie",
+                    # chartdata = as_data_frame(toto)[-c(1,ncol(as_data_frame(toto)))],
+                    chartdata = dplyr::select(toto,-c(species,total)) %>% st_drop_geometry(),type = "pie",
                     # showLabels = TRUE,
                     # layerId = "tartothon",
                     # colorPalette = pal_fun,
@@ -517,8 +558,8 @@ server <- function(input, output, session) {
     # output$pie_map_i11 <- renderPlot({
       
     # df_i11_map <- data_i11() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value)) # %>% top_n(3)
-    metadata_i11 <- data() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value)) # %>% top_n(3)
-    
+    # metadata_i11 <- data() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value)) # %>% top_n(3)
+    metadata_i11 <- data_pie_chart_country() %>% arrange(desc(value)) # %>% top_n(3)
     # df_i11_map <- as_data_frame(metadata_i11())  # %>% top_n(3)
     df_i11_map <- as_data_frame(metadata_i11)  # %>% top_n(3)
     
@@ -548,7 +589,8 @@ server <- function(input, output, session) {
   output$plot1_streamgraph <- renderPlot({
     
     # df_i1 = st_read(con, query = sql_query_metadata_plot1()) %>% group_by(species,year) %>% summarise(value = sum(value))  %>% arrange(desc(value)) %>% filter (value>mean(value)) # %>% top_n(3)
-    df_i1 = data() %>% group_by(species,year) %>% summarise(value = sum(value))  %>% arrange(desc(value))  %>% filter (value>mean(value)) # %>% top_n(3)
+    # df_i1 = data() %>% group_by(species,year) %>% summarise(value = sum(value))  %>% arrange(desc(value))  %>% filter (value>mean(value)) # %>% top_n(3)
+    df_i1 = data_time_serie() %>%  arrange(desc(value))  %>% filter (value>mean(value)) # %>% top_n(3)
     # df_i1 = st_read(con, query = paste0("SELECT species, year, count(species), sum(value) AS value FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species,year ORDER BY count;")) %>% filter (count>mean(count))
     
     value=as.vector(as.integer(df_i1$value))

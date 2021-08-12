@@ -40,6 +40,7 @@ source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 global_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
 wkt <- reactiveVal(global_wkt) 
 metadata <- reactiveVal() 
+zoom <- reactiveVal(1) 
 # data <- reactiveVal() 
 # data_i11 <- reactiveVal() 
 # data_pie_map<- reactiveVal() 
@@ -234,15 +235,7 @@ server <- function(input, output, session) {
  
 
   sql_query_metadata_plot1 <- eventReactive(input$submit, {
-    # paste0("SELECT  ogc_fid, geom_id, geom, year, species, country, value, count,ST_asText(geom) AS geom_wkt FROM fact_tables.i6i7i8
-    paste0("SELECT species, SUM(value) as value, year FROM fact_tables.i6i7i8
-           WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))
-                      AND species IN ('",paste0(input$species,collapse="','"),"')
-                      AND country IN ('",paste0(input$country,collapse="','"),"')
-                      AND year IN ('",paste0(input$year,collapse="','"),"')
-           GROUP BY species, year
-           ORDER BY species, year DESC
-           ;")
+    paste0("Your zom is Zoom",zoom(),"   ;")
   },
   ignoreNULL = FALSE)
 
@@ -432,7 +425,7 @@ server <- function(input, output, session) {
     # qpal <- brewer.pal(n = 20, name = "RdBu")
     
     # https://r-spatial.github.io/sf/articles/sf5.html
-    map_leaflet <- leaflet() %>% 
+    leaflet() %>% 
       addProviderTiles("Esri.OceanBasemap") %>% 
       addPolygons(data = df,
                     label = ~value,
@@ -461,7 +454,6 @@ server <- function(input, output, session) {
         options = layersControlOptions(collapsed = FALSE)
       )
     
-    # map_leaflet
     
   })
   
@@ -537,14 +529,13 @@ server <- function(input, output, session) {
     
     
     # https://r-spatial.github.io/sf/articles/sf5.html
-    map_leaflet <- leaflet() %>%  setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
+    map_i11 <- leaflet() %>%  setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
       clearBounds() %>%   
       addLayersControl(baseGroups = c("minicharts"), overlayGroups = c("background")) %>%
       addMinicharts(lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
                     lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
                     # chartdata = as_data_frame(subset(toto, select = -c(species,geom_wkt))), type = "pie",
-                    # chartdata = as_data_frame(toto)[-c(1:4,ncol(as_data_frame(toto)))], type = "pie",
-                    # chartdata = as_data_frame(toto)[-c(1,ncol(as_data_frame(toto)))],
+                    # chartdata = as_data_frame(toto)[-c(1:3,ncol(as_data_frame(toto)))], type = "pie",
                     chartdata = dplyr::select(toto,-c(species,total)) %>% st_drop_geometry(),type = "pie",
                     # showLabels = TRUE,
                     # layerId = "tartothon",
@@ -553,6 +544,24 @@ server <- function(input, output, session) {
                     width = (60*toto$total/max(toto$total))+20,
                     legend = TRUE, legendPosition = "bottomright")
   })
+  
+  
+# 
+#   observe({
+#     new_zoom <- input$map_i11_zoom
+#     req(input$map_i11_zoom)
+#     zoom(new_zoom)
+#     # toto <- data_pie_map()
+#     leafletProxy(mapId = "map_i11") %>% updateMinicharts(map='map_i11', lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
+#                                                       # layerId = "tartothon",
+#                                          lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
+#                                          width = (5*zoom()*(60*toto$total/max(toto$total))+20),
+#                                          colorPalette = d3.schemeCategory10,
+#                                          legend = TRUE, legendPosition = "bottomright")
+#     textOutput("zoom")
+# 
+#   })
+#   
   
   output$pie_map_i11 <- renderPlotly({
     # output$pie_map_i11 <- renderPlot({
@@ -594,7 +603,7 @@ server <- function(input, output, session) {
     # df_i1 = st_read(con, query = paste0("SELECT species, year, count(species), sum(value) AS value FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species,year ORDER BY count;")) %>% filter (count>mean(count))
     
     value=as.vector(as.integer(df_i1$value))
-    g1 = ggplot(df_i1, aes(x = df_i1$year, y = value, colour = df_i1$species)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
+    g1 = ggplot(df_i1, aes(x = year, y = value, colour = species)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
       # geom_bar(position="stack", stat="identity") +
       ylab("Catches in Tons") + xlab("Date") + theme_bw() +
       scale_colour_manual(values=c(value)) +

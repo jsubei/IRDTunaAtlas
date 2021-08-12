@@ -528,8 +528,10 @@ server <- function(input, output, session) {
     # cocolor<-factor(toto$Species, levels=as.vector(input$country), labels=rainbow_hcl(length(as.vector(input$country))))
     
     
+    # new_zoom <- input$map_i11_zoom
+    
     # https://r-spatial.github.io/sf/articles/sf5.html
-    map_i11 <- leaflet() %>%  setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
+    map_i11 <- leaflet() %>%  setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
       clearBounds() %>%   
       addLayersControl(baseGroups = c("minicharts"), overlayGroups = c("background")) %>%
       addMinicharts(lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
@@ -541,27 +543,27 @@ server <- function(input, output, session) {
                     # layerId = "tartothon",
                     # colorPalette = pal_fun,
                     colorPalette = d3.schemeCategory10,
-                    width = (60*toto$total/max(toto$total))+20,
+                    width = (zoom()*60*toto$total/max(toto$total))+20,
                     legend = TRUE, legendPosition = "bottomright")
   })
   
   
-# 
-#   observe({
-#     new_zoom <- input$map_i11_zoom
-#     req(input$map_i11_zoom)
-#     zoom(new_zoom)
-#     # toto <- data_pie_map()
-#     leafletProxy(mapId = "map_i11") %>% updateMinicharts(map='map_i11', lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
-#                                                       # layerId = "tartothon",
-#                                          lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
-#                                          width = (5*zoom()*(60*toto$total/max(toto$total))+20),
-#                                          colorPalette = d3.schemeCategory10,
-#                                          legend = TRUE, legendPosition = "bottomright")
-#     textOutput("zoom")
-# 
-#   })
-#   
+
+  observe({
+    new_zoom <- input$map_i11_zoom
+    req(input$map_i11_zoom)
+    zoom(new_zoom)
+    # # toto <- data_pie_map()
+    # leafletProxy(mapId = "map_i11") %>% updateMinicharts(map='map_i11', lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
+    #                                                   # layerId = "tartothon",
+    #                                      lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
+    #                                      width = (5*zoom()*(60*toto$total/max(toto$total))+20),
+    #                                      colorPalette = d3.schemeCategory10,
+    #                                      legend = TRUE, legendPosition = "bottomright")
+    textOutput("zoom")
+
+  })
+
   
   output$pie_map_i11 <- renderPlotly({
     # output$pie_map_i11 <- renderPlot({

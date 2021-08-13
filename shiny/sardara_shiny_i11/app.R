@@ -77,9 +77,11 @@ palette3_info <- brewer.pal.info[brewer.pal.info$category == "qual", ]
 palette3_all <- unlist(mapply(brewer.pal, 
                               palette3_info$maxcolors,
                               rownames(palette3_info)))
+set.seed(2643598)  
 # palette3 <- sample(palette3_all, nrow(unique(df_i11_map$country)), replace=TRUE)
 palette3 <- sample(palette3_all, nrow(target_flag), replace=TRUE)
 names(palette3) = target_flag$country
+palette3
 # print(palette3)
 # class(palette3)
 # palette3[names(palette3) != c('AGO','ALB')]
@@ -320,7 +322,7 @@ server <- function(input, output, session) {
   })
   
   data_pie_chart_country <- reactive({
-    st_read(con, query = paste0("SELECT country, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY country"))
+    st_read(con, query = paste0("SELECT country, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY country ORDER BY country"))
   })
   
   
@@ -565,7 +567,7 @@ server <- function(input, output, session) {
     
     # qpal <- colorQuantile(rev(viridis::viridis(10)),toto$total, n=10)
     # factpal <- colorFactor(topo.colors(ncol(dplyr::select(toto,-c(species,total)))),colnames(dplyr::select(toto,-c(species,total))))
-    la_palette = palette3[names(palette3) !=colnames(dplyr::select(toto,-c(species,total)))]
+    la_palette = palette3[names(palette3) %in% colnames(dplyr::select(toto,-c(species,total)))]
     
     # pal_fun <- colorQuantile("YlOrRd", NULL, n = length(unique(input$country)))
     # cocolor<-factor(toto$Species, levels=as.vector(input$country), labels=rainbow_hcl(length(as.vector(input$country))))
@@ -640,7 +642,7 @@ server <- function(input, output, session) {
       new_zoom <- input$map_i11_zoom
       req(input$map_i11_zoom)
       if(zoom()!=new_zoom & !is.null(input$map_i11_zoom)){
-        la_palette = palette3[names(palette3) !=colnames(dplyr::select(data_pie_map(),-c(species,total)))]
+        la_palette = palette3[names(palette3) %in% colnames(dplyr::select(data_pie_map(),-c(species,total)))]
         zoom(new_zoom)
         lat_centroid <-input$map_i11_center[2]
         lon_centroid <- input$map_i11_center[1]
@@ -665,28 +667,31 @@ server <- function(input, output, session) {
     
     # df_i11_map <- data_i11() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value)) # %>% top_n(3)
     # metadata_i11 <- data() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value)) # %>% top_n(3)
-    metadata_i11 <- data_pie_chart_country() %>% arrange(desc(value)) # %>% top_n(3)
+    metadata_i11 <- data_pie_chart_country() 
     # df_i11_map <- as_data_frame(metadata_i11())  # %>% top_n(3)
     df_i11_map <- as_tibble(metadata_i11)  # %>% top_n(3)
     
-    # # Basic piechart
+    la_palette = palette3[names(palette3) %in% unique(df_i11_map$country)]
+    
+    
+    # # # Basic piechart
     # i11_map <-   ggplot(df_i11_map, aes(x="", y=value, fill=country)) +
     #   geom_bar(stat="identity", width=1) +
-    #   coord_polar("y", start=0) 
-    # # +
+    #   coord_polar("y", start=0) + 
+    # scale_fill_manual(values = la_palette)
+    # ggplotly(i11_map)
     # #   theme(axis.text.x = element_text(angle = 90))
-    # 
-    # i11_map
+
     
-    la_palette = palette3[names(palette3) != unique(df_i11_map$country)]
     
+
     fig <- plot_ly(df_i11_map, labels = ~country, values = ~value, type = 'pie',
-                   marker = list(colors = la_palette, line = list(color = '#FFFFFF', width = 1)),
+                   marker = list(colors = la_palette, line = list(color = '#FFFFFF', width = 1), sort = FALSE),
                    showlegend = FALSE)
     fig <- fig %>% layout(title = 'Tuna catches by country for selected species, area and period of time',
                           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-    
+
     fig
     
     

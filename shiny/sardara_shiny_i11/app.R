@@ -25,6 +25,7 @@ library(tidyr)
 library(streamgraph)
 library(RColorBrewer)
 library(glue)
+library(pals)
 
 # pending issue with st_union
 # https://keen-swartz-3146c4.netlify.app/sf.html
@@ -55,6 +56,7 @@ target_flag <- dbGetQuery(con, "SELECT DISTINCT(country) FROM fact_tables.i6i7i8
 default_species <- 'YFT'
 default_year <- '2010'
 default_flag <- c('EUESP','EUFRA','TWN','JPN')
+
 # default_flag <- unique(target_flag)
 # default_year <- c(seq(min(target_year):max(target_year))+min(target_year)-1)
 
@@ -69,6 +71,38 @@ default_flag <- c('EUESP','EUFRA','TWN','JPN')
 
 filters_combinations <- dbGetQuery(con, "SELECT species, year, country FROM  fact_tables.i6i7i8 GROUP BY species, year, country;")
 
+
+# https://www.r-bloggers.com/2020/03/how-to-standardize-group-colors-in-data-visualizations-in-r/
+palette3_info <- brewer.pal.info[brewer.pal.info$category == "qual", ]  
+palette3_all <- unlist(mapply(brewer.pal, 
+                              palette3_info$maxcolors,
+                              rownames(palette3_info)))
+# palette3 <- sample(palette3_all, nrow(unique(df_i11_map$country)), replace=TRUE)
+palette3 <- sample(palette3_all, nrow(target_flag), replace=TRUE)
+names(palette3) = target_flag$country
+# print(palette3)
+# class(palette3)
+# palette3[names(palette3) != c('AGO','ALB')]
+
+
+# palette3[-(1:10)]
+
+# palette3_named = setNames(object = scales::hue_pal()(palette3), nm = target_flag)
+# print(palette3_named)
+
+# paldark <- colorFactor(
+#   palette = 'Dark2',
+#   domain = target_flag$country
+# )
+# print(paldark)
+
+# # If you want to set your own colors manually:
+# pal <- colorFactor(
+#   palette = c('red', 'blue', 'green', 'purple', 'orange'),
+#   domain = df$type
+# )
+
+####################################################################################################################################################################################################################################
 
 ui <- fluidPage(
   titlePanel("Tuna Atlas: indicateurs cartographiques i11"),
@@ -528,7 +562,11 @@ server <- function(input, output, session) {
     # colors2 <- c("#3093e5","#3000e5", "#fcba50"," #dd0e34", "#4e9c1e")
     # qpal <- colorQuantile(rev(viridis::viridis(length(unique(toto$country)))),unique(toto$country), n=length(unique(toto$country)))
     # pal_fun <- brewer.pal(n = 30, name = "Dark2")
-    qpal <- colorQuantile(rev(viridis::viridis(10)),toto$total, n=10)
+    
+    # qpal <- colorQuantile(rev(viridis::viridis(10)),toto$total, n=10)
+    # factpal <- colorFactor(topo.colors(ncol(dplyr::select(toto,-c(species,total)))),colnames(dplyr::select(toto,-c(species,total))))
+    la_palette = palette3[names(palette3) !=colnames(dplyr::select(toto,-c(species,total)))]
+    
     # pal_fun <- colorQuantile("YlOrRd", NULL, n = length(unique(input$country)))
     # cocolor<-factor(toto$Species, levels=as.vector(input$country), labels=rainbow_hcl(length(as.vector(input$country))))
     
@@ -538,7 +576,8 @@ server <- function(input, output, session) {
     # https://r-spatial.github.io/sf/articles/sf5.html
     map_i11 <-  leaflet() %>%  
       # map_i11 <-  leaflet(options = leafletOptions(zoomSnap=0.25)) %>%  
-      setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
+      # setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% 
+      addProviderTiles("Esri.OceanBasemap", group = "background") %>%
       clearBounds() %>% 
       addDrawToolbar(
         targetGroup = "draw",
@@ -550,13 +589,6 @@ server <- function(input, output, session) {
         overlayGroups = c("draw"),
         options = layersControlOptions(collapsed = FALSE)
       )  %>%
-      addPolygons(data = toto,
-                  label = ~total,
-                  popup = ~paste0("Captures de",species,": ", round(total), " tonnes(t) et des brouettes"),
-                  # fillColor = ~qpal(total),
-                  # fill = TRUE,
-                  # fillOpacity = 0.8,
-                  smoothFactor = 0.5) %>% 
       addMinicharts(lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
                     lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
                     # chartdata = as_data_frame(subset(toto, select = -c(species,geom_wkt))), type = "pie",
@@ -565,11 +597,20 @@ server <- function(input, output, session) {
                     chartdata = dplyr::select(toto,-c(species,total)) %>% st_drop_geometry(),type = "pie",
                     # showLabels = TRUE,
                     # layerId = "tartothon",
-                    # colorPalette = pal_fun,
-                    colorPalette = d3.schemeCategory10,
+                    # colorPalette = pal.bands(polychrome, n=36),
+                    # colorPalette = d3.schemeCategory10,
+                    colorPalette = unname(la_palette),
                     width = (60*toto$total/max(toto$total))+20,
                     legend = TRUE, legendPosition = "bottomright") %>% 
-      addLayersControl(baseGroups = c("minicharts"), overlayGroups = c("background"))
+      addPolygons(data = toto,
+                  label = ~total,
+                  popup = ~paste0("Captures de",species,": ", round(total), " tonnes(t) et des brouettes"),
+                  group = "grid",
+                  # fillColor = ~qpal(total),
+                  # fill = TRUE,
+                  # fillOpacity = 0.8,
+                  smoothFactor = 0.5) %>% 
+      addLayersControl(baseGroups = c("minicharts","grid"), overlayGroups = c("background"))
   })
   
   
@@ -599,6 +640,7 @@ server <- function(input, output, session) {
       new_zoom <- input$map_i11_zoom
       req(input$map_i11_zoom)
       if(zoom()!=new_zoom & !is.null(input$map_i11_zoom)){
+        la_palette = palette3[names(palette3) !=colnames(dplyr::select(data_pie_map(),-c(species,total)))]
         zoom(new_zoom)
         lat_centroid <-input$map_i11_center[2]
         lon_centroid <- input$map_i11_center[1]
@@ -608,7 +650,7 @@ server <- function(input, output, session) {
                         lat = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "Y"],
                         maxValues = max(data_pie_map()$total),
                         chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
-                        colorPalette = d3.schemeCategory10,
+                        colorPalette = unname(la_palette),
                         width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),
                         legend = TRUE, legendPosition = "bottomright")
         
@@ -636,16 +678,18 @@ server <- function(input, output, session) {
     # 
     # i11_map
     
+    la_palette = palette3[names(palette3) != unique(df_i11_map$country)]
     
-    
-    
-    
-    fig <- plot_ly(df_i11_map, labels = ~country, values = ~value, type = 'pie')
+    fig <- plot_ly(df_i11_map, labels = ~country, values = ~value, type = 'pie',
+                   marker = list(colors = la_palette, line = list(color = '#FFFFFF', width = 1)),
+                   showlegend = FALSE)
     fig <- fig %>% layout(title = 'Tuna catches by country for selected species, area and period of time',
                           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     
     fig
+    
+    
   })
   
   
@@ -672,8 +716,7 @@ server <- function(input, output, session) {
   
   output$plot11 <- renderImage({
     # https://semba-blog.netlify.app/06/13/2020/plots-in-interactive-maps-with-r/
-    df_i11_filtered <- data()
-    df_i11_filtered <- as(df_i11_filtered, "Spatial")
+    df_i11_filtered <- as(data(), "Spatial")
     
     i11 <- Atlas_i11_CatchesByCountry(df=df_i11_filtered,
                                       geomIdAttributeName="geom_id",

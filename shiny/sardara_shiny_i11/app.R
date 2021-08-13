@@ -148,7 +148,8 @@ ui <- fluidPage(
                                         ),
                                         span(("Rate of catch according to the flag of the fishing fleet"),align = "left", style = "font-size:80%"),
                                         tags$br(),
-                                        span(("Circles in the grid shows the detail of this rate for a spefic square of the grid"),align = "left", style = "font-size:80%")
+                                        span(("Circles in the grid shows the detail of this rate for a spefic square of the grid"),align = "left", style = "font-size:80%"),
+                                        actionButton("refresh_map","Refresh map for this zoom level")
                                         
                                         # sliderTextInput("sars_plot_date",
                                         #                 label = h5("Select mapping date"),
@@ -527,7 +528,7 @@ server <- function(input, output, session) {
     # colors2 <- c("#3093e5","#3000e5", "#fcba50"," #dd0e34", "#4e9c1e")
     # qpal <- colorQuantile(rev(viridis::viridis(length(unique(toto$country)))),unique(toto$country), n=length(unique(toto$country)))
     # pal_fun <- brewer.pal(n = 30, name = "Dark2")
-    pal_fun <- colorQuantile("YlOrRd", NULL, n = 50)
+    qpal <- colorQuantile(rev(viridis::viridis(10)),toto$total, n=10)
     # pal_fun <- colorQuantile("YlOrRd", NULL, n = length(unique(input$country)))
     # cocolor<-factor(toto$Species, levels=as.vector(input$country), labels=rainbow_hcl(length(as.vector(input$country))))
     
@@ -538,41 +539,83 @@ server <- function(input, output, session) {
     map_i11 <-  leaflet() %>%  
       # map_i11 <-  leaflet(options = leafletOptions(zoomSnap=0.25)) %>%  
       setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
-      clearBounds() %>%
-      addLayersControl(baseGroups = c("minicharts"), overlayGroups = c("background")) %>%
+      clearBounds() %>% 
+      addDrawToolbar(
+        targetGroup = "draw",
+        editOptions = editToolbarOptions(
+          selectedPathOptions = selectedPathOptions()
+        )
+      ) %>%
+      addLayersControl(
+        overlayGroups = c("draw"),
+        options = layersControlOptions(collapsed = FALSE)
+      )  %>%
+      addPolygons(data = toto,
+                  label = ~total,
+                  popup = ~paste0("Captures de",species,": ", round(total), " tonnes(t) et des brouettes"),
+                  # fillColor = ~qpal(total),
+                  # fill = TRUE,
+                  # fillOpacity = 0.8,
+                  smoothFactor = 0.5) %>% 
       addMinicharts(lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
                     lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
                     # chartdata = as_data_frame(subset(toto, select = -c(species,geom_wkt))), type = "pie",
                     # chartdata = as_data_frame(toto)[-c(1:3,ncol(as_data_frame(toto)))], type = "pie",
+                    maxValues = max(toto$total),
                     chartdata = dplyr::select(toto,-c(species,total)) %>% st_drop_geometry(),type = "pie",
                     # showLabels = TRUE,
                     # layerId = "tartothon",
                     # colorPalette = pal_fun,
                     colorPalette = d3.schemeCategory10,
                     width = (60*toto$total/max(toto$total))+20,
-                    legend = TRUE, legendPosition = "bottomright")
+                    legend = TRUE, legendPosition = "bottomright") %>% 
+      addLayersControl(baseGroups = c("minicharts"), overlayGroups = c("background"))
   })
   
   
   
-  observe({
-    new_zoom <- input$map_i11_zoom
-    req(input$map_i11_zoom)
-    if(zoom()!=new_zoom){
-      zoom(new_zoom)
-      #%>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>%  addProviderTiles("Esri.OceanBasemap", group = "background") %>%  clearBounds() %>%
-      map_i11_proxy = leafletProxy("map_i11") %>% clearMinicharts()  %>% 
-        addMinicharts(lng = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "X"],
-                      lat = st_coordinates(st_centroid( data_pie_map(), crs = 4326))[, "Y"],
-                      chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
-                      colorPalette = d3.schemeCategory10,
-                      width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),
-                      legend = TRUE, legendPosition = "bottomright")
-      
-      
-    }
-    
+  # observe({
+  #   new_zoom <- input$map_i11_zoom
+  #   req(input$map_i11_zoom)
+  #   if(zoom()!=new_zoom & !is.null(input$map_i11_zoom)){
+  #     zoom(new_zoom)
+  #     #%>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>%  addProviderTiles("Esri.OceanBasemap", group = "background") %>%  clearBounds() %>%
+  #     map_i11_proxy = leafletProxy("map_i11") %>% clearMinicharts() %>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>% 
+  #       addMinicharts(lng = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "X"],
+  #                     lat = st_coordinates(st_centroid( data_pie_map(), crs = 4326))[, "Y"],
+  #                     maxValues = max(data_pie_map()$total),
+  #                     chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
+  #                     colorPalette = d3.schemeCategory10,
+  #                     width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),
+  #                     legend = TRUE, legendPosition = "bottomright")
+  #     
+  #     
+  #   }
+  #   
+  # })
+  
+  
+  observeEvent(input$refresh_map,{
+      new_zoom <- input$map_i11_zoom
+      req(input$map_i11_zoom)
+      if(zoom()!=new_zoom & !is.null(input$map_i11_zoom)){
+        zoom(new_zoom)
+        lat_centroid <-input$map_i11_center[2]
+        lon_centroid <- input$map_i11_center[1]
+        #%>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>%  addProviderTiles("Esri.OceanBasemap", group = "background") %>%  clearBounds() %>%
+        map_i11_proxy = leafletProxy("map_i11") %>% clearMinicharts() %>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>% 
+          addMinicharts(lng = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "X"],
+                        lat = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "Y"],
+                        maxValues = max(data_pie_map()$total),
+                        chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
+                        colorPalette = d3.schemeCategory10,
+                        width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),
+                        legend = TRUE, legendPosition = "bottomright")
+        
+        
+      }
   })
+  
   
   
   output$pie_map_i11 <- renderPlotly({

@@ -33,8 +33,8 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtl
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i11_CatchesByCountry.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
 ####################################################################################################################################################################################################################################
-source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
-# source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 
 global_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
@@ -171,12 +171,10 @@ ui <- fluidPage(
              tabPanel("ggplot Indicator 11",
                       imageOutput("plot11", height = 1200)
              ),
-             # tabPanel("Interactive Indicator 11",
-             #          # hr(),
-             #          # textOutput("sql_query"),
-             #          hr(),
-             #          leafletOutput('map_i11', width = "60%", height = 1500)
-             # ),
+             tabPanel("Zoom level",
+                      hr(),
+                      textOutput("zoom")
+             ),
              tabPanel("Data explorer overview",
                       # hr(),
                       # textOutput("sql_query"),
@@ -427,6 +425,9 @@ server <- function(input, output, session) {
     # https://r-spatial.github.io/sf/articles/sf5.html
     leaflet() %>% 
       addProviderTiles("Esri.OceanBasemap") %>% 
+      # setView(lng = lon_centroid, lat =lat_centroid, zoom = 3
+      # ) %>%
+      clearBounds() %>%
       addPolygons(data = df,
                     label = ~value,
                   popup = ~paste0("Captures de",species,": ", round(value), " tonnes(t) et des brouettes"),
@@ -438,22 +439,18 @@ server <- function(input, output, session) {
                     fill = TRUE,
                     fillOpacity = 0.8,
                     smoothFactor = 0.5) %>% 
-      addProviderTiles("Esri.OceanBasemap") %>% 
       addDrawToolbar(
         targetGroup = "draw",
         editOptions = editToolbarOptions(
           selectedPathOptions = selectedPathOptions()
         )
       ) %>%
-      # setView(lng =48, lat =-8, zoom = 5
-      setView(lng = lon_centroid, lat =lat_centroid, zoom = 3
-      ) %>%
-      clearBounds() %>%
       addLayersControl(
         overlayGroups = c("draw"),
         options = layersControlOptions(collapsed = FALSE)
       )
-    
+    # %>% 
+    #   addLegend(pal = qpal, values = ~value, opacity = 1)
     
   })
   
@@ -531,8 +528,10 @@ server <- function(input, output, session) {
     # new_zoom <- input$map_i11_zoom
     
     # https://r-spatial.github.io/sf/articles/sf5.html
-    map_i11 <- leaflet() %>%  setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
-      clearBounds() %>%   
+    map_i11 <-  leaflet() %>%  
+      # map_i11 <-  leaflet(options = leafletOptions(zoomSnap=0.25)) %>%  
+      setView(lng = lon_centroid, lat = lat_centroid, zoom = 3) %>% addProviderTiles("Esri.OceanBasemap", group = "background") %>%
+      clearBounds() %>%
       addLayersControl(baseGroups = c("minicharts"), overlayGroups = c("background")) %>%
       addMinicharts(lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
                     lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
@@ -543,7 +542,7 @@ server <- function(input, output, session) {
                     # layerId = "tartothon",
                     # colorPalette = pal_fun,
                     colorPalette = d3.schemeCategory10,
-                    width = (zoom()*60*toto$total/max(toto$total))+20,
+                    width = (60*toto$total/max(toto$total))+20,
                     legend = TRUE, legendPosition = "bottomright")
   })
   
@@ -552,15 +551,20 @@ server <- function(input, output, session) {
   observe({
     new_zoom <- input$map_i11_zoom
     req(input$map_i11_zoom)
-    zoom(new_zoom)
-    # # toto <- data_pie_map()
-    # leafletProxy(mapId = "map_i11") %>% updateMinicharts(map='map_i11', lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
-    #                                                   # layerId = "tartothon",
-    #                                      lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
-    #                                      width = (5*zoom()*(60*toto$total/max(toto$total))+20),
-    #                                      colorPalette = d3.schemeCategory10,
-    #                                      legend = TRUE, legendPosition = "bottomright")
-    textOutput("zoom")
+    if(zoom()!=new_zoom){
+      zoom(new_zoom)
+      #%>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>%  addProviderTiles("Esri.OceanBasemap", group = "background") %>%  clearBounds() %>%
+      map_i11_proxy = leafletProxy("map_i11") %>% clearMinicharts()  %>% 
+        addMinicharts(lng = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "X"],
+                      lat = st_coordinates(st_centroid( data_pie_map(), crs = 4326))[, "Y"],
+                      chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
+                      colorPalette = d3.schemeCategory10,
+                      width = 10*zoom()+100*((data_pie_map()$total+max(data_pie_map()$total))/max(data_pie_map()$total)-1),
+                      legend = TRUE, legendPosition = "bottomright")
+      
+      # textOutput("zoom")
+      
+    }
 
   })
 

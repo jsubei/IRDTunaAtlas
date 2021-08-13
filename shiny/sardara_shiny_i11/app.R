@@ -72,6 +72,7 @@ default_flag <- c('EUESP','EUFRA','TWN','JPN')
 filters_combinations <- dbGetQuery(con, "SELECT species, year, country FROM  fact_tables.i6i7i8 GROUP BY species, year, country;")
 
 
+# https://www.rapidtables.com/convert/color/hex-to-rgb.html
 # https://www.r-bloggers.com/2020/03/how-to-standardize-group-colors-in-data-visualizations-in-r/
 palette3_info <- brewer.pal.info[brewer.pal.info$category == "qual", ]  
 palette3_all <- unlist(mapply(brewer.pal, 
@@ -472,7 +473,7 @@ server <- function(input, output, session) {
       clearBounds() %>%
       addPolygons(data = df,
                   label = ~value,
-                  popup = ~paste0("Captures de",species,": ", round(value), " tonnes(t) et des brouettes"),
+                  popup = ~paste0("Total catches for ",species," species in this square of the grid: ", round(value), " ton(t) et des brouettes"),
                   # popup = ~paste0("Captures de",species,": ", area, " tonnes(t) et des brouettes"),
                   # fillColor = ~pal_fun(value),
                   # fillColor = brewer.pal(n = 20, name = "RdBu"),
@@ -651,6 +652,7 @@ server <- function(input, output, session) {
           addMinicharts(lng = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "X"],
                         lat = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "Y"],
                         maxValues = max(data_pie_map()$total),
+                        transitionTime = 750,
                         chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
                         colorPalette = unname(la_palette),
                         width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),

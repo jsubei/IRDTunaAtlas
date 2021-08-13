@@ -76,50 +76,50 @@ ui <- fluidPage(
              tabPanel("Interactive",
                       div(class="outer",
                           tags$head(includeCSS("https://raw.githubusercontent.com/eparker12/nCoV_tracker/master/styles.css")),
-                      leafletOutput("mymap", width="100%", height="100%"),
-                      
-                      
-                      # Shiny versions prior to 0.11 should use class = "modal" instead.
-                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                    draggable = TRUE, top = 200, left = "auto", right = 20, bottom = "auto",
-                                    width = 400, height = "auto",
-                                    
-                                    h2("Select filters to customize indicators"),
-                                    # imageOutput("plot11", height = 200),
-                                    selectInput(
-                                      inputId = "species",
-                                      label = "Species",
-                                      choices = target_species$species,
-                                      selected= default_species
-                                    ),
-                                    selectInput(
-                                      inputId = "year",
-                                      label = "Year",
-                                      choices = target_year$year,
-                                      multiple = TRUE,
-                                      selected= default_year
-                                    ),
-                                    selectInput(
-                                      inputId = "country",
-                                      label = "Country",
-                                      choices = target_flag$country,
-                                      multiple = TRUE,
-                                      selected= default_flag
-                                    ),
-                                    actionButton(
-                                      inputId = "submit",
-                                      label = "Submit"
-                                    ),
-                                    actionButton("resetWkt", "Reset WKT to global"),
-                                    plotOutput(outputId = "plot_species",width="300")
-                                    
-                                    # actionButton("resetWkt", "Reset WKT to global"),
-                                    # plotOutput(outputId = "plot_species")
-                                    # plotOutput("cumulative_plot", height="130px", width="100%")
-                                    
-                      ),
-                      absolutePanel(id = "logo", class = "card", bottom = 15, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
-                                    tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='89',width='108')))
+                          leafletOutput("mymap", width="100%", height="100%"),
+                          
+                          
+                          # Shiny versions prior to 0.11 should use class = "modal" instead.
+                          absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
+                                        draggable = TRUE, top = 200, left = "auto", right = 20, bottom = "auto",
+                                        width = 400, height = "auto",
+                                        
+                                        h2("Select filters to customize indicators"),
+                                        # imageOutput("plot11", height = 200),
+                                        selectInput(
+                                          inputId = "species",
+                                          label = "Species",
+                                          choices = target_species$species,
+                                          selected= default_species
+                                        ),
+                                        selectInput(
+                                          inputId = "year",
+                                          label = "Year",
+                                          choices = target_year$year,
+                                          multiple = TRUE,
+                                          selected= default_year
+                                        ),
+                                        selectInput(
+                                          inputId = "country",
+                                          label = "Country",
+                                          choices = target_flag$country,
+                                          multiple = TRUE,
+                                          selected= default_flag
+                                        ),
+                                        actionButton(
+                                          inputId = "submit",
+                                          label = "Submit"
+                                        ),
+                                        actionButton("resetWkt", "Reset WKT to global"),
+                                        plotOutput(outputId = "plot_species",width="300")
+                                        
+                                        # actionButton("resetWkt", "Reset WKT to global"),
+                                        # plotOutput(outputId = "plot_species")
+                                        # plotOutput("cumulative_plot", height="130px", width="100%")
+                                        
+                          ),
+                          absolutePanel(id = "logo", class = "card", bottom = 15, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
+                                        tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='89',width='108')))
                       )
              ),
              tabPanel("Interactive Indicator 11",
@@ -128,7 +128,7 @@ ui <- fluidPage(
                           # leafletOutput('map_i11', width = "60%", height = 1500),
                           leafletOutput("map_i11", width="100%", height="100%"),
                           
-                                        
+                          
                           absolutePanel(id = "controls", class = "panel panel-default",
                                         top = 200, left = "auto", width = 400, fixed=TRUE,
                                         draggable = TRUE, height = "auto",
@@ -145,7 +145,7 @@ ui <- fluidPage(
                                                     max = max(target_year),
                                                     value = c(min(target_year),max(target_year)),
                                                     round = TRUE, step=1
-                                                    ),
+                                        ),
                                         span(("Rate of catch according to the flag of the fishing fleet"),align = "left", style = "font-size:80%"),
                                         tags$br(),
                                         span(("Circles in the grid shows the detail of this rate for a spefic square of the grid"),align = "left", style = "font-size:80%")
@@ -230,23 +230,23 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
- 
-
+  
+  
   sql_query_metadata_plot1 <- eventReactive(input$submit, {
     paste0("Your zom is Zoom",zoom(),"   ;")
   },
   ignoreNULL = FALSE)
-
+  
   
   sql_query <- eventReactive(input$submit, {
     query <- glue::glue_sql(
       "SELECT   geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8
-           WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326))
-                      AND species IN ({species_name*})
-                      AND country IN ({country_name*})
-                      AND year IN ({year_name*})
-           GROUP BY species, country,geom_id, geom_wkt, geom , year
-           ORDER BY species,country DESC",
+      WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326))
+      AND species IN ({species_name*})
+      AND country IN ({country_name*})
+      AND year IN ({year_name*})
+      GROUP BY species, country,geom_id, geom_wkt, geom , year
+      ORDER BY species,country DESC",
       wkt = wkt(),
       species_name = input$species,
       country_name = input$country,
@@ -269,26 +269,26 @@ server <- function(input, output, session) {
     outp
   },
   ignoreNULL = FALSE)
-
+  
   
   metadata <- reactive({
     st_read(con, query = paste0("SELECT species, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, geom")) 
   })  
   
-    data_pie_map <- reactive({
-      # st_read(con, query = paste0("SELECT species, country, geom, sum(value) AS value FROM(SELECT geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND species IN ('YFT') AND country IN ('EUESP', 'EUFRA', 'JPN', 'TWN') AND year IN ('2010') GROUP BY species, country,geom_id, geom_wkt, geom , year ORDER BY species,country DESC) AS foo GROUP BY species, country, geom"))
-      st_read(con, query = paste0("SELECT species, country, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, country, geom"))  %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
-})
-    
-    data_time_serie <- reactive({
-      st_read(con, query = paste0("SELECT species, year, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, year, geom")) 
-    })
-    
-    data_pie_chart_country <- reactive({
-      st_read(con, query = paste0("SELECT country, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY country"))
-    })
-    
-    
+  data_pie_map <- reactive({
+    # st_read(con, query = paste0("SELECT species, country, geom, sum(value) AS value FROM(SELECT geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND species IN ('YFT') AND country IN ('EUESP', 'EUFRA', 'JPN', 'TWN') AND year IN ('2010') GROUP BY species, country,geom_id, geom_wkt, geom , year ORDER BY species,country DESC) AS foo GROUP BY species, country, geom"))
+    st_read(con, query = paste0("SELECT species, country, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, country, geom"))  %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
+  })
+  
+  data_time_serie <- reactive({
+    st_read(con, query = paste0("SELECT species, year, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, year, geom")) 
+  })
+  
+  data_pie_chart_country <- reactive({
+    st_read(con, query = paste0("SELECT country, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY country"))
+  })
+  
+  
   centroid <- eventReactive(input$submit, {
     st_read(con, query = paste0("SELECT st_centroid(St_convexhull(st_collect(geom))) FROM  (",sql_query(),") AS foo;"))
   },
@@ -304,7 +304,7 @@ server <- function(input, output, session) {
   # },
   # ignoreNULL = FALSE)
   
-
+  
   
   # data <- eventReactive(input$submit, {
   #   st_read(con, query = sql_query())
@@ -369,12 +369,12 @@ server <- function(input, output, session) {
     temp <- filters_combinations %>% filter(species %in% change()[1])
     updateSelectInput(session,"year",choices = unique(temp$year),selected=c(seq(min(temp$year):max(temp$year))+min(temp$year)-1))
     updateSelectInput(session,"country",choices = unique(temp$country),selected=unique(temp$country))
-
+    
   },
   ignoreInit = TRUE)
   
-
-############################################################# OUTPUTS   ############################################################# 
+  
+  ############################################################# OUTPUTS   ############################################################# 
   
   output$sql_query <- renderText({ 
     paste("Your SQL Query for indicator 11 is : \n", sql_query())
@@ -384,11 +384,15 @@ server <- function(input, output, session) {
     paste("Your SQL Query is : \n", sql_query_metadata())
   })
   
+  output$zoom <- renderText({ 
+    paste0("Your zom is Zoom",zoom(),"   ;")
+  })
+  
   
   output$DT <- renderDT({
-     data()  %>% st_drop_geometry()
+    data()  %>% st_drop_geometry()
     # dplyr::select(species,country,value,geom_wkt)
-      # dplyr::select(-c(geom))
+    # dplyr::select(-c(geom))
     # as_data_frame(toto)[-c(1:3,ncol(as_data_frame(toto)))]
   }) 
   
@@ -419,26 +423,27 @@ server <- function(input, output, session) {
     # brewer.pal(7, "OrRd")
     # pal <- colorNumeric(palette = "YlGnBu",domain = df$value)
     # pal_fun <- colorQuantile("YlOrRd", NULL, n = 10)
+    # qpal <- colorQuantile("RdYlBu",df$value, n = 10)
     qpal <- colorQuantile(rev(viridis::viridis(10)),df$value, n=10)
     # qpal <- brewer.pal(n = 20, name = "RdBu")
     
     # https://r-spatial.github.io/sf/articles/sf5.html
-    leaflet() %>% 
+    mymap <- leaflet() %>% 
       addProviderTiles("Esri.OceanBasemap") %>% 
       # setView(lng = lon_centroid, lat =lat_centroid, zoom = 3
       # ) %>%
       clearBounds() %>%
       addPolygons(data = df,
-                    label = ~value,
+                  label = ~value,
                   popup = ~paste0("Captures de",species,": ", round(value), " tonnes(t) et des brouettes"),
                   # popup = ~paste0("Captures de",species,": ", area, " tonnes(t) et des brouettes"),
                   # fillColor = ~pal_fun(value),
                   # fillColor = brewer.pal(n = 20, name = "RdBu"),
                   fillColor = ~qpal(value),
-                    # color = ~pal(value)
-                    fill = TRUE,
-                    fillOpacity = 0.8,
-                    smoothFactor = 0.5) %>% 
+                  # color = ~pal(value)
+                  fill = TRUE,
+                  fillOpacity = 0.8,
+                  smoothFactor = 0.5) %>% 
       addDrawToolbar(
         targetGroup = "draw",
         editOptions = editToolbarOptions(
@@ -448,10 +453,12 @@ server <- function(input, output, session) {
       addLayersControl(
         overlayGroups = c("draw"),
         options = layersControlOptions(collapsed = FALSE)
-      )
-    # %>% 
-    #   addLegend(pal = qpal, values = ~value, opacity = 1)
-    
+      )  %>% 
+    addLegend("bottomright", pal = qpal, values = df$value,
+              title = "Total catch per cell for selected criteria",
+              labFormat = labelFormat(prefix = "MT "),
+              opacity = 1
+    )
   })
   
   
@@ -499,8 +506,8 @@ server <- function(input, output, session) {
   
   output$map_i11 <- renderLeaflet({
     # toto <- data() %>% filter (year <= max(input$yearInterval) & year>=min(input$yearInterval)) %>% group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>%
-      # toto <- data() %>% group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country))))) #  %>% filter (total>mean(total))
-      
+    # toto <- data() %>% group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country))))) #  %>% filter (total>mean(total))
+    
     
     # test_data$grp = sapply(st_equals(test_data), max)
     # toto <- data() %>% group_by(species,country,geom_id) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
@@ -508,7 +515,7 @@ server <- function(input, output, session) {
     
     # toto <- st_read(con, query = "SELECT geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, ST_area(geom) AS area FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',4326)) AND species IN ('SKJ') AND country IN ('OMN','NAM','BRA','AGO','CPV','USA','JPN','MEX','BRB','EUPRT','UNK','ECU','SHN','MYS','MAR','COL','MDV') AND year IN ('2013','2014','2015','2016','2017','2018','2019') GROUP BY area,species, country,geom_wkt, geom ORDER BY area,species,country DESC ;")  %>% 
     #   spread(country, value, fill=0)  %>% mutate(total = sum(across(any_of(c('OMN','NAM','BRA','AGO','CPV','USA','JPN','MEX','BRB','EUPRT','UNK','ECU','SHN','MYS','MAR','COL','MDV')))))  %>% filter (total>mean(total))
-  # %>% spread(country, value, fill=0)  %>% mutate(total = rowSums(across(any_of(as.vector(input$country)))))   %>% filter (total>mean(total))
+    # %>% spread(country, value, fill=0)  %>% mutate(total = rowSums(across(any_of(as.vector(input$country)))))   %>% filter (total>mean(total))
     # toto <- df %>%  group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>% mutate(total = rowSums(across(any_of(default_flag))))
     # toto <- data() %>% filter (year <= max(input$yearInterval) & year>=min(input$yearInterval)) %>% group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value) 
     # toto <- df %>% group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value) 
@@ -547,7 +554,7 @@ server <- function(input, output, session) {
   })
   
   
-
+  
   observe({
     new_zoom <- input$map_i11_zoom
     req(input$map_i11_zoom)
@@ -559,44 +566,43 @@ server <- function(input, output, session) {
                       lat = st_coordinates(st_centroid( data_pie_map(), crs = 4326))[, "Y"],
                       chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
                       colorPalette = d3.schemeCategory10,
-                      width = 10*zoom()+100*((data_pie_map()$total+max(data_pie_map()$total))/max(data_pie_map()$total)-1),
+                      width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),
                       legend = TRUE, legendPosition = "bottomright")
       
-      # textOutput("zoom")
       
     }
-
+    
   })
-
+  
   
   output$pie_map_i11 <- renderPlotly({
     # output$pie_map_i11 <- renderPlot({
-      
+    
     # df_i11_map <- data_i11() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value)) # %>% top_n(3)
     # metadata_i11 <- data() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value)) # %>% top_n(3)
     metadata_i11 <- data_pie_chart_country() %>% arrange(desc(value)) # %>% top_n(3)
     # df_i11_map <- as_data_frame(metadata_i11())  # %>% top_n(3)
-    df_i11_map <- as_data_frame(metadata_i11)  # %>% top_n(3)
+    df_i11_map <- as_tibble(metadata_i11)  # %>% top_n(3)
     
-        # # Basic piechart
-        # i11_map <-   ggplot(df_i11_map, aes(x="", y=value, fill=country)) +
-        #   geom_bar(stat="identity", width=1) +
-        #   coord_polar("y", start=0) 
-        # # +
-        # #   theme(axis.text.x = element_text(angle = 90))
-        # 
-        # i11_map
-        
-
-        
-        
-        
-        fig <- plot_ly(df_i11_map, labels = ~country, values = ~value, type = 'pie')
-        fig <- fig %>% layout(title = 'Tuna catches by country for selected species, area and period of time',
-                              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-                              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-        
-        fig
+    # # Basic piechart
+    # i11_map <-   ggplot(df_i11_map, aes(x="", y=value, fill=country)) +
+    #   geom_bar(stat="identity", width=1) +
+    #   coord_polar("y", start=0) 
+    # # +
+    # #   theme(axis.text.x = element_text(angle = 90))
+    # 
+    # i11_map
+    
+    
+    
+    
+    
+    fig <- plot_ly(df_i11_map, labels = ~country, values = ~value, type = 'pie')
+    fig <- fig %>% layout(title = 'Tuna catches by country for selected species, area and period of time',
+                          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    
+    fig
   })
   
   
@@ -647,7 +653,7 @@ server <- function(input, output, session) {
   
   
   
-
+  
   
 }
 

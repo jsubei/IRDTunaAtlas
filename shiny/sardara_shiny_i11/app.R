@@ -187,7 +187,7 @@ ui <- fluidPage(
                                         
                                         # h3(textOutput("sql_query"), align = "right"),
                                         # plotOutput("plot1_streamgraph", height=200, width="100%"),
-                                        dygraphOutput("plot1_streamgraph", height=400, width="100%"),
+                                        # dygraphOutput("plot1_streamgraph", height=400, width="100%"),
                                         tags$br(),
                                         plotlyOutput("pie_map_i11", width="100%"),
                                         tags$br(),
@@ -219,8 +219,9 @@ ui <- fluidPage(
                           absolutePanel(id = "logo", class = "card", bottom = 15, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
                                         tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='178',width='216'))),
                           
-                          absolutePanel(id = "logo", class = "card", bottom = 15, left = 20, width = "90%", fixed=TRUE, draggable = FALSE, height = "auto",
-                                        tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='178',width='216')))
+                          absolutePanel(id = "controls", class = "panel panel-default", bottom =  "15%", left = "5%", width = "90%", fixed=TRUE, draggable = FALSE, height = "20%",
+                                        dygraphOutput("plot1_streamgraph", height="400", width="80%")
+                                        )
                       )
              ),
              

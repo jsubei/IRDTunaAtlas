@@ -23,6 +23,8 @@ library(mapplots)
 library(reshape)
 library(tidyr)
 library(streamgraph)
+library(dygraphs)
+library(xts)
 library(RColorBrewer)
 library(glue)
 library(pals)
@@ -34,8 +36,8 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtl
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i11_CatchesByCountry.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
 ####################################################################################################################################################################################################################################
-# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
-source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 
 global_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
@@ -82,6 +84,17 @@ set.seed(2643598)
 palette3 <- sample(palette3_all, nrow(target_flag), replace=TRUE)
 names(palette3) = target_flag$country
 palette3
+
+palette3_speciesinfo <- brewer.pal.info[brewer.pal.info$category == "qual", ]  
+palette3_species <- unlist(mapply(brewer.pal, 
+                                  palette3_speciesinfo$maxcolors,
+                              rownames(palette3_speciesinfo)))
+set.seed(2643598)  
+# palette3 <- sample(palette3_all, nrow(unique(df_i11_map$country)), replace=TRUE)
+palette_species <- sample(palette3_species, nrow(target_species), replace=TRUE)
+names(palette_species) = target_species$species
+
+
 # print(palette3)
 # class(palette3)
 # palette3[names(palette3) != c('AGO','ALB')]
@@ -117,8 +130,8 @@ ui <- fluidPage(
                           
                           # Shiny versions prior to 0.11 should use class = "modal" instead.
                           absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                        draggable = TRUE, top = 200, left = "auto", right = 20, bottom = "auto",
-                                        width = 400, height = "auto",
+                                        draggable = TRUE, top = 200, left = "auto", right="83%", width = "15%", height = "auto",
+                                        tags$br(),
                                         
                                         h2("Select filters to customize indicators"),
                                         # imageOutput("plot11", height = 200),
@@ -147,7 +160,10 @@ ui <- fluidPage(
                                           label = "Submit"
                                         ),
                                         actionButton("resetWkt", "Reset WKT to global"),
-                                        plotOutput(outputId = "plot_species",width="300")
+                                        # plotOutput(outputId = "plot_species",width="300")
+                                        tags$br(),
+                                        tags$br(),
+                                        plotlyOutput(outputId = "plot_species",width="100%")
                                         
                                         # actionButton("resetWkt", "Reset WKT to global"),
                                         # plotOutput(outputId = "plot_species")
@@ -166,17 +182,20 @@ ui <- fluidPage(
                           
                           
                           absolutePanel(id = "controls", class = "panel panel-default",
-                                        top = 200, left = "auto", width = 400, fixed=TRUE,
+                                        top = 200, left = "auto", width = "20%", fixed=TRUE,
                                         draggable = TRUE, height = "auto",
                                         
                                         # h3(textOutput("sql_query"), align = "right"),
-                                        plotOutput("plot1_streamgraph", height=200, width="100%"),
-                                        plotlyOutput("pie_map_i11", height = 200),
+                                        # plotOutput("plot1_streamgraph", height=200, width="100%"),
+                                        dygraphOutput("plot1_streamgraph", height=400, width="100%"),
+                                        tags$br(),
+                                        plotlyOutput("pie_map_i11", width="100%"),
+                                        tags$br(),
                                         # h6(textOutput("sars_clean_date_reactive"), align = "right"),
                                         # h6(textOutput("sars_reactive_country_count"), align = "right"),
                                         # plotOutput("sars_epi_curve", height="130px", width="100%"),
                                         # plotOutput("sars_cumulative_plot", height="130px", width="100%"),
-                                        sliderInput(inputId="yearInterval", "Range:",
+                                        sliderInput(inputId="yearInterval", "Select period of interest :",
                                                     min = min(target_year),
                                                     max = max(target_year),
                                                     value = c(min(target_year),max(target_year)),
@@ -185,6 +204,7 @@ ui <- fluidPage(
                                         span(("Rate of catch according to the flag of the fishing fleet"),align = "left", style = "font-size:80%"),
                                         tags$br(),
                                         span(("Circles in the grid shows the detail of this rate for a spefic square of the grid"),align = "left", style = "font-size:80%"),
+                                        tags$br(),
                                         actionButton("refresh_map","Refresh map for this zoom level")
                                         
                                         # sliderTextInput("sars_plot_date",
@@ -217,12 +237,14 @@ ui <- fluidPage(
                       # textOutput("sql_query"),
                       hr(),
                       DT::dataTableOutput("DT")
+                      # downloadButton("downloadCsv", "Download as CSV"),tags$br(),tags$br(),
              ),
              tabPanel("Data explorer i11",
                       # hr(),
                       # textOutput("sql_query"),
                       hr(),
-                      DT::dataTableOutput("DTi11")
+                      DT::dataTableOutput("DTi11"),
+                      downloadButton("downloadCsv", "Download as CSV"),tags$br(),tags$br()
              ),
              navbarMenu("More",
                         tabPanel(
@@ -258,8 +280,43 @@ ui <- fluidPage(
                                             a(href="https://horizon.documentation.ird.fr/exl-doc/pleins_textes/divers11-03/010012425.pdf",
                                               "PDF")
                                           )
+                                   ),
+                                   column(3,
+                                          img(class="logo_IRD",
+                                              src=paste0("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg")),
+                                          tags$small(
+                                            "General Disclaimer:",
+                                            "This repository contains work in progress. It can be used to explore the content of multi-dimensionnal data cubes storing tuna fisheries data. Dimensions are: spatial (lat,lon), time, flag of the fishing fleet, free schools or FADs. The content is made of publicly available data delivered by Tuna RFMOs. Its content should not be used for publications without explicit agreement from the authors. The accuracy of the estimates provided in these analyses is contingent on data quality and availability. Results presented here do not represent the official view of IRD, its staff or consultants.",
+                                            "Caution must be taken when interpreting all data presented, and differences between information products published by IRD and other sources using different inclusion criteria and different data cut-off times are to be expected. While steps are taken to ensure accuracy and reliability, all data are subject to continuous verification and change.  See here for further background and other important considerations surrounding the source data."
+                                          )
                                    )
+                                   
                                  )
+                          # ),
+                          # 
+                          # tabPanel("About this site",
+                          #          tags$div(
+                          #            tags$h4("Last update"), 
+                          #            h6(paste0(update)),
+                          #            "This site is updated once yearly. Our aim is to complement these resources with several interactive features, including the timeline function and the ability to overlay past outbreaks.",
+                          #            
+                          #            tags$br(),tags$br(),tags$h4("Background"), 
+                          #            "In late 90ies......IRD, Alain Fontneau",
+                          #            tags$br(),tags$br(),
+                          #            
+                          #            tags$br(),tags$br(),tags$h4("Sources"),
+                          #            tags$b("FIRMS / tuna RFMOs: "), tags$a(href="https://www", "IOTC page,")," with additional information from the ",tags$a(href="https://www", "FIRMS page."),
+                          #            " In previous versions of this site (up to 17th March 2020), updates were based solely on the WHO's situation reports.",tags$br(),
+                          #            tags$b("Country mapping coordinates: "), tags$a(href="https://github.com/martynafford/natural-earth-geojson", "Martyn Afford's Github repository"),
+                          #            
+                          #            tags$br(),tags$br(),tags$h4("Authors"),
+                          #            "Dr XXX BB, IRD",tags$br(),
+                          #            "DD BB FAO / IOTC",tags$br(),
+                          #            tags$br(),tags$br(),tags$h4("Contact: "),
+                          #            "julien barde at ird",tags$br(),tags$br(),
+                          #            tags$img(src = "https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg", width = "150px", height = "75px"),
+                          #            tags$img(src = "https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg", width = "150px", height = "75px")
+                          #          )
                         )
              )
   )
@@ -318,7 +375,7 @@ server <- function(input, output, session) {
   })
   
   data_time_serie <- reactive({
-    st_read(con, query = paste0("SELECT species, year, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, year, geom")) 
+    st_read(con, query = paste0("SELECT species,to_date(year::varchar(4),'YYYY') AS  year, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, year")) 
   })
   
   data_pie_chart_country <- reactive({
@@ -491,7 +548,7 @@ server <- function(input, output, session) {
         overlayGroups = c("draw"),
         options = layersControlOptions(collapsed = FALSE)
       )  %>% 
-    addLegend("bottomright", pal = qpal, values = df$value,
+    leaflet::addLegend("bottomright", pal = qpal, values = df$value,
               title = "Total catch per cell for selected criteria",
               labFormat = labelFormat(prefix = "MT "),
               opacity = 1
@@ -531,11 +588,23 @@ server <- function(input, output, session) {
   })
   
   
-  output$plot_species<- renderPlot({ 
-    df_i2 = st_read(con, query = paste0("SELECT species, count(species), sum(value) FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species ORDER BY count;")) %>% filter (count>mean(count))
+  output$plot_species<- renderPlotly({ 
+    # output$plot_species<- renderPlot({ 
+      df_i2 = st_read(con, query = paste0("SELECT species, count(species), sum(value) FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species ORDER BY count;")) %>% filter (count>mean(count))
     
     # https://www.tenderisthebyte.com/blog/2019/04/25/rotating-axis-labels-in-r/
-    barplot(as.vector(as.integer(df_i2$count)),names.arg=df_i2$species, xlab="species",ylab="count",las = 2, cex.names = 1)
+    # barplot(as.vector(as.integer(df_i2$count)),names.arg=df_i2$species, xlab="species",ylab="count",las = 2, cex.names = 1)
+      la_palette_species = palette_species[names(palette_species) %in% unique(df_i2$species)]
+      
+    
+    fig <- plot_ly(df_i2, labels = ~species, values = ~count, type = 'pie',
+                   marker = list(colors = la_palette_species, line = list(color = '#FFFFFF', width = 1), sort = FALSE),
+                   showlegend = TRUE)
+    fig <- fig %>% layout(title = 'Overall species composition in selected area and period of time',
+                          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    
+    
   })
   
   
@@ -687,7 +756,7 @@ server <- function(input, output, session) {
 
     fig <- plot_ly(df_i11_map, labels = ~country, values = ~value, type = 'pie',
                    marker = list(colors = la_palette, line = list(color = '#FFFFFF', width = 1), sort = FALSE),
-                   showlegend = FALSE)
+                   showlegend = TRUE)
     fig <- fig %>% layout(title = 'Tuna catches by country for selected species, area and period of time',
                           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -698,23 +767,40 @@ server <- function(input, output, session) {
   })
   
   
-  
-  output$plot1_streamgraph <- renderPlot({
-    
+  output$plot1_streamgraph <- renderDygraph({
+    # output$plot1_streamgraph <- renderPlot({
+      
     # df_i1 = st_read(con, query = sql_query_metadata_plot1()) %>% group_by(species,year) %>% summarise(value = sum(value))  %>% arrange(desc(value)) %>% filter (value>mean(value)) # %>% top_n(3)
     # df_i1 = data() %>% group_by(species,year) %>% summarise(value = sum(value))  %>% arrange(desc(value))  %>% filter (value>mean(value)) # %>% top_n(3)
-    df_i1 = data_time_serie() %>%  arrange(desc(value))  %>% filter (value>mean(value)) # %>% top_n(3)
+    df_i1 = data_time_serie() # %>%  arrange(desc(value))  %>% filter (value>mean(value)) # %>% top_n(3)
     # df_i1 = st_read(con, query = paste0("SELECT species, year, count(species), sum(value) AS value FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species,year ORDER BY count;")) %>% filter (count>mean(count))
     
-    value=as.vector(as.integer(df_i1$value))
-    g1 = ggplot(df_i1, aes(x = year, y = value, colour = species)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-      # geom_bar(position="stack", stat="identity") +
-      ylab("Catches in Tons") + xlab("Date") + theme_bw() +
-      scale_colour_manual(values=c(value)) +
-      # scale_y_continuous(labels = function(l) {trans = l / 1000; paste0(trans, "kT")}) +
-      theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10),
-            plot.margin = margin(5, 12, 5, 5))
+    # value=as.vector(as.integer(df_i1$value))
+    # g1 = ggplot(df_i1, aes(x = year, y = value, colour = species)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
+    #   # geom_bar(position="stack", stat="identity") +
+    #   ylab("Catches in Tons") + xlab("Date") + theme_bw() +
+    #   scale_colour_manual(values=c(value)) +
+    #   # scale_y_continuous(labels = function(l) {trans = l / 1000; paste0(trans, "kT")}) +
+    #   theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10),
+    #         plot.margin = margin(5, 12, 5, 5))
+    # 
+    
+    # https://rstudio.github.io/dygraphs/gallery-timezones.html
+    # create time series object
+    df_i1 <- as_tibble(df_i1)  # %>% top_n(3)
+    
+    tuna_catches_timeSeries <- xts(x = df_i1$value, order.by = df_i1$year)
+    
+    # create the area chart
+    g1 <- dygraph(tuna_catches_timeSeries) %>% dyOptions( fillGraph=TRUE )
+
+    # create a basic interactive element
+    # g1 <- dygraph(discharge_timeSeries)  %>% dyRangeSelector()
+    
     g1
+    
+    
+    
     # 
   })
   
@@ -744,7 +830,16 @@ server <- function(input, output, session) {
   
   
   
-  
+  # output to download data
+  output$downloadCsv <- downloadHandler(
+    filename = function() {
+      paste("Tuna_data_", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      csv_tuna = data()
+      write.csv(csv_tuna, file)
+    }
+  )
   
 }
 

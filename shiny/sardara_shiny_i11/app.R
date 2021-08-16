@@ -219,7 +219,7 @@ ui <- fluidPage(
                           absolutePanel(id = "logo", class = "card", bottom = 15, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
                                         tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='178',width='216'))),
                           
-                          absolutePanel(id = "controls", class = "panel panel-default", bottom =  "15%", left = "5%", width = "90%", fixed=TRUE, draggable = FALSE, height = "20%",
+                          absolutePanel(id = "controls", class = "panel panel-default", bottom =  "2%", left = "10%", width = "80%", fixed=TRUE, draggable = FALSE, height = "auto",
                                         dygraphOutput("plot1_streamgraph", height="400", width="80%")
                                         )
                       )

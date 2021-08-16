@@ -205,6 +205,7 @@ ui <- fluidPage(
                                         tags$br(),
                                         span(("Circles in the grid shows the detail of this rate for a spefic square of the grid"),align = "left", style = "font-size:80%"),
                                         tags$br(),
+                                        tags$br(),
                                         actionButton("refresh_map","Refresh map for this zoom level")
                                         
                                         # sliderTextInput("sars_plot_date",
@@ -218,10 +219,8 @@ ui <- fluidPage(
                           absolutePanel(id = "logo", class = "card", bottom = 15, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
                                         tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='178',width='216'))),
                           
-                          absolutePanel(id = "logo", class = "card", bottom = 15, left = 20, width = 30, fixed=TRUE, draggable = FALSE, height = "auto",
-                                        actionButton("twitter_share", label = "", icon = icon("twitter"),style='padding:5px',
-                                                     onclick = sprintf("window.open('%s')", 
-                                                                       "https://twitter.com/intent/tweet?text=%20@LSHTM_Vaccines%20outbreak%20mapper&url=https://bit.ly/2uBvnds&hashtags=coronavirus")))
+                          absolutePanel(id = "logo", class = "card", bottom = 15, left = 20, width = "90%", fixed=TRUE, draggable = FALSE, height = "auto",
+                                        tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='178',width='216')))
                       )
              ),
              
@@ -331,8 +330,10 @@ server <- function(input, output, session) {
   },
   ignoreNULL = FALSE)
   
-  
+  # AND year IN ('",paste0(input$year,collapse="','"),"');")
+
   sql_query <- eventReactive(input$submit, {
+    if(is.null(input$year)){year_name=target_year$year}else{year_name=input$year}
     query <- glue::glue_sql(
       "SELECT   geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8
       WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326))
@@ -344,7 +345,7 @@ server <- function(input, output, session) {
       wkt = wkt(),
       species_name = input$species,
       country_name = input$country,
-      year_name = input$year,
+      year_name = year_name,
       .con = con)
   },
   ignoreNULL = FALSE)
@@ -590,7 +591,7 @@ server <- function(input, output, session) {
   
   output$plot_species<- renderPlotly({ 
     # output$plot_species<- renderPlot({ 
-      df_i2 = st_read(con, query = paste0("SELECT species, count(species), sum(value) FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species ORDER BY count;")) %>% filter (count>mean(count))
+      df_i2 = st_read(con, query = paste0("SELECT species, count(species), sum(value) FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species ORDER BY count;")) # %>% filter (count>mean(count))
     
     # https://www.tenderisthebyte.com/blog/2019/04/25/rotating-axis-labels-in-r/
     # barplot(as.vector(as.integer(df_i2$count)),names.arg=df_i2$species, xlab="species",ylab="count",las = 2, cex.names = 1)

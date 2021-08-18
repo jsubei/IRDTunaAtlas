@@ -30,19 +30,19 @@ source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
 wkt <- reactiveVal(new_wkt) 
 
-query_i4 <- "select species, year, month, ocean, value from public.i4 ;"
+query_i4 <- "select species, year, month, ocean, value from public.i4_spatial ;"
 
-target_species <- dbGetQuery(con, "SELECT DISTINCT(species) FROM public.i4 ORDER BY species;")
-target_year <- dbGetQuery(con, "SELECT DISTINCT(year) FROM public.i4 ORDER BY year;")
-target_ocean <- dbGetQuery(con, "SELECT DISTINCT(ocean) FROM public.i4 ORDER BY ocean;")
+target_species <- dbGetQuery(con, "SELECT DISTINCT(species) FROM public.i4_spatial ORDER BY species;")
+target_year <- dbGetQuery(con, "SELECT DISTINCT(year) FROM public.i4_spatial ORDER BY year;")
+target_ocean <- dbGetQuery(con, "SELECT DISTINCT(ocean) FROM public.i4_spatial ORDER BY ocean;")
 
-selectInput("species_choice", label = h3("Select species for i4 "), choices = species, selected = c("SKJ","YFT","BET"),multiple = TRUE)
-selectInput("year_choice", label = h3("Select year for i4"), choices = year, selected = c("2000","2001","2002"),multiple = TRUE)
+selectInput("species_choice", label = h3("Select species for i4 "), choices = target_species, selected = c("SKJ","YFT","BET"),multiple = TRUE)
+selectInput("year_choice", label = h3("Select year for i4"), choices = target_year, selected = c("2000","2001","2002"),multiple = TRUE)
 
 default_species <-  c("SKJ","YFT","BET")
 default_year <- c(seq(min(target_year):max(target_year))+min(target_year)-1)
 default_ocean <- unique(target_ocean)
-filters_combinations <- dbGetQuery(con, "SELECT species, year, ocean FROM public.i4 GROUP BY  species, year, ocean  ;")
+filters_combinations <- dbGetQuery(con, "SELECT species, year, ocean FROM public.i4_spatial GROUP BY  species, year, ocean  ;")
 
 ui <- fluidPage(
   titlePanel("Tuna Atlas: indicateurs cartographiques"),
@@ -85,13 +85,13 @@ ui <- fluidPage(
         leafletOutput('mymap', width = "50%", height = 600)
       ),
       tabPanel(
-        title = "Plot indicator 3",
+        title = "Plot indicator 4",
         # plotlyOutput("plot1")
-        plotlyOutput("plot1")
+        plotlyOutput("plot4")
       ),
       tabPanel(
-        title = "Browse i3 data",
-        DT::dataTableOutput("DTi3")
+        title = "Browse i4 data",
+        DT::dataTableOutput("DTi4")
       ),
       tabPanel(
         title = "Your SQL query",
@@ -111,14 +111,14 @@ server <- function(input, output, session) {
   
   sql_query <- eventReactive(input$submit, {
     
-    query = paste0("select species, year, month, ocean, value, ST_ConvexHull(st_collect(geom)) as convexhull FROM public.i4 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))  AND species IN ('",paste0(input$species,collapse="','"),"')   AND year IN ('",paste0(input$year,collapse="','"),"')  GROUP BY  species, year, month, ocean ;")
+    query = paste0("select species, year, month, ocean, sum(value) as value FROM public.i4_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))  AND species IN ('",paste0(input$species,collapse="','"),"')   AND year IN ('",paste0(input$year,collapse="','"),"')  GROUP BY  species, year, month, ocean ;")
   },
   
   ignoreNULL = FALSE)
   
-  data <- eventReactive(input$submit, {
-    query = paste0("SELECT unit, ocean, gear_group, year, species, sum(value) as value, ST_ConvexHull(st_collect(geom)) as convexhull FROM public.i1i2_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))  AND species IN ('",paste0(input$species,collapse="','"),"')  GROUP BY  unit, ocean, gear_group, year, species ;")
-    st_read(con, query =query)
+  data_i4 <- eventReactive(input$submit, {
+    st_read(con, query = sql_query()) %>% filter(year %in% input$year) #%>% group_by(ocean,year,month,species) %>% summarise(value = sum(value)) 
+    
   },
   # on.exit(dbDisconnect(conn), add = TRUE)
   ignoreNULL = FALSE)
@@ -132,20 +132,20 @@ server <- function(input, output, session) {
     wkt(new_wkt)
   })
   
-  observeEvent(input$species,{
-    temp <- filters_combinations %>% filter(species %in% change()[1])
-    updateSelectInput(session,"year",choices = unique(temp$year),selected=c(seq(min(temp$year):max(temp$year))+min(temp$year)-1))
-      updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
-    
-  }
-  )
-  
+  # observeEvent(input$species,{
+  #   temp <- filters_combinations %>% filter(species %in% change()[1])
+  #   updateSelectInput(session,"year",choices = unique(temp$year),selected=c(seq(min(temp$year):max(temp$year))+min(temp$year)-1))
+  #     updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
+  #   
+  # }
+  # )
+  # 
   # observeEvent(input$year,{
   #   temp <- filters_combinations %>% filter(species %in% change()[1], year %in% change()[2])
   #   updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
   # }
   # )
-
+  
   
   output$selected_var <- renderText({ 
     paste("You have selected:\n", input$species, "and \n", input$year, "and \n", input$flag, "and \n", wkt())
@@ -157,9 +157,9 @@ server <- function(input, output, session) {
   })
   
   
-  output$DTi1 <- renderDT({
+  output$DTi4 <- renderDT({
     # this <- data() %>% filter(year %in% input$year)
-    this <- data() %>% filter(year %in% input$year) %>% group_by(ocean,year,species) %>% summarise(value = sum(value))
+    data_i4()
   })
   
   
@@ -192,15 +192,15 @@ server <- function(input, output, session) {
     # https://r-spatial.github.io/sf/articles/sf5.html
     map_leaflet <- leaflet()  %>%  
       addPolygons(data = df,
-                                                 label = ~value,
-                                                 popup = ~paste0("Captures de",species,": ", round(value), " tonnes(t) et des brouettes"),
-                                                 # fillColor = ~pal_fun(value),
-                                                 fillColor = ~qpal(value),
-                                                 fill = TRUE,
-                                                 fillOpacity = 0.8,
-                                                 smoothFactor = 0.5
-                                                 # color = ~pal(value)
-    ) %>%
+                  label = ~value,
+                  popup = ~paste0("Captures de",species,": ", round(value), " tonnes(t) et des brouettes"),
+                  # fillColor = ~pal_fun(value),
+                  fillColor = ~qpal(value),
+                  fill = TRUE,
+                  fillOpacity = 0.8,
+                  smoothFactor = 0.5
+                  # color = ~pal(value)
+      ) %>%
       addProviderTiles("Esri.OceanBasemap")  %>%
       addDrawToolbar(
         targetGroup = "draw",
@@ -239,17 +239,17 @@ server <- function(input, output, session) {
     geom <- st_read(geoJson)
     wkt(st_as_text(st_geometry(geom[1,])))
     coord <- st_as_text(st_geometry(geom[1,]))
-
+    
     north <- polygon_coordinates[[1]][[1]]
     south <- polygon_coordinates[[2]][[1]]
     east <- polygon_coordinates[[1]][[2]]
     west <- polygon_coordinates[[2]][[2]]
-
-
+    
+    
     if(is.null(polygon_coordinates))
       return()
     text<-paste("North ", north, "South ", east)
-
+    
     mymap_proxy = leafletProxy("mymap") %>% clearPopups() %>% addPopups(south,west,coord)
     textOutput("wkt")
     
@@ -258,26 +258,19 @@ server <- function(input, output, session) {
   
   
   # renderPlot({
-  output$plot3 <- renderPlotly({ 
+  output$plot4 <- renderPlotly({ 
     
-    # df_i3_filtered <- df_i3 %>% filter(gear_group %in% input$gear_choice,species %in% input$species_choice) %>% rename(gear_type=gear_group)
-    # df_i3_filtered <- df_i3 %>% filter(year %in% target_year, gear_type %in% target_gear, species %in% target_species) 
-    df_i3_filtered <- df_i3 %>% filter(year %in% input$year, gear_type %in% input$gear, species %in% input$species) 
+    df_i4_filtered <- data_i4()
     
-    i3 <- Atlas_i3_SpeciesYearByGearMonth(df=df_i3_filtered,
-                                          yearAttributeName="year",
-                                          monthAttributeName="month",
-                                          speciesAttributeName="species",
-                                          gearTypeAttributeName="gear_type",
-                                          valueAttributeName="value",
-                                          meanPrev5YearsAttributeName="mean_prev_5_years",
-                                          stddevPrev5YearsAttributeName="stddev_prev_5_years",
-                                          withSparql=FALSE
-    )
-    i3
+    i4 <-  Atlas_i4_SpeciesMonthByOcean(df=df_i4_filtered, 
+                                        oceanAttributeName="ocean", 
+                                        yearAttributeName="year", 
+                                        monthAttributeName="month",
+                                        speciesAttributeName="species", 
+                                        valueAttributeName="value")
+  i4
   })
   
-  plotlyOutput("plot3")
   
   
 }

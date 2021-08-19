@@ -23,6 +23,7 @@ library(dygraphs)
 library(tidyr)
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i3_SpeciesYearByGearMonth.R")
+source("/home/julien/Desktop/CODES/IRDTunaAtlas/R/TunaAtlas_i3_SpeciesYearByGearMonth.R")
 ####################################################################################################################################################################################################################################
 DRV=RPostgres::Postgres()
 source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
@@ -332,9 +333,9 @@ output$plot3_dygraph <- renderDygraph({
   tuna_catches_timeSeries <- cbind(ll, other, ps,bb)
   
   # create the area chart
-  # g1 <- dygraph(tuna_catches_timeSeries)  %>% dyOptions( fillGraph=TRUE )
-  g1 <- dygraph(tuna_catches_timeSeries, main = "Catches by gear") %>%
-    dyRangeSelector()     %>%     dyStackedBarGroup(c('bb', 'other','ll','ps'))    #%>% dyOptions( fillGraph=TRUE) create bar chart with the passed dygraph
+  g1 <- dygraph(tuna_catches_timeSeries)  %>% dyOptions( fillGraph=TRUE ) %>% dyOptions(stackedGraph = stack()) 
+  # g1 <- dygraph(tuna_catches_timeSeries, main = "Catches by gear") %>%
+  #   dyRangeSelector()     %>%     dyStackedBarGroup(c('bb', 'other','ll','ps'))    #%>% dyOptions( fillGraph=TRUE) create bar chart with the passed dygraph
   #   dyOptions(stackedGraph = stack()) %>%
   # dySeries(bb, label = "bb") %>%
   #   dySeries(other, label = "other") %>%

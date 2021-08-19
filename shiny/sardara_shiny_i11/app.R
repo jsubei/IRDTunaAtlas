@@ -36,8 +36,8 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtl
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i11_CatchesByCountry.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
 ####################################################################################################################################################################################################################################
-source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
-# source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 
 global_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
@@ -89,7 +89,7 @@ palette3
 palette3_speciesinfo <- brewer.pal.info[brewer.pal.info$category == "qual", ]  
 palette3_species <- unlist(mapply(brewer.pal, 
                                   palette3_speciesinfo$maxcolors,
-                              rownames(palette3_speciesinfo)))
+                                  rownames(palette3_speciesinfo)))
 set.seed(2643598)  
 # palette3 <- sample(palette3_all, nrow(unique(df_i11_map$country)), replace=TRUE)
 palette_species <- sample(palette3_species, nrow(target_species), replace=TRUE)
@@ -222,10 +222,18 @@ ui <- fluidPage(
                           
                           absolutePanel(id = "controls", class = "panel panel-default", bottom =  "2%", left = "10%", width = "80%", fixed=TRUE, draggable = FALSE, height = "auto",
                                         dygraphOutput("plot1_streamgraph", height="400", width="80%")
-                                        )
+                          )
                       )
              ),
-             
+             tabPanel("Interactive Indicator 11 for species",
+                      div(class="outer",
+                          tags$head(includeCSS("https://raw.githubusercontent.com/eparker12/nCoV_tracker/master/styles.css")),
+                          leafletOutput("pie_map_species", width="100%", height="100%"),
+
+                          absolutePanel(id = "logo", class = "card", bottom = 15, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
+                                        tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='178',width='216')))
+                          )
+             ),
              tabPanel("ggplot Indicator 11",
                       imageOutput("plot11", height = 1200)
              ),
@@ -293,31 +301,31 @@ ui <- fluidPage(
                                    )
                                    
                                  )
-                          # ),
-                          # 
-                          # tabPanel("About this site",
-                          #          tags$div(
-                          #            tags$h4("Last update"), 
-                          #            h6(paste0(update)),
-                          #            "This site is updated once yearly. Our aim is to complement these resources with several interactive features, including the timeline function and the ability to overlay past outbreaks.",
-                          #            
-                          #            tags$br(),tags$br(),tags$h4("Background"), 
-                          #            "In late 90ies......IRD, Alain Fontneau",
-                          #            tags$br(),tags$br(),
-                          #            
-                          #            tags$br(),tags$br(),tags$h4("Sources"),
-                          #            tags$b("FIRMS / tuna RFMOs: "), tags$a(href="https://www", "IOTC page,")," with additional information from the ",tags$a(href="https://www", "FIRMS page."),
-                          #            " In previous versions of this site (up to 17th March 2020), updates were based solely on the WHO's situation reports.",tags$br(),
-                          #            tags$b("Country mapping coordinates: "), tags$a(href="https://github.com/martynafford/natural-earth-geojson", "Martyn Afford's Github repository"),
-                          #            
-                          #            tags$br(),tags$br(),tags$h4("Authors"),
-                          #            "Dr XXX BB, IRD",tags$br(),
-                          #            "DD BB FAO / IOTC",tags$br(),
-                          #            tags$br(),tags$br(),tags$h4("Contact: "),
-                          #            "julien barde at ird",tags$br(),tags$br(),
-                          #            tags$img(src = "https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg", width = "150px", height = "75px"),
-                          #            tags$img(src = "https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg", width = "150px", height = "75px")
-                          #          )
+                                 # ),
+                                 # 
+                                 # tabPanel("About this site",
+                                 #          tags$div(
+                                 #            tags$h4("Last update"), 
+                                 #            h6(paste0(update)),
+                                 #            "This site is updated once yearly. Our aim is to complement these resources with several interactive features, including the timeline function and the ability to overlay past outbreaks.",
+                                 #            
+                                 #            tags$br(),tags$br(),tags$h4("Background"), 
+                                 #            "In late 90ies......IRD, Alain Fontneau",
+                                 #            tags$br(),tags$br(),
+                                 #            
+                                 #            tags$br(),tags$br(),tags$h4("Sources"),
+                                 #            tags$b("FIRMS / tuna RFMOs: "), tags$a(href="https://www", "IOTC page,")," with additional information from the ",tags$a(href="https://www", "FIRMS page."),
+                                 #            " In previous versions of this site (up to 17th March 2020), updates were based solely on the WHO's situation reports.",tags$br(),
+                                 #            tags$b("Country mapping coordinates: "), tags$a(href="https://github.com/martynafford/natural-earth-geojson", "Martyn Afford's Github repository"),
+                                 #            
+                                 #            tags$br(),tags$br(),tags$h4("Authors"),
+                                 #            "Dr XXX BB, IRD",tags$br(),
+                                 #            "DD BB FAO / IOTC",tags$br(),
+                                 #            tags$br(),tags$br(),tags$h4("Contact: "),
+                                 #            "julien barde at ird",tags$br(),tags$br(),
+                                 #            tags$img(src = "https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg", width = "150px", height = "75px"),
+                                 #            tags$img(src = "https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg", width = "150px", height = "75px")
+                                 #          )
                         )
              )
   )
@@ -333,7 +341,7 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE)
   
   # AND year IN ('",paste0(input$year,collapse="','"),"');")
-
+  
   sql_query <- eventReactive(input$submit, {
     if(is.null(input$year)){year_name=target_year$year}else{year_name=input$year}
     query <- glue::glue_sql(
@@ -351,6 +359,24 @@ server <- function(input, output, session) {
       .con = con)
   },
   ignoreNULL = FALSE)
+  
+  sql_query_species_pie <- eventReactive(input$submit, {
+    if(is.null(input$year)){year_name=target_year$year}else{year_name=input$year}
+    query <- glue::glue_sql(
+      "SELECT   geom_id, geom, species, SUM(value) as value, ST_asText(geom) AS geom_wkt FROM fact_tables.i6i7i8
+      WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326))
+      AND country IN ({country_name*})
+      AND year IN ({year_name*})
+      GROUP BY species, geom_id, geom_wkt, geom
+      ORDER BY value DESC",
+      wkt = wkt(),
+      species_name = input$species,
+      country_name = input$country,
+      year_name = year_name,
+      .con = con)
+  },
+  ignoreNULL = FALSE)
+  
   
   sql_query_metadata <- eventReactive(input$submit, {
     paste0("SELECT species, country, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, country, geom") 
@@ -375,6 +401,10 @@ server <- function(input, output, session) {
   data_pie_map <- reactive({
     # st_read(con, query = paste0("SELECT species, country, geom, sum(value) AS value FROM(SELECT geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND species IN ('YFT') AND country IN ('EUESP', 'EUFRA', 'JPN', 'TWN') AND year IN ('2010') GROUP BY species, country,geom_id, geom_wkt, geom , year ORDER BY species,country DESC) AS foo GROUP BY species, country, geom"))
     st_read(con, query = paste0("SELECT species, country, geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY species, country, geom"))  %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
+  })
+  
+  data_pie_map_species <- reactive({
+    st_read(con, query = paste0("SELECT species, geom, sum(value) AS value FROM(",sql_query_species_pie(),") AS foo GROUP BY species, geom"))  %>% spread(species, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(target_species$species)))))
   })
   
   data_time_serie <- reactive({
@@ -498,7 +528,7 @@ server <- function(input, output, session) {
     # this <- data() %>% group_by(country) %>% summarise(value = sum(value))  %>% arrange(desc(value))
     # toto <- st_read(con, query = "SELECT geom_id, geom, species, country, SUM(value) as value, ST_asText(geom) AS geom_wkt, year FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',4326)) AND species IN ('YFT') AND country IN ('EUESP','EUFRA','JPN','TWN') AND year IN ('2010','2011') GROUP BY species, country,geom_id, geom_wkt, geom , year ORDER BY species,country DESC") %>% group_by(species,country,geom_id) %>% summarise(value = sum(value))  %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country)))))
     
-    data_pie_map()  %>% st_drop_geometry()
+    data_pie_map_species()  %>% st_drop_geometry()
     
   }) 
   
@@ -551,11 +581,11 @@ server <- function(input, output, session) {
         overlayGroups = c("draw"),
         options = layersControlOptions(collapsed = FALSE)
       )  %>% 
-    leaflet::addLegend("bottomright", pal = qpal, values = df$value,
-              title = "Total catch per cell for selected criteria",
-              labFormat = labelFormat(prefix = "MT "),
-              opacity = 1
-    )
+      leaflet::addLegend("bottomright", pal = qpal, values = df$value,
+                         title = "Total catch per cell for selected criteria",
+                         labFormat = labelFormat(prefix = "MT "),
+                         opacity = 1
+      )
   })
   
   
@@ -593,12 +623,12 @@ server <- function(input, output, session) {
   
   output$plot_species<- renderPlotly({ 
     # output$plot_species<- renderPlot({ 
-      df_i2 = st_read(con, query = paste0("SELECT species, count(species), sum(value) FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species ORDER BY count;")) # %>% filter (count>mean(count))
+    df_i2 = st_read(con, query = paste0("SELECT species, count(species), sum(value) FROM fact_tables.i6i7i8 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326)) GROUP BY species ORDER BY count;")) # %>% filter (count>mean(count))
     
     # https://www.tenderisthebyte.com/blog/2019/04/25/rotating-axis-labels-in-r/
     # barplot(as.vector(as.integer(df_i2$count)),names.arg=df_i2$species, xlab="species",ylab="count",las = 2, cex.names = 1)
-      la_palette_species = palette_species[names(palette_species) %in% unique(df_i2$species)]
-      
+    la_palette_species = palette_species[names(palette_species) %in% unique(df_i2$species)]
+    
     
     fig <- plot_ly(df_i2, labels = ~species, values = ~count, type = 'pie',
                    marker = list(colors = la_palette_species, line = list(color = '#FFFFFF', width = 1), sort = FALSE),
@@ -711,26 +741,26 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$refresh_map,{
-      new_zoom <- input$map_i11_zoom
-      req(input$map_i11_zoom)
-      if(zoom()!=new_zoom & !is.null(input$map_i11_zoom)){
-        la_palette = palette3[names(palette3) %in% colnames(dplyr::select(data_pie_map(),-c(species,total)))]
-        zoom(new_zoom)
-        lat_centroid <-input$map_i11_center[2]
-        lon_centroid <- input$map_i11_center[1]
-        #%>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>%  addProviderTiles("Esri.OceanBasemap", group = "background") %>%  clearBounds() %>%
-        map_i11_proxy = leafletProxy("map_i11") %>% clearMinicharts() %>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>% 
-          addMinicharts(lng = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "X"],
-                        lat = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "Y"],
-                        maxValues = max(data_pie_map()$total),
-                        transitionTime = 750,
-                        chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
-                        colorPalette = unname(la_palette),
-                        width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),
-                        legend = TRUE, legendPosition = "bottomright")
-        
-        
-      }
+    new_zoom <- input$map_i11_zoom
+    req(input$map_i11_zoom)
+    if(zoom()!=new_zoom & !is.null(input$map_i11_zoom)){
+      la_palette = palette3[names(palette3) %in% colnames(dplyr::select(data_pie_map(),-c(species,total)))]
+      zoom(new_zoom)
+      lat_centroid <-input$map_i11_center[2]
+      lon_centroid <- input$map_i11_center[1]
+      #%>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>%  addProviderTiles("Esri.OceanBasemap", group = "background") %>%  clearBounds() %>%
+      map_i11_proxy = leafletProxy("map_i11") %>% clearMinicharts() %>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>% 
+        addMinicharts(lng = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "X"],
+                      lat = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "Y"],
+                      maxValues = max(data_pie_map()$total),
+                      transitionTime = 750,
+                      chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
+                      colorPalette = unname(la_palette),
+                      width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),
+                      legend = TRUE, legendPosition = "bottomright")
+      
+      
+    }
   })
   
   
@@ -754,17 +784,17 @@ server <- function(input, output, session) {
     # scale_fill_manual(values = la_palette)
     # ggplotly(i11_map)
     # #   theme(axis.text.x = element_text(angle = 90))
-
     
     
-
+    
+    
     fig <- plot_ly(df_i11_map, labels = ~country, values = ~value, type = 'pie',
                    marker = list(colors = la_palette, line = list(color = '#FFFFFF', width = 1), sort = FALSE),
                    showlegend = TRUE)
     fig <- fig %>% layout(title = 'Tuna catches by country for selected species, area and period of time',
                           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-
+    
     fig
     
     
@@ -773,7 +803,7 @@ server <- function(input, output, session) {
   
   output$plot1_streamgraph <- renderDygraph({
     # output$plot1_streamgraph <- renderPlot({
-      
+    
     # df_i1 = st_read(con, query = sql_query_metadata_plot1()) %>% group_by(species,year) %>% summarise(value = sum(value))  %>% arrange(desc(value)) %>% filter (value>mean(value)) # %>% top_n(3)
     # df_i1 = data() %>% group_by(species,year) %>% summarise(value = sum(value))  %>% arrange(desc(value))  %>% filter (value>mean(value)) # %>% top_n(3)
     df_i1 = data_time_serie() # %>%  arrange(desc(value))  %>% filter (value>mean(value)) # %>% top_n(3)
@@ -797,7 +827,7 @@ server <- function(input, output, session) {
     
     # create the area chart
     g1 <- dygraph(tuna_catches_timeSeries) %>% dyOptions( fillGraph=TRUE )
-
+    
     # create a basic interactive element
     # g1 <- dygraph(discharge_timeSeries)  %>% dyRangeSelector()
     
@@ -831,6 +861,73 @@ server <- function(input, output, session) {
          height = 1200,
          alt = "This is alternate text")
   }, deleteFile = TRUE)
+  
+  
+  
+  
+  output$pie_map_species <- renderLeaflet({
+    toto <- data_pie_map_species()
+    lat_centroid <- st_coordinates(centroid())[2]
+    lon_centroid <- st_coordinates(centroid())[1]
+    la_palette_species = palette_species[names(palette_species) %in% unique(toto$species)]
+    la_palette_species = palette_species[names(palette_species) %in% colnames(dplyr::select(toto,-total))]
+    
+    data_pie_map_species <-  leaflet() %>%  
+      addProviderTiles("Esri.OceanBasemap", group = "background") %>%
+      clearBounds() %>% 
+      addDrawToolbar(
+        targetGroup = "draw",
+        editOptions = editToolbarOptions(
+          selectedPathOptions = selectedPathOptions()
+        )
+      ) %>%
+      addLayersControl(
+        overlayGroups = c("draw"),
+        options = layersControlOptions(collapsed = FALSE)
+      )  %>%
+      addMinicharts(lng = st_coordinates(st_centroid(toto, crs = 4326))[, "X"],
+                    lat = st_coordinates(st_centroid(toto, crs = 4326))[, "Y"],
+                    maxValues = max(toto$total),
+                    # chartdata = dplyr::select(toto,-c(total)) %>% st_drop_geometry(),type = "pie",
+                    chartdata = dplyr::select(toto,-total) %>% st_drop_geometry(),type = "pie",
+                    colorPalette = unname(la_palette_species),
+                    width = (60*toto$total/max(toto$total))+20,
+                    legend = TRUE, legendPosition = "bottomright") %>% 
+      # addPolygons(data = toto,
+      #             label = ~total,
+      #             popup = ~paste0("Captures de",species,": ", round(total), " tonnes(t) et des brouettes"),
+      #             group = "grid",
+      #             smoothFactor = 0.5) %>% 
+      addLayersControl(baseGroups = c("minicharts","grid"), overlayGroups = c("background"))
+  })
+  
+  
+  # 
+  # observeEvent(input$refresh_map,{
+  #   new_zoom <- input$map_i11_zoom
+  #   req(input$map_i11_zoom)
+  #   if(zoom()!=new_zoom & !is.null(input$map_i11_zoom)){
+  #     la_palette = palette3[names(palette3) %in% colnames(dplyr::select(data_pie_map(),-c(species,total)))]
+  #     zoom(new_zoom)
+  #     lat_centroid <-input$map_i11_center[2]
+  #     lon_centroid <- input$map_i11_center[1]
+  #     #%>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>%  addProviderTiles("Esri.OceanBasemap", group = "background") %>%  clearBounds() %>%
+  #     map_i11_proxy = leafletProxy("map_i11") %>% clearMinicharts() %>% setView(lng = lon_centroid, lat = lat_centroid, zoom = zoom()) %>% 
+  #       addMinicharts(lng = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "X"],
+  #                     lat = st_coordinates(st_centroid(data_pie_map(), crs = 4326))[, "Y"],
+  #                     maxValues = max(data_pie_map()$total),
+  #                     transitionTime = 750,
+  #                     chartdata = dplyr::select(data_pie_map(),-c(species,total)) %>% st_drop_geometry(),type = "pie",
+  #                     colorPalette = unname(la_palette),
+  #                     width = 10+(zoom()^2+200*(data_pie_map()$total/max(data_pie_map()$total))),
+  #                     legend = TRUE, legendPosition = "bottomright")
+  #     
+  #     
+  #   }
+  # })
+  # 
+  
+  
   
   
   

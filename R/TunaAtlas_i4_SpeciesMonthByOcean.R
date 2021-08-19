@@ -80,7 +80,10 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
     species.df$decade <- factor(species.df$decade, 
                                 levels=decades.factor,
                                 labels=unlist(lapply(X=decades.factor, FUN=function(dec) paste(min(species.df[species.df$decade == dec,]$year), "-", max(species.df[species.df$decade == dec,]$year), sep=""))))
-    for (decade.current in unique(species.df$decade)) {
+    
+    # for (decade.current in unique(species.df$decade)) {
+      decade.current= species.df$decade[length(unique(species.df$decade))]
+      
       current.df <- species.df[species.df$decade == decade.current,]
       
       #aggregate values by years and month
@@ -107,35 +110,38 @@ Atlas_i4_SpeciesMonthByOcean <- function(df,
       ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
       
       
-    }
+    # }
     
     #if multiple decade we produce a graph by decade
-    if (length(unique(species.df$decade)) > 1) {
-      #aggregate values by decade and month
-      valuesSum <- aggregate(value ~ decade + month, data=species.df, FUN=sum)
-      names(valuesSum) <- c("decade", "month", "valuesSum")
-      values <- aggregate(value ~ decade + month + ocean, data=species.df, FUN=sum)
-      mergedDf <- merge(values, valuesSum)
+    # if (length(unique(species.df$decade)) > 1) {
+    #   #aggregate values by decade and month
+    #   valuesSum <- aggregate(value ~ decade + month, data=species.df, FUN=sum)
+    #   names(valuesSum) <- c("decade", "month", "valuesSum")
+    #   values <- aggregate(value ~ decade + month + ocean, data=species.df, FUN=sum)
+    #   mergedDf <- merge(values, valuesSum)
+    #   
+    #   #build the plot
+    #   #pie plot
+    #   resultPlot <- ggplot(data=mergedDf, mapping=aes(x=valuesSum/2, fill=ocean, y=value, width=valuesSum)) + 
+    #     facet_grid(facets=decade ~ month) + 
+    #     geom_bar(aes(order = ocean), position="fill", stat="identity") + 
+    #     scale_fill_manual(name="Ocean", values=my.colors) +
+    #     coord_polar(theta="y") + 
+    #     theme(axis.text.y=element_text(size=6), axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + 
+    #     labs(title=paste(species.label, "monthly catches by ocean and by decade"))
+    #   
+    #   #draw the plot
+    #   tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.current), "_byDecade_", sep=""))
+    #   #plot_file_path <- paste(tempfile.base, ".png", sep="")
+    #   plot.filepath <- paste(tempfile.base, ".png", sep="")
+    #   ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
+    #   
+    #   
+    # }
       
-      #build the plot
-      #pie plot
-      resultPlot <- ggplot(data=mergedDf, mapping=aes(x=valuesSum/2, fill=ocean, y=value, width=valuesSum)) + 
-        facet_grid(facets=decade ~ month) + 
-        geom_bar(aes(order = ocean), position="fill", stat="identity") + 
-        scale_fill_manual(name="Ocean", values=my.colors) +
-        coord_polar(theta="y") + 
-        theme(axis.text.y=element_text(size=6), axis.text.x=element_blank(), panel.grid.minor=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank()) + 
-        labs(title=paste(species.label, "monthly catches by ocean and by decade"))
       
-      #draw the plot
-      tempfile.base <- tempfile(pattern=paste("I4_", gsub(" ", "_", species.current), "_byDecade_", sep=""))
-      #plot_file_path <- paste(tempfile.base, ".png", sep="")
-      plot.filepath <- paste(tempfile.base, ".png", sep="")
-      ggsave(filename=plot.filepath, plot=resultPlot, dpi=100)
-      
-      
-    }
   }
   
-  return(resultPlot)
+  # return(resultPlot)
+  return(plot.filepath)
 }

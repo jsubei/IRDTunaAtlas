@@ -26,8 +26,8 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtl
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i2_SpeciesByGear.R")
 ####################################################################################################################################################################################################################################
 DRV=RPostgres::Postgres()
-# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
-source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
@@ -48,48 +48,57 @@ filters_combinations <- dbGetQuery(con, "SELECT species, year, gear_group as gea
 
 ui <- fluidPage(
   titlePanel("Tuna Atlas: indicateurs cartographiques"),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput(
-        inputId = "species",
-        label = "Species",
-        choices = target_species$species,
-        selected= default_species
-      ),
-      selectInput(
-        inputId = "year",
-        label = "Year",
-        choices = target_year$year,
-        multiple = TRUE,
-        selected= default_year
-      ),
-      selectInput(
-        inputId = "gear",
-        label = "Gear",
-        choices = target_gear$gear,
-        multiple = TRUE,
-        selected= target_gear$gear
-      ),
-      actionButton(
-        inputId = "submit",
-        label = "Submit"
-      ),
-      actionButton("resetWkt", "Reset WKT to global")
-    ),
-    # mainPanel(
-    #     # tableOutput("tbl"),
-    #     leafletOutput('mymap')
-    # ),
-    tabsetPanel(
-      tabPanel(
-        title = "Map Postgis Vector / SF data",
-        leafletOutput('mymap', width = "50%", height = 600)
-      ),
-      tabPanel(
-        title = "Plot indicator 1",
-        # plotlyOutput("plot1")
-        plotlyOutput("plot1")
-      ),
+  navbarPage(title="TunaAtlas", 
+             tabPanel("Interactive",
+                      
+                      # If not using custom CSS, set height of leafletOutput to a number instead of percent
+                      # leafletOutput("mymap", width="1000", height="1000"),
+                      leafletOutput('mymap', width = "60%", height = 1500),
+                      
+                      
+                      # Shiny versions prior to 0.11 should use class = "modal" instead.
+                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
+                                    draggable = TRUE, top = 200, left = "auto", right = 20, bottom = "auto",
+                                    width = "30%", height = "auto",
+                                    
+                                    selectInput(
+                                      inputId = "species",
+                                      label = "Species",
+                                      choices = target_species$species,
+                                      selected= default_species
+                                    ),
+                                    selectInput(
+                                      inputId = "year",
+                                      label = "Year",
+                                      choices = target_year$year,
+                                      multiple = TRUE,
+                                      selected= default_year
+                                    ),
+                                    selectInput(
+                                      inputId = "gear",
+                                      label = "Gear",
+                                      choices = target_gear$gear,
+                                      multiple = TRUE,
+                                      selected= target_gear$gear
+                                    ),
+                                    actionButton(
+                                      inputId = "submit",
+                                      label = "Submit"
+                                    ),
+                                    actionButton("resetWkt", "Reset WKT to global"),
+                                    # conditionalPanel("input.gear",
+                                    #                  inputId = "gear",
+                                    #                  label = "Gear",
+                                    #                  choices = target_gear$gear,
+                                    #                  multiple = TRUE,
+                                    #                  selected= target_gear$gear
+                                    # ),
+                                    
+                                    plotlyOutput("plot1", height = "20%"),
+                                    plotlyOutput("plot2", height = "20%")
+                      ),
+                      
+             ),
       tabPanel(
         title = "dygraph indicator 1",
         actionButton(
@@ -102,10 +111,6 @@ ui <- fluidPage(
         title = "Streamgraph indicator 1",
         # plotlyOutput("plot1")
         streamgraphOutput("plot1_streamgraph")
-      ),
-      tabPanel(
-        title = "Plot indicator 2",
-        plotlyOutput("plot2")
       ),
       tabPanel(
         title = "Streamgraph indicator 2",
@@ -129,7 +134,8 @@ ui <- fluidPage(
       )
     )
   )
-)
+
+
 
 
 server <- function(input, output, session) {

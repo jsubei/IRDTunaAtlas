@@ -18,32 +18,47 @@ library(ggplot2)
 library(XML)
 library(streamgraph)
 library(viridis)
-
+library(xts)
+library(dygraphs)
+library(tidyr)
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i3_SpeciesYearByGearMonth.R")
 ####################################################################################################################################################################################################################################
 DRV=RPostgres::Postgres()
-# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
-source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
 wkt <- reactiveVal(new_wkt) 
 # target_species<- c("YFT","BFT")
 # target_year <- c(seq(1:10)+1994)
-target_species <- dbGetQuery(con, "SELECT DISTINCT(c_esp) AS species FROM public.i3 ORDER BY c_esp;")
-target_year <- dbGetQuery(con, "SELECT DISTINCT(year) FROM public.i3 ORDER BY year;")
-target_gear <- dbGetQuery(con, "SELECT DISTINCT(c_g_engin) as gear FROM public.i3 ORDER BY c_g_engin;")
+target_species <- dbGetQuery(con, "SELECT DISTINCT(c_esp) AS species FROM public.i3_spatial ORDER BY c_esp;")
+target_year <- dbGetQuery(con, "SELECT DISTINCT(year) FROM public.i3_spatial ORDER BY year;")
+target_gear <- dbGetQuery(con, "SELECT DISTINCT(c_g_engin) as gear FROM public.i3_spatial ORDER BY c_g_engin;")
 
 default_species <- 'YFT'
-default_year <- c(seq(min(target_year):max(target_year))+min(target_year)-1)
+# default_year <- c(seq(min(target_year):max(target_year))+min(target_year)-1)
+default_year <- "2000"
 default_gear <- unique(target_gear)
-filters_combinations <- dbGetQuery(con, "SELECT c_esp, year, c_g_engin as gear FROM public.i3 GROUP BY c_esp, year,c_g_engin;")
+filters_combinations <- dbGetQuery(con, "SELECT c_esp, year, c_g_engin as gear FROM public.i3_spatial GROUP BY c_esp, year,c_g_engin;")
+
 
 ui <- fluidPage(
   titlePanel("Tuna Atlas: indicateurs cartographiques"),
-  sidebarLayout(
-    sidebarPanel(
+  navbarPage(title="TunaAtlas", 
+             tabPanel("Interactive",
+                      
+                      # If not using custom CSS, set height of leafletOutput to a number instead of percent
+                      # leafletOutput("mymap", width="1000", height="1000"),
+                      leafletOutput('mymap', width = "60%", height = 1500),
+                      
+                      
+                      # Shiny versions prior to 0.11 should use class = "modal" instead.
+                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
+                                    draggable = TRUE, top = 200, left = "auto", right = 20, bottom = "auto",
+                                    width = "30%", height = "auto",
+                                    
       selectInput(
         inputId = "species",
         label = "Species",
@@ -68,21 +83,26 @@ ui <- fluidPage(
         inputId = "submit",
         label = "Submit"
       ),
-      actionButton("resetWkt", "Reset WKT to global")
-    ),
-    # mainPanel(
-    #     # tableOutput("tbl"),
-    #     leafletOutput('mymap')
-    # ),
-    tabsetPanel(
-      tabPanel(
-        title = "Map Postgis Vector / SF data",
-        leafletOutput('mymap', width = "50%", height = 600)
-      ),
+      actionButton("resetWkt", "Reset WKT to global"),
+      # conditionalPanel("input.gear",
+      #                  inputId = "gear",
+      #                  label = "Gear",
+      #                  choices = target_gear$gear,
+      #                  multiple = TRUE,
+      #                  selected= target_gear$gear
+      # ),
+      
+      # dygraphOutput("plot3_dygraph", height = "20%")
+      # dygraphOutput("plot3_dygraph", height = "20%")
+      plotlyOutput("plot3", height = "20%")
+      
+      
+                      ),
+      
+             ),
       tabPanel(
         title = "Plot indicator 3",
-        # plotlyOutput("plot1")
-        plotlyOutput("plot1")
+        dygraphOutput("plot3_dygraph")
       ),
       tabPanel(
         title = "Browse i3 data",
@@ -90,34 +110,63 @@ ui <- fluidPage(
       ),
       tabPanel(
         title = "Your SQL query",
-        textOutput("sql_query")
+        textOutput("query")
       ),
       tabPanel(
         title = "Your filters",
         textOutput("selected_var")
       )
     )
-  )
 )
 
 
 server <- function(input, output, session) {
   
   
-  sql_query <- eventReactive(input$submit, {
-    query <- ("select year, month,  c_esp AS species, c_g_engin AS gear_type, value, mean_prev_5_years, stddev_prev_5_years from public.i3 ;")
-    query = paste0("select year, month,  c_esp AS species, c_g_engin AS gear_type, value, mean_prev_5_years, stddev_prev_5_years, ST_ConvexHull(st_collect(geom)) as convexhull FROM public.i3 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))  AND species IN ('",paste0(input$species,collapse="','"),"')  GROUP BY  year, month,  c_esp, c_g_engin ;")
-  },
+  # sql_query <- eventReactive(input$submit, {
+  #   query <- ("select year, month,  c_esp AS species, c_g_engin AS gear_type, value, mean_prev_5_years, stddev_prev_5_years from public.i3 ;")
+  #   query = paste0("select year, month,  c_esp AS species, c_g_engin AS gear_type, value, mean_prev_5_years, stddev_prev_5_years, ST_ConvexHull(st_collect(geom)) as convexhull FROM public.i3 WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))  AND species IN ('",paste0(input$species,collapse="','"),"')  GROUP BY  year, month,  c_esp, c_g_engin ;")
+  # },
+  # 
+  # ignoreNULL = FALSE)
   
+  
+  sql_query <- eventReactive(input$submit, {
+    if(is.null(input$year)){year_name=target_year$year}else{year_name=input$year}
+    query <- glue::glue_sql("SELECT year, month,  c_esp AS species, c_g_engin AS gear_type, SUM(value) as value, mean_prev_5_years, stddev_prev_5_years, geom FROM public.i3_spatial 
+      WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326)) 
+      AND  c_esp IN ({species_name*}) 
+          AND c_g_engin IN ({gear_name*}) 
+    AND year IN ({year_name*}) 
+
+                             GROUP BY  year, month,  c_esp, c_g_engin,  mean_prev_5_years, stddev_prev_5_years, geom",
+                            wkt = wkt(),
+                            species_name = input$species,
+                            gear_name = input$gear,
+                            year_name = year_name,
+                            .con = con)
+  },
   ignoreNULL = FALSE)
   
-  data <- eventReactive(input$submit, {
-    query = paste0("SELECT unit, ocean, gear_group, year, species, sum(value) as value, ST_ConvexHull(st_collect(geom)) as convexhull FROM public.i1i2_spatial WHERE ST_Within(geom,ST_GeomFromText('",wkt(),"',4326))  AND species IN ('",paste0(input$species,collapse="','"),"')  GROUP BY  unit, ocean, gear_group, year, species ;")
-    st_read(con, query =query)
+  
+  metadata <- reactive({
+    st_read(con, query = paste0("SELECT geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY geom")) 
+  })  
+  
+  query <- eventReactive(input$submit, {
+    paste0("SELECT year, month,  species, gear_type, SUM(value) as value, mean_prev_5_years, stddev_prev_5_years FROM (",sql_query(),") AS foo  GROUP BY  year, month,  species, gear_type, mean_prev_5_years, stddev_prev_5_years")
+  },
+  ignoreNULL = FALSE)
+  
+  
+  data_i3 <- eventReactive(input$submit, {
+    # st_read(con, query = paste0("SELECT to_date(concat(year::varchar(4),month::varchar(4)),''YYYY Mon') AS  year, month,  species, gear_type, SUM(value) as value, SUM(mean_prev_5_years) AS mean_prev_5_years, SUM(stddev_prev_5_years) AS stddev_prev_5_years FROM (",sql_query(),") AS foo  GROUP BY  year, month,  species, gear_type"))
+    st_read(con, query = paste0("SELECT year, to_date(concat(year::varchar(4),'/',month::varchar(4)),'YYYY/MM') AS  date, month,  species, gear_type, SUM(value) as value, SUM(mean_prev_5_years) AS mean_prev_5_years, SUM(stddev_prev_5_years) AS stddev_prev_5_years FROM (",sql_query(),") AS foo  GROUP BY  year, month,  species, gear_type"))
+    
   },
   # on.exit(dbDisconnect(conn), add = TRUE)
   ignoreNULL = FALSE)
-  
+
   
   change <- reactive({
     unlist(strsplit(paste(c(input$species,input$year,input$gear),collapse="|"),"|",fixed=TRUE))
@@ -127,13 +176,13 @@ server <- function(input, output, session) {
     wkt(new_wkt)
   })
   
-  observeEvent(input$species,{
-    temp <- filters_combinations %>% filter(species %in% change()[1])
-    updateSelectInput(session,"year",choices = unique(temp$year),selected=c(seq(min(temp$year):max(temp$year))+min(temp$year)-1))
-      updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
-    
-  }
-  )
+  # observeEvent(input$species,{
+  #   temp <- filters_combinations %>% filter(species %in% change()[1])
+  #   updateSelectInput(session,"year",choices = unique(temp$year),selected=c(seq(min(temp$year):max(temp$year))+min(temp$year)-1))
+  #     updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
+  #   
+  # }
+  # )
   
   # observeEvent(input$year,{
   #   temp <- filters_combinations %>% filter(species %in% change()[1], year %in% change()[2])
@@ -152,15 +201,10 @@ server <- function(input, output, session) {
   })
   
   
-  output$DTi1 <- renderDT({
-    # this <- data() %>% filter(year %in% input$year)
-    this <- data() %>% filter(year %in% input$year) %>% group_by(ocean,year,species) %>% summarise(value = sum(value))
-  })
-  
-  
-  output$DTi2 <- renderDT({
-    this <- data()
-    this <- data() %>% filter(year %in% input$year) %>% filter(gear_group %in% input$gear) %>% group_by(year,gear_group,species)   %>% summarise(value = sum(value))  %>% dplyr::rename(gear_type=gear_group)
+  output$DTi3 <- renderDT({
+    this <- data_i3()   %>%  dplyr::select(-c(mean_prev_5_years,stddev_prev_5_years))  %>% spread(gear_type, value, fill=0)  
+    # this <- data() %>% filter(year %in% input$year) %>% filter(gear_group %in% input$gear) %>% group_by(year,gear_group,species)   %>% summarise(value = sum(value))  %>% dplyr::rename(gear_type=gear_group)
+    # df_i3_filtered <- df_i3 %>% filter(year %in% input$year, gear_type %in% input$gear, species %in% input$species) 
     
   })
   
@@ -169,7 +213,7 @@ server <- function(input, output, session) {
   
   output$mymap <- renderLeaflet({
     
-    df <- data()
+    df <- metadata()
     centroid <-  st_convex_hull(df)   %>% st_centroid()
     lat_centroid <- st_coordinates(centroid)[2]
     lon_centroid <- st_coordinates(centroid)[1]
@@ -188,7 +232,7 @@ server <- function(input, output, session) {
     map_leaflet <- leaflet()  %>%  
       addPolygons(data = df,
                                                  label = ~value,
-                                                 popup = ~paste0("Captures de",species,": ", round(value), " tonnes(t) et des brouettes"),
+                                                 popup = ~paste0("Captures de : ", round(value), " tonnes(t) et des brouettes"),
                                                  # fillColor = ~pal_fun(value),
                                                  fillColor = ~qpal(value),
                                                  fill = TRUE,
@@ -255,9 +299,7 @@ server <- function(input, output, session) {
   # renderPlot({
   output$plot3 <- renderPlotly({ 
     
-    # df_i3_filtered <- df_i3 %>% filter(gear_group %in% input$gear_choice,species %in% input$species_choice) %>% rename(gear_type=gear_group)
-    # df_i3_filtered <- df_i3 %>% filter(year %in% target_year, gear_type %in% target_gear, species %in% target_species) 
-    df_i3_filtered <- df_i3 %>% filter(year %in% input$year, gear_type %in% input$gear, species %in% input$species) 
+    df_i3_filtered <- data_i3()
     
     i3 <- Atlas_i3_SpeciesYearByGearMonth(df=df_i3_filtered,
                                           yearAttributeName="year",
@@ -275,6 +317,36 @@ server <- function(input, output, session) {
   plotlyOutput("plot3")
   
   
+
+
+
+output$plot3_dygraph <- renderDygraph({
+  
+  df_i3 = data_i3()  %>%  dplyr::select(-c(mean_prev_5_years,stddev_prev_5_years))  %>% spread(gear_type, value, fill=0)   #%>%  mutate(total = rowSums(across(any_of(as.vector(target_gear$gear_type)))))
+  # df_i3 <- as_tibble(df_i3)  # %>% top_n(3)
+  
+  ll <- xts(x = df_i3$LL, order.by = df_i3$date)
+  other <-  xts(x = df_i3$OTHER, order.by = df_i3$date)
+  ps <-  xts(x = df_i3$PS, order.by = df_i3$date)
+  bb <-  xts(x = df_i3$BB, order.by = df_i3$date)
+  tuna_catches_timeSeries <- cbind(ll, other, ps,bb)
+  
+  # create the area chart
+  # g1 <- dygraph(tuna_catches_timeSeries)  %>% dyOptions( fillGraph=TRUE )
+  g1 <- dygraph(tuna_catches_timeSeries, main = "Catches by gear") %>%
+    dyRangeSelector()     %>%     dyStackedBarGroup(c('bb', 'other','ll','ps'))    #%>% dyOptions( fillGraph=TRUE) create bar chart with the passed dygraph
+  #   dyOptions(stackedGraph = stack()) %>%
+  # dySeries(bb, label = "bb") %>%
+  #   dySeries(other, label = "other") %>%
+  #   dySeries(ll, label = "ll") %>%
+  #   dySeries(ps, label = "ps")
+  # %>%
+  #   
+
+  #   
+})
+
+
 }
 
 

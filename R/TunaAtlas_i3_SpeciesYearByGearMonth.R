@@ -88,7 +88,9 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
     species.label <- species.current
     species.URI <- species.current
     #for each year
-    for (year.current in unique(df[df$species == species.current,]$year)) {
+    # for (year.current in unique(df[df$species == species.current,]$year)) {
+    
+      year.current= max(unique(df[df$species == species.current,]$year)) 
       current.df <- df[df$species == species.current & df$year == year.current,]
       
       if (! all(table(current.df$month) == 1)) {
@@ -131,7 +133,7 @@ Atlas_i3_SpeciesYearByGearMonth <- function(df,
         xlab("Month") + ylab("Catches in tons") + 
         ggtitle(paste(species.label, "monthly catches by gear type on", year.current))
       
-    }
+    # }
     
     
   }

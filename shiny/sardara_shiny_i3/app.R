@@ -23,7 +23,7 @@ library(dygraphs)
 library(tidyr)
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i3_SpeciesYearByGearMonth.R")
-source("/home/julien/Desktop/CODES/IRDTunaAtlas/R/TunaAtlas_i3_SpeciesYearByGearMonth.R")
+# source("/home/julien/Desktop/CODES/IRDTunaAtlas/R/TunaAtlas_i3_SpeciesYearByGearMonth.R")
 ####################################################################################################################################################################################################################################
 DRV=RPostgres::Postgres()
 source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
@@ -33,17 +33,23 @@ source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
 wkt <- reactiveVal(new_wkt) 
 # target_species<- c("YFT","BFT")
-# target_year <- c(seq(1:10)+1994)
-target_species <- dbGetQuery(con, "SELECT DISTINCT(c_esp) AS species FROM public.i3_spatial ORDER BY c_esp;")
-target_year <- dbGetQuery(con, "SELECT DISTINCT(year) FROM public.i3_spatial ORDER BY year;")
-target_gear <- dbGetQuery(con, "SELECT DISTINCT(c_g_engin) as gear FROM public.i3_spatial ORDER BY c_g_engin;")
 
+default_dataset <- 'i3_spatial_tunaatlas'
 default_species <- 'YFT'
 # default_year <- c(seq(min(target_year):max(target_year))+min(target_year)-1)
 default_year <- "2000"
-default_gear <- unique(target_gear)
-filters_combinations <- dbGetQuery(con, "SELECT c_esp, year, c_g_engin as gear FROM public.i3_spatial GROUP BY c_esp, year,c_g_engin;")
+default_year <- c(seq(1:10)+1994)
+filters_combinations <- dbGetQuery(con,  paste0("SELECT c_esp, year, c_g_engin as gear FROM public.",default_dataset," GROUP BY c_esp, year,c_g_engin;"))
 
+
+
+# target_dataset <- dbGetQuery(con, "select concat(schemaname,'.',matviewname)  as dataset from pg_matviews WHERE matviewname LIKE 'i3_%'  ORDER BY matviewname;")
+target_dataset <- dbGetQuery(con, "select matviewname as dataset from pg_matviews WHERE matviewname LIKE 'i3_%'  ORDER BY matviewname;")
+target_species <- dbGetQuery(con, paste0("SELECT DISTINCT(c_esp) AS species FROM public.",default_dataset," ORDER BY c_esp;"))
+target_year <- dbGetQuery(con, paste0("SELECT DISTINCT(year) FROM public.",default_dataset," ORDER BY year;"))
+target_gear <- dbGetQuery(con, paste0("SELECT DISTINCT(c_g_engin) as gear FROM public.",default_dataset," ORDER BY c_g_engin;"))
+
+default_gear <- unique(target_gear)
 
 ui <- fluidPage(
   titlePanel("Tuna Atlas: indicateurs cartographiques"),
@@ -52,14 +58,31 @@ ui <- fluidPage(
                       
                       # If not using custom CSS, set height of leafletOutput to a number instead of percent
                       # leafletOutput("mymap", width="1000", height="1000"),
-                      leafletOutput('mymap', width = "60%", height = 1500),
+                      absolutePanel(id = "themap", class = "panel panel-default", fixed = TRUE,
+                                    draggable = FALSE, top = 200, right = "auto", left = 20, bottom = "auto",
+                                    width = "60%", height = "auto",
+                                    
+                                    leafletOutput('mymap'),
+                      ),
+                      absolutePanel(id = "theplot", class = "panel panel-default", fixed = TRUE,
+                                    draggable = FALSE, top = "auto", right = "auto", left = 20, bottom = "200",
+                                    width = "90%", height = "auto",
+                                    
+                                    dygraphOutput("plot3_dygraph"),
+                      ),
                       
                       
                       # Shiny versions prior to 0.11 should use class = "modal" instead.
                       absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                    draggable = TRUE, top = 200, left = "auto", right = 20, bottom = "auto",
+                                    draggable = FALSE, top = 200, left = "auto", right = 20, bottom = "auto",
                                     width = "30%", height = "auto",
                                     
+      selectInput(
+        inputId = "dataset",
+        label = "Dataset",
+        choices = target_dataset$dataset,
+        selected= default_dataset
+      ),
       selectInput(
         inputId = "species",
         label = "Species",
@@ -85,6 +108,8 @@ ui <- fluidPage(
         label = "Submit"
       ),
       actionButton("resetWkt", "Reset WKT to global"),
+      tags$br(),
+      tags$br(),
       # conditionalPanel("input.gear",
       #                  inputId = "gear",
       #                  label = "Gear",
@@ -95,23 +120,29 @@ ui <- fluidPage(
       
       # dygraphOutput("plot3_dygraph", height = "20%")
       # dygraphOutput("plot3_dygraph", height = "20%")
-      plotlyOutput("plot3", height = "20%")
+      plotlyOutput("plot3", height = "20%"),
+      tags$br(),
+      tags$br(),
+      # dygraphOutput("plot3_dygraph"),
+      tags$br(),
+      tags$br()
       
       
                       ),
       
              ),
-      tabPanel(
-        title = "Plot indicator 3",
-        dygraphOutput("plot3_dygraph")
-      ),
+
       tabPanel(
         title = "Browse i3 data",
         DT::dataTableOutput("DTi3")
       ),
       tabPanel(
+        title = "Browse i3 data 1deg",
+        DT::dataTableOutput("DTi3_1deg")
+      ),
+      tabPanel(
         title = "Your SQL query",
-        textOutput("query")
+        textOutput("sql_query_text")
       ),
       tabPanel(
         title = "Your filters",
@@ -134,7 +165,7 @@ server <- function(input, output, session) {
   
   sql_query <- eventReactive(input$submit, {
     if(is.null(input$year)){year_name=target_year$year}else{year_name=input$year}
-    query <- glue::glue_sql("SELECT year, month,  c_esp AS species, c_g_engin AS gear_type, SUM(value) as value, mean_prev_5_years, stddev_prev_5_years, geom FROM public.i3_spatial 
+    query <- glue::glue_sql("SELECT year, month,  c_esp AS species, c_g_engin AS gear_type, SUM(value) as value, mean_prev_5_years, stddev_prev_5_years, geom FROM public.{`dataset_name`}
       WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326)) 
       AND  c_esp IN ({species_name*}) 
           AND c_g_engin IN ({gear_name*}) 
@@ -142,6 +173,7 @@ server <- function(input, output, session) {
 
                              GROUP BY  year, month,  c_esp, c_g_engin,  mean_prev_5_years, stddev_prev_5_years, geom",
                             wkt = wkt(),
+                            dataset_name = input$dataset,
                             species_name = input$species,
                             gear_name = input$gear,
                             year_name = year_name,
@@ -197,13 +229,13 @@ server <- function(input, output, session) {
   })
   
   
-  output$sql_query <- renderText({ 
+  output$sql_query_text <- renderText({ 
     paste("Your SQL Query is : \n", sql_query())
   })
   
   
   output$DTi3 <- renderDT({
-    this <- data_i3()   %>%  dplyr::select(-c(mean_prev_5_years,stddev_prev_5_years))  %>% spread(gear_type, value, fill=0)  
+    this <- data_i3()   #%>%  dplyr::select(-c(mean_prev_5_years,stddev_prev_5_years))  %>% spread(gear_type, value, fill=0)  
     # this <- data() %>% filter(year %in% input$year) %>% filter(gear_group %in% input$gear) %>% group_by(year,gear_group,species)   %>% summarise(value = sum(value))  %>% dplyr::rename(gear_type=gear_group)
     # df_i3_filtered <- df_i3 %>% filter(year %in% input$year, gear_type %in% input$gear, species %in% input$species) 
     
@@ -315,7 +347,6 @@ server <- function(input, output, session) {
     i3
   })
   
-  plotlyOutput("plot3")
   
   
 
@@ -333,19 +364,16 @@ output$plot3_dygraph <- renderDygraph({
   tuna_catches_timeSeries <- cbind(ll, other, ps,bb)
   
   # create the area chart
-  g1 <- dygraph(tuna_catches_timeSeries)  %>% dyOptions( fillGraph=TRUE ) %>% dyOptions(stackedGraph = stack()) 
+  g1 <- dygraph(tuna_catches_timeSeries)  %>% dyOptions( fillGraph=TRUE ) %>% dyOptions(stackedGraph = stack()) %>% dyRoller(rollPeriod = 1)
   # g1 <- dygraph(tuna_catches_timeSeries, main = "Catches by gear") %>%
   #   dyRangeSelector()     %>%     dyStackedBarGroup(c('bb', 'other','ll','ps'))    #%>% dyOptions( fillGraph=TRUE) create bar chart with the passed dygraph
-  #   dyOptions(stackedGraph = stack()) %>%
   # dySeries(bb, label = "bb") %>%
   #   dySeries(other, label = "other") %>%
   #   dySeries(ll, label = "ll") %>%
   #   dySeries(ps, label = "ps")
-  # %>%
-  #   
 
-  #   
-})
+  
+  })
 
 
 }

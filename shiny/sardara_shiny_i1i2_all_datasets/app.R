@@ -26,8 +26,8 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtl
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i2_SpeciesByGear.R")
 ####################################################################################################################################################################################################################################
 DRV=RPostgres::Postgres()
-# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
-source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
@@ -41,44 +41,76 @@ target_species <- dbGetQuery(con, "SELECT DISTINCT(species) FROM public.i1i2_spa
 target_year <- dbGetQuery(con, "SELECT DISTINCT(year) FROM public.i1i2_spatial_all_datasets ORDER BY year;")
 target_gear <- dbGetQuery(con, "SELECT DISTINCT(gear_group) as gear FROM public.i1i2_spatial_all_datasets ORDER BY gear_group;")
 target_ocean <- dbGetQuery(con, "SELECT DISTINCT(ocean) as ocean FROM public.i1i2_spatial_all_datasets ORDER BY ocean;")
-target_unit <- dbGetQuery(con, "SELECT DISTINCT(unit) FROM public.i1i2_spatial_all_datasets ORDER BY unit;")
-target_area <- dbGetQuery(con, "SELECT DISTINCT(area)::varchar FROM public.i1i2_spatial_all_datasets ORDER BY area;")
+target_unit <- dbGetQuery(con, "SELECT DISTINCT(unit) AS unit FROM public.i1i2_spatial_all_datasets ORDER BY unit;")
+target_area <- dbGetQuery(con, "SELECT DISTINCT(area)::varchar AS area FROM public.i1i2_spatial_all_datasets ORDER BY area DESC;")
 
 default_species <- 'YFT'
 default_year <- c(seq(min(target_year):max(target_year))+min(target_year)-1)
 # default_gear <- c('BB','PS')
 default_gear <- unique(target_gear)
 filters_combinations <- dbGetQuery(con, "SELECT species, year, gear_group as gear FROM public.i1i2_spatial_all_datasets GROUP BY species, year,gear_group;")
-default_dataset <- 'global_catch_5deg_1m_firms_level0'
-default_unit <- 'no'
-default_area <- '5'
+# default_dataset <- 'global_catch_5deg_1m_firms_level0'
+default_dataset <- unique(target_dataset$dataset)
+default_unit <-  c('MT','t')
+# default_unit <- unique(target_unit$unit)
+# default_area <- '25'
+default_area <- unique(target_area$area)
 
 ui <- fluidPage(
   titlePanel("Tuna Atlas: indicateurs cartographiques"),
-  sidebarLayout(
-    sidebarPanel(
+  navbarPage(title="TunaAtlas", 
+             tabPanel("Interactive",
+                      
+                      # If not using custom CSS, set height of leafletOutput to a number instead of percent
+                      # leafletOutput("mymap", width="1000", height="1000"),
+                      absolutePanel(id = "themap", class = "panel panel-default", fixed = TRUE,
+                                    draggable = FALSE, top = 200, right = "auto", left = 20, bottom = "auto",
+                                    width = "65%", height = "30%",
+                                    
+                                    leafletOutput('mymap'),
+                      ),
+                      absolutePanel(id = "theplot", class = "panel panel-default", fixed = TRUE,
+                                    draggable = FALSE, top = "auto", right = "auto", left = 20, bottom = "100",
+                                    width = "65%", height = "65%",
+                                    dygraphOutput("dygraph_all_datasets",  width = "65%"),
+                                    tags$br(),
+                                    plotlyOutput("pie_area_catch"),
+                                    tags$br(),
+                                    plotlyOutput("barplot_datasets"),
+                                    tags$br(),
+                                    
+                      ),
+                      
+                      # Shiny versions prior to 0.11 should use class = "modal" instead.
+                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
+                                    draggable = FALSE, top = 200, left = "auto", right = 20, bottom = "auto",
+                                    width = "30%", height = "auto",
       selectInput(
         inputId = "dataset",
         label = "Dataset",
         choices = target_dataset$dataset,
+        multiple = TRUE,
         selected= default_dataset
       ),
       selectInput(
         inputId = "unit",
         label = "Unit",
         choices = target_unit$unit,
+        multiple = TRUE,
         selected= default_unit
       ),
       selectInput(
         inputId = "area",
         label = "Area",
         choices = target_area$area,
+        multiple = TRUE,
         selected= default_area
       ),
       selectInput(
         inputId = "species",
         label = "Species",
         choices = target_species$species,
+        multiple = TRUE,
         selected= default_species
       ),
       selectInput(
@@ -99,21 +131,17 @@ ui <- fluidPage(
         inputId = "submit",
         label = "Submit"
       ),
-      actionButton("resetWkt", "Reset WKT to global")
-    ),
-    # mainPanel(
-    #     # tableOutput("tbl"),
-    #     leafletOutput('mymap')
-    # ),
-    tabsetPanel(
+      actionButton("resetWkt", "Reset WKT to global"),
+      tags$br(),
+
+      
+                      ),
+      
+             ),
       tabPanel(
-        title = "Map Postgis Vector / SF data",
-        leafletOutput('mymap', width = "50%", height = 600)
-      ),
-      tabPanel(
-        title = "Plot indicator 1",
+        title = "Pie ratio catch",
         # plotlyOutput("plot1")
-        plotlyOutput("plot1")
+        plotlyOutput("pie_ratio_catch")
       ),
       tabPanel(
         title = "dygraph indicator 1",
@@ -152,7 +180,6 @@ ui <- fluidPage(
         title = "Your filters",
         textOutput("selected_var")
       )
-    )
   )
 )
 
@@ -163,14 +190,15 @@ server <- function(input, output, session) {
   
   sql_query <- eventReactive(input$submit, {
     if(is.null(input$year)){year_name=target_year$year}else{year_name=input$year}
+    # if(is.null(input$dataset)){dataset_name=target_dataset$dataset}else{year_name=input$dataset}
     query <- glue::glue_sql(
-      "SELECT unit, ocean, gear_group, year, species, value, geom  FROM public.i1i2_spatial_all_datasets 
+      "SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom  FROM public.i1i2_spatial_all_datasets 
       WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326))
       AND  dataset IN ({dataset_name*}) 
       AND  species IN ({species_name*}) 
     AND gear_group IN ({gear_group_name*})
     AND year IN ({year_name*})
-    AND area IN ({area_name*})
+    AND area::varchar IN ({area_name*})
     AND unit IN ({unit_name*}) ",
       wkt = wkt(),
       dataset_name = input$dataset,
@@ -191,9 +219,42 @@ server <- function(input, output, session) {
   # ignoreNULL = FALSE)
   
   
+  data_all_datasets <- eventReactive(input$submit, {
+    # st_read(con, query =sql_query()) # %>% mutate(time_start = ISOdate(year, 1, 1), time_end = ISOdate(year, 12,31)) %>% dplyr::select (-c(ogc_fid, geom_id,geom,count,year)) %>%  dplyr::rename(v_catch=value,flag=country)
+    st_read(con, query = paste0("SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY  dataset, year, species"))
+    
+  },
+  # on.exit(dbDisconnect(conn), add = TRUE)
+  ignoreNULL = FALSE)
+  
+  
+  data_pie_all_datasets <- eventReactive(input$submit, {
+    st_read(con, query = paste0("SELECT dataset, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY  dataset"))
+    
+  },
+  # on.exit(dbDisconnect(conn), add = TRUE)
+  ignoreNULL = FALSE)
+  
+  data_pie_area_catch <- eventReactive(input$submit, {
+    st_read(con, query = paste0("SELECT dataset, area, unit, count(*), SUM(value)  as value FROM (",sql_query(),") AS foo GROUP BY dataset, area, unit ORDER BY dataset"))
+    
+  },
+  ignoreNULL = FALSE)
+  
+  
+  
+  data_barplot_all_datasets <- eventReactive(input$submit, {
+    st_read(con, query = paste0("SELECT  dataset, unit, count(*) AS count, SUM(value) AS value  FROM (",sql_query(),") AS foo  WHERE unit in ('t','MT','no') GROUP BY dataset, unit ORDER BY dataset"))
+    # st_read(con, query = paste0("SELECT  dataset, unit, count(*) AS count FROM (",sql_query(),") AS foo  WHERE unit in ('t','MT','no') GROUP BY dataset, unit ORDER BY dataset"))
+    
+  },
+  # on.exit(dbDisconnect(conn), add = TRUE)
+  ignoreNULL = FALSE)
+  
+  
   data_i1 <- eventReactive(input$submit, {
     # st_read(con, query =sql_query()) # %>% mutate(time_start = ISOdate(year, 1, 1), time_end = ISOdate(year, 12,31)) %>% dplyr::select (-c(ogc_fid, geom_id,geom,count,year)) %>%  dplyr::rename(v_catch=value,flag=country)
-    st_read(con, query = paste0("SELECT unit, ocean, to_date(year::varchar(4),'YYYY') AS  year, species, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY  unit, ocean, year, species"))
+    st_read(con, query = paste0("SELECT dataset, unit, ocean, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY  dataset,unit, ocean, year, species"))
 
   },
   # on.exit(dbDisconnect(conn), add = TRUE)
@@ -252,13 +313,13 @@ server <- function(input, output, session) {
   
   
   output$DTi1 <- renderDT({
-    # this <- data() %>% filter(year %in% input$year)
-    this <-data_i1()
+    this <- data_barplot_all_datasets()
+    # this <-data_i1()   %>% filter(unit %in% c('t','MT'))  %>% spread(dataset, value, fill=0)
   })
   
   
   output$DTi2 <- renderDT({
-    this <- data_i2()
+    this <- data_pie_area_catch() # %>% filter(dataset=='global_nominal_catch_firms_level0' &&  unit=='MT')
     # this <- data() %>% filter(year %in% input$year) %>% filter(gear_group %in% input$gear) %>% group_by(year,gear_group,species)   %>% summarise(value = sum(value))  %>% dplyr::rename(gear_type=gear_group)
     
   })
@@ -440,6 +501,127 @@ server <- function(input, output, session) {
       sg_fill_brewer("PuOr") %>%
       sg_legend(show=TRUE, label="I=RFMO - names: ")
   })
+  
+  
+  
+  output$dygraph_all_datasets <- renderDygraph({
+    
+    # df_i1 = data_all_datasets()  %>% filter(unit %in% c('t','MT'))  %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    df_i1 = data_all_datasets()  %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    df_i1 <- as_tibble(df_i1)  # %>% top_n(3)
+    
+    global_catch_5deg_1m_firms_level0 <- xts(x = df_i1$global_catch_5deg_1m_firms_level0, order.by = df_i1$year)
+    global_catch_1deg_1m_ps_bb_firms_level0 <-  xts(x = df_i1$global_catch_1deg_1m_ps_bb_firms_level0, order.by = df_i1$year)
+    spatial <-  xts(x = df_i1$global_catch_firms_level0, order.by = df_i1$year)
+    nominal <-  xts(x = df_i1$global_nominal_catch_firms_level0, order.by = df_i1$year)
+    tuna_catches_timeSeries <- cbind(global_catch_1deg_1m_ps_bb_firms_level0, global_catch_5deg_1m_firms_level0, spatial,nominal)
+    
+    # create the area chart
+    # g1 <- dygraph(tuna_catches_timeSeries) # %>% dyOptions( fillGraph=TRUE )
+    g1 <- dygraph(tuna_catches_timeSeries, main = "Catches by ocean") %>%
+      dyRangeSelector()
+    # %>%
+    #   dyStackedBarGroup(c('global_catch_5deg_1m_firms_level0', 'global_catch_1deg_1m_ps_bb_firms_level0','spatial','nominal'))
+    # >%  dyOptions( fillGraph=TRUE) %>%        # create bar chart with the passed dygraph
+    #   dyOptions(stackedGraph = stack())
+    #     dySeries(iotc, label = "iotc") %>%
+    #   dySeries(iattc, label = "iattc") %>%
+    # dySeries(iccat, label = "iccat") 
+    #   
+  })
+  
+  
+  
+  
+  
+  output$pie_ratio_catch<- renderPlotly({ 
+    # output$plot_species<- renderPlot({ 
+    df_i2 = data_pie_all_datasets() # %>% spread(dataset, value, fill=0)  
+   if('global_nominal_catch_firms_level0' %in% unique(df_i2$dataset)){
+    total <- filter(df_i2, dataset=='global_nominal_catch_firms_level0')  
+    total <- total$value
+}else{total=1}
+    df_i2 =  df_i2 %>% mutate(value = value/total)  %>% subset(dataset!='global_nominal_catch_firms_level0')
+    
+    fig <- plot_ly(df_i2, labels = ~dataset, values = ~value, type = 'pie',
+                   # marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1), sort = FALSE),
+                   textposition = 'inside',
+                   textinfo = 'label+percent',
+                   showlegend = TRUE)
+    fig <- fig %>% layout(title = 'Ratio of all datasets for selected units',
+                          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    fig
+    
+  })
+  
+  
+  
+  output$pie_area_catch<- renderPlotly({ 
+
+    df_i2 = data_pie_area_catch()   %>% mutate(unit=replace(unit,unit=='MT', 't')) # %>% filter(unit == 't') # %>% filter(dataset=='global_nominal_catch_firms_level0')
+    # df_i2 = st_read(con, query = paste0("SELECT dataset, area, unit, count(*), SUM(value)  as value FROM (SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom FROM public.i1i2_spatial_all_datasets                                         WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND  species IN ('YFT') AND gear_group IN ('LL', 'PS', 'BB', 'OTHER', 'UNK') AND year IN ('1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') ) AS foo GROUP BY dataset, area, unit ORDER BY dataset"))
+    # df_i2 <- df_i2 %>% mutate(unit=replace(unit,unit=='MT', 't')) # %>% filter(unit == 't')
+    
+    row=c(0,0,1,1)
+    column=c(0,1,0,1)
+    if(length(unique(df_i2$dataset))>1){
+      fig <- plot_ly()
+      for(d in 1:length(unique(df_i2$dataset))){
+        cat(df_i2$dataset[d])
+        fig <- fig %>% add_pie(data = df_i2 %>% filter(dataset == unique(df_i2$dataset)[d]), labels = ~area, values = ~value,
+                               name = "Color", domain = list(row =row[d], column =column[d]))
+      }
+      fig <- fig %>% layout(title = "Pie Charts with Subplots", showlegend = T,
+                            grid=list(rows=2, columns=2),
+                            xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                            yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+      }else{
+      fig <- plot_ly(df_i2, labels = ~area, values = ~value, type = 'pie',
+                     # marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1), sort = FALSE),
+                     textposition = 'inside',
+                     textinfo = 'label+percent',
+                     showlegend = TRUE)
+      df_i2 = d <- fig %>% layout(title = 'Total catch according to area type',
+                            xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                            yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    }
+      
+    
+    fig
+    # barplot_datasets <- ggplotly(fig, tooltip="text")
+    
+    
+  })
+  
+  # st_read(con, query = paste0("SELECT dataset, area, unit, count(*), SUM(value)  as value FROM (",sql_query(),") AS foo GROUP BY dataset, area, unit ORDER BY dataset"))
+  
+  
+  
+  output$barplot_datasets <- renderPlotly({
+    
+    df_i1 <- data_barplot_all_datasets()
+    # df_i1 <- data_pie_area_catch() 
+    df_i1$dataset <- factor(df_i1$dataset) 
+    df_i1$unit <- factor(df_i1$unit) 
+    
+    p <- ggplot(df_i1) + geom_bar(aes(x = dataset, stat=value, fill = unit, width=0.5))
+    # geom_bar(aes(x = dataset, fill = factor(unit)), position = position_dodge(preserve = 'single'))
+
+    # p <- ggplot(data=df_i1, aes(x = dataset, stat = value, fill = unit)) + geom_bar(stat = "identity", width = 1)
+    # p <- p + ggtitle("Catch by dataset") + xlab("") + ylab("Datasets") # Adds titles
+    # p <- p + facet_grid(facets=. ~ dataset) # Side by side bar chart
+    # p <- p + coord_polar(theta="y") # side by side pie chart
+    # 
+    
+    # Turn it interactive
+    barplot_datasets <- ggplotly(p, tooltip="text")
+    
+    
+  })
+  
+
+  
   
   
   

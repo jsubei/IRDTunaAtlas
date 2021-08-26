@@ -267,25 +267,24 @@ server <- function(input, output, session) {
     
     pal <- colorNumeric(
       palette = "YlGnBu",
-      domain = df$value
+      domain = df$value, n = 10
     )
     # brewer.pal(7, "OrRd")
-    pal_fun <- colorQuantile(   "YlOrRd", NULL, n = 10)
+    pal_fun <- colorQuantile("YlOrRd", NULL, n = 10)
     
-    qpal <- colorQuantile(rev(viridis::viridis(10)),
-                          df$value, n=10)
+    qpal <- colorQuantile(rev(viridis::viridis(10)),df$value, n=10)
     
     # https://r-spatial.github.io/sf/articles/sf5.html
     map_leaflet <- leaflet()  %>%  
       addPolygons(data = df,
-                                                 label = ~value,
-                                                 popup = ~paste0("Captures pour cette espece: ", round(value), " tonnes(t) et des brouettes"),
-                                                 # fillColor = ~pal_fun(value),
-                                                 fillColor = ~qpal(value),
-                                                 fill = TRUE,
-                                                 fillOpacity = 0.8,
-                                                 smoothFactor = 0.5
-                                                 # color = ~pal(value)
+                  label = ~value,
+                  popup = ~paste0("Captures pour cette espece: ", round(value), " tonnes(t) et des brouettes"),
+                  fillColor = ~qpal(value),
+                  # color = ~pal_fun(value),
+                  # color = ~pal(value),
+                  fill = TRUE,
+                  fillOpacity = 0.8,
+                  smoothFactor = 0.5
     ) %>%
       addProviderTiles("Esri.OceanBasemap")  %>%
       addDrawToolbar(
@@ -300,13 +299,12 @@ server <- function(input, output, session) {
       addLayersControl(
         overlayGroups = c("draw"),
         options = layersControlOptions(collapsed = FALSE)
+      )  %>% 
+      leaflet::addLegend("bottomright", pal = qpal, values = df$value,
+                         title = "Total catch per cell for selected criteria",
+                         labFormat = labelFormat(prefix = "MT "),
+                         opacity = 1
       )
-    # %>%  addLegend("bottomright", 
-    #            # colors = colorQuantile("YlOrRd", NULL, n = 10), 
-    #            pal = pal, values = ~value,
-    #            # labFormat = labelFormat(prefix = "$"),
-    #            # labels = paste0("up to ", format(df$values[-1], digits = 2)),
-    #            title = "Captures de thons")
   })
   
   

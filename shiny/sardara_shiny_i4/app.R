@@ -20,10 +20,8 @@ library(streamgraph)
 library(viridis)
 
 ####################################################################################################################################################################################################################################
-# source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i4_SpeciesMonthByOcean.R")
-source("/home/julien/Desktop/CODES/IRDTunaAtlas/R/TunaAtlas_i4_SpeciesMonthByOcean.R")
+source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i4_SpeciesMonthByOcean.R")
 ####################################################################################################################################################################################################################################
-DRV=RPostgres::Postgres()
 source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
 # source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
@@ -92,11 +90,11 @@ ui <- fluidPage(
                       )
     ),
 
-      tabPanel(
-        title = "Plot indicator 4",
-        # plotlyOutput("plot1")
-        plotlyOutput("plot4")
-      ),
+      # tabPanel(
+      #   title = "Plot indicator 4",
+      #   # plotlyOutput("plot1")
+      #   plotlyOutput("plot4")
+      # ),
       tabPanel(
         title = "Browse i4 data",
         DT::dataTableOutput("DTi4")
@@ -160,20 +158,20 @@ server <- function(input, output, session) {
     wkt(new_wkt)
   })
   
-  # observeEvent(input$species,{
-  #   temp <- filters_combinations %>% filter(species %in% change()[1])
-  #   updateSelectInput(session,"year",choices = unique(temp$year),selected=c(seq(min(temp$year):max(temp$year))+min(temp$year)-1))
-  #     updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
-  #   
-  # }
-  # )
-  # 
-  # observeEvent(input$year,{
-  #   temp <- filters_combinations %>% filter(species %in% change()[1], year %in% change()[2])
-  #   updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
-  # }
-  # )
-  
+  observeEvent(input$species,{
+    temp <- filters_combinations %>% filter(species %in% change()[1])
+    updateSelectInput(session,"year",choices = unique(temp$year),selected=c(seq(min(temp$year):max(temp$year))+min(temp$year)-1))
+      updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
+
+  }
+  )
+
+  observeEvent(input$year,{
+    temp <- filters_combinations %>% filter(species %in% change()[1], year %in% change()[2])
+    updateSelectInput(session,"gear",choices = unique(temp$gear),selected=unique(temp$gear))
+  }
+  )
+
   
   output$selected_var <- renderText({ 
     paste("You have selected:\n", input$species, "and \n", input$year, "and \n", input$flag, "and \n", wkt())
@@ -188,13 +186,6 @@ server <- function(input, output, session) {
   output$DTi4 <- renderDT({
     # this <- data() %>% filter(year %in% input$year)
     data_i4()
-  })
-  
-  
-  output$DTi2 <- renderDT({
-    this <- data()
-    this <- data() %>% filter(year %in% input$year) %>% filter(gear_group %in% input$gear) %>% group_by(year,gear_group,species)   %>% summarise(value = sum(value))  %>% dplyr::rename(gear_type=gear_group)
-    
   })
   
   
@@ -284,20 +275,19 @@ server <- function(input, output, session) {
   })
   
   
-  
-  # renderPlot({
-  output$plot4 <- renderPlotly({ 
-    
-    df_i4_filtered <- data_i4()
-    
-    i4 <-  Atlas_i4_SpeciesMonthByOcean(df=df_i4_filtered, 
-                                        oceanAttributeName="ocean", 
-                                        yearAttributeName="year", 
-                                        monthAttributeName="month",
-                                        speciesAttributeName="species", 
-                                        valueAttributeName="value")
-  i4
-  })
+  # 
+  # output$plot4 <- renderPlotly({ 
+  #   
+  #   df_i4_filtered <- data_i4()
+  #   
+  #   i4 <-  Atlas_i4_SpeciesMonthByOcean(df=df_i4_filtered, 
+  #                                       oceanAttributeName="ocean", 
+  #                                       yearAttributeName="year", 
+  #                                       monthAttributeName="month",
+  #                                       speciesAttributeName="species", 
+  #                                       valueAttributeName="value")
+  # i4
+  # })
   
   
   output$plot4_image <- renderImage({

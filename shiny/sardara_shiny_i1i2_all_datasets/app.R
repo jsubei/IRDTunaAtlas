@@ -118,6 +118,8 @@ ui <- fluidPage(
                                           selected= target_gear$gear,
                                           width = "90%"
                                         ),
+                                        textInput("caption", "Caption", "Data Summary"),
+                                        verbatimTextOutput("value"),
                                         actionButton(
                                           inputId = "submit",
                                           label = "Submit"
@@ -150,106 +152,6 @@ ui <- fluidPage(
                                         tags$a(href='https://www.ird.fr/', tags$img(src='https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/logo_IRD.svg',height='178',width='216'))
                           )
                       )
-             ),
-             # tabPanel("Interactive",
-             # # If not using custom CSS, set height of leafletOutput to a number instead of percent
-             # absolutePanel(id = "themap", class = "panel panel-default", fixed = TRUE,
-             #               draggable = FALSE, top = 100, 
-             #               right = "auto", left = 20, bottom = "auto",
-             #               width = "65%",height = "30%",
-             #               leafletOutput('mymap')
-             #               
-             # ),
-             # absolutePanel(id = "theplot", class = "panel panel-default", fixed = TRUE,
-             #               draggable = FALSE, top = "auto", right = "auto", left = 20, bottom ="auto",
-             #               width = "65%",height = "50%",
-             #               tags$br(),
-             #               fluidRow(
-             #                 column(6,
-             #                        plotlyOutput("pie_area_catch"),
-             #                        tags$br(),
-             #                        actionButton(
-             #                          inputId = "switched",
-             #                          label = "Switch unit for pie chart"
-             #                        )
-             #                        ), 
-             #                 column(6,
-             #                        plotlyOutput("barplot_datasets"),
-             #                        tags$br()
-             #                 )
-             #                 ),
-             #                 tags$br(),
-             #                 fluidRow(
-             #                   column(10,dygraphOutput("dygraph_all_datasets", height = 300)), 
-             #                   column(2,textOutput("legendDivID"))
-             #                 )
-             #               ),
-             # Shiny versions prior to 0.11 should use class = "modal" instead.
-             # absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-             #               draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "100",
-             #               width = "30%", height = "auto",
-             #               selectInput(
-             #                 inputId = "dataset",
-             #                 label = "Dataset",
-             #                 choices = target_dataset$dataset,
-             #                 multiple = TRUE,
-             #                 selected= default_dataset
-             #               ),
-             #               selectInput(
-             #                 inputId = "unit",
-             #                 label = "Unit",
-             #                 choices = target_unit$unit,
-             #                 multiple = TRUE,
-             #                 selected= default_unit
-             #               ),
-             #               selectInput(
-             #                 inputId = "area",
-             #                 label = "Area",
-             #                 choices = target_area$area,
-             #                 multiple = TRUE,
-             #                 selected= default_area
-             #               ),
-             #               selectInput(
-             #                 inputId = "species",
-             #                 label = "Species",
-             #                 choices = target_species$species,
-             #                 multiple = TRUE,
-             #                 selected= default_species
-             #               ),
-             #               selectInput(
-             #                 inputId = "year",
-             #                 label = "Year",
-             #                 choices = target_year$year,
-             #                 multiple = TRUE,
-             #                 selected= default_year
-             #               ),
-             #               selectInput(
-             #                 inputId = "gear",
-             #                 label = "Gear",
-             #                 choices = target_gear$gear,
-             #                 multiple = TRUE,
-             #                 selected= target_gear$gear
-             #               ),
-             #               actionButton(
-             #                 inputId = "submit",
-             #                 label = "Submit"
-             #               ),
-             #               actionButton("resetWkt", "Reset WKT to global"),
-             #               tags$br()
-             #               )
-             # ),
-             tabPanel(
-               title = "dygraph indicator 1",
-               actionButton(
-                 inputId = "stacked",
-                 label = "Stack/unstack time series"
-               ),
-               dygraphOutput("plot1_dygraph")
-             ),
-             tabPanel(
-               title = "Streamgraph indicator 1",
-               # plotlyOutput("plot1")
-               streamgraphOutput("plot1_streamgraph")
              ),
              tabPanel(
                title = "Plot indicator 2",
@@ -428,6 +330,7 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE)
   
   ########################################################## Outputs: text & Data tables ########################################################## 
+  output$value <- renderText({ wkt() })
   
   output$sql_query <- renderText({ 
     paste("Your SQL Query is : \n", sql_query())
@@ -551,43 +454,9 @@ server <- function(input, output, session) {
   })
   
   
-  output$plot1 <- renderPlotly({
-    
-    # df_i1 <- data() %>% filter(year %in% input$year) %>% group_by(ocean,year,species) %>% summarise(value = sum(value))  
-    df_i1 <- data_i1()
-    
-    # df_i1 <- data() 
-    
-    # i1 <- Atlas_i1_SpeciesByOcean(as.data.frame(df_i1), 
-    #                               yearAttributeName="year", 
-    #                               oceanAttributeName="ocean", 
-    #                               speciesAttributeName="species", 
-    #                               valueAttributeName="value")
-    
-    
-    i1 <- df_i1 %>%
-      ggplot(aes(x=year, y=value, fill=ocean, text=ocean)) +
-      geom_area( ) +
-      theme(legend.position="none") +
-      ggtitle("Popularity of American names in the previous 30 years") +
-      theme(legend.position="none")
-    
-    # Turn it interactive
-    i1 <- ggplotly(i1, tooltip="text")
-    
-    
-  })
+
   
-  output$plot1_streamgraph <- renderStreamgraph({
-    
-    # df_i1 <- data() %>% filter(year %in% input$year) %>% group_by(ocean,year,species) %>% summarise(value = sum(value))
-    df_i1 <-data_i1()
-    
-    streamgraph(df_i1, key="ocean", value="value", date="year", height="300px", width="1000px", offset="zero", interpolate="linear") %>% 
-      # streamgraph("name", "n", "year", offset="zero", interpolate="linear") %>%
-      sg_legend(show=TRUE, label="I=RFMO - names: ")
-  })
-  
+
   output$plot2 <- renderPlotly({ 
     
     
@@ -604,33 +473,7 @@ server <- function(input, output, session) {
     i2 
   })
   
-  
-  
-  # output$plot1_dygraph <- renderDygraph({
-  #   
-  #   df_i1 = data_i1()   %>% spread(ocean, value, fill=0)   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
-  #   df_i1 <- as_tibble(df_i1)  # %>% top_n(3)
-  #   
-  #   wcpfc <- xts(x = df_i1$WCPFC, order.by = df_i1$year)
-  #   iotc <-  xts(x = df_i1$IOTC, order.by = df_i1$year)
-  #   iccat <-  xts(x = df_i1$ICCAT, order.by = df_i1$year)
-  #   iattc <-  xts(x = df_i1$ICCAT, order.by = df_i1$year)
-  #   tuna_catches_timeSeries <- cbind(wcpfc, iotc, iccat,iattc)
-  #   
-  #   # create the area chart
-  #   # g1 <- dygraph(tuna_catches_timeSeries)  %>% dyOptions( fillGraph=TRUE )
-  #   g1 <- dygraph(tuna_catches_timeSeries, main = "Catches by ocean") %>%
-  #     dyRangeSelector() %>%
-  #     dyStackedBarGroup(c('iotc', 'iattc','iccat','wcpfc'))
-  #   # >%  dyOptions( fillGraph=TRUE) %>%        # create bar chart with the passed dygraph
-  #   #   dyOptions(stackedGraph = stack())
-  # #     dySeries(iotc, label = "iotc") %>%
-  # #   dySeries(iattc, label = "iattc") %>%
-  # # dySeries(iccat, label = "iccat") 
-  # #   
-  # })
-  # 
-  
+
   
   
   
@@ -717,9 +560,9 @@ server <- function(input, output, session) {
   output$plotly_time_series_all_datasets <- renderPlotly({
     
     
-    df_i1 =  st_read(con, query = "SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value, unit FROM (SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom FROM public.i1i2_spatial_all_datasets WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND dataset IN ('global_catch_1deg_1m_ps_bb_firms_level0', 'global_catch_5deg_1m_firms_level0', 'global_catch_firms_level0', 'global_nominal_catch_firms_level0') AND species IN ('YFT') AND gear_group IN ('BB', 'LL', 'OTHER', 'PS', 'UNK') AND year IN ('1918', '1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') AND unit IN ('MT', 'no', 't') ) AS foo GROUP BY dataset, year, species, unit")  %>%
-      mutate(unit=replace(unit,unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
-    # df_i1 = data_all_datasets()  %>% mutate(unit=replace(unit,unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    # df_i1 =  st_read(con, query = "SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value, unit FROM (SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom FROM public.i1i2_spatial_all_datasets WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND dataset IN ('global_catch_1deg_1m_ps_bb_firms_level0', 'global_catch_5deg_1m_firms_level0', 'global_catch_firms_level0', 'global_nominal_catch_firms_level0') AND species IN ('YFT') AND gear_group IN ('BB', 'LL', 'OTHER', 'PS', 'UNK') AND year IN ('1918', '1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') AND unit IN ('MT', 'no', 't') ) AS foo GROUP BY dataset, year, species, unit")  %>%
+      # mutate(unit=replace(unit,unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    df_i1 = data_all_datasets()  %>% mutate(unit=replace(unit,unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
     df_i1 <- as_tibble(df_i1)  # %>% top_n(3)
     
     

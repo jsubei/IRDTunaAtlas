@@ -118,7 +118,7 @@ ui <- fluidPage(
                                           selected= target_gear$gear,
                                           width = "90%"
                                         ),
-                                        textInput("caption", "Caption", "Data Summary"),
+                                        textInput("yourWKT","Paste you WKT",value=new_wkt),
                                         verbatimTextOutput("value"),
                                         actionButton(
                                           inputId = "submit",
@@ -330,7 +330,10 @@ server <- function(input, output, session) {
   ignoreNULL = FALSE)
   
   ########################################################## Outputs: text & Data tables ########################################################## 
-  output$value <- renderText({ wkt() })
+  output$value <- renderText({ 
+    wkt()
+    # output$value <- renderText({ input$caption })
+    })
   
   output$sql_query <- renderText({ 
     paste("Your SQL Query is : \n", sql_query())

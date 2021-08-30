@@ -69,14 +69,14 @@ ui <- fluidPage(
                           # leafletOutput('map_i11', width = "60%", height = 1500),
                           leafletOutput("mymap", width="100%", height="100%"),
                           absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                        draggable = TRUE, top = 200, left = "auto",  right="80%", width = "15%", height = "auto",
+                                        draggable = TRUE, top = 150,  left = "3%", width = "21%", height = "auto",
                                         selectInput(
                                           inputId = "dataset",
                                           label = "Dataset",
                                           choices = target_dataset$dataset,
                                           multiple = TRUE,
                                           selected= default_dataset,
-                                          width = "95%"
+                                          width = "99%"
                                         ),
                                         selectInput(
                                           inputId = "unit",
@@ -84,7 +84,7 @@ ui <- fluidPage(
                                           choices = target_unit$unit,
                                           multiple = TRUE,
                                           selected= default_unit,
-                                          width = "90%"
+                                          width = "99%"
                                         ),
                                         selectInput(
                                           inputId = "area",
@@ -92,7 +92,7 @@ ui <- fluidPage(
                                           choices = target_area$area,
                                           multiple = TRUE,
                                           selected= default_area,
-                                          width = "90%"
+                                          width = "99%"
                                         ),
                                         selectInput(
                                           inputId = "species",
@@ -100,7 +100,7 @@ ui <- fluidPage(
                                           choices = target_species$species,
                                           multiple = TRUE,
                                           selected= default_species,
-                                          width = "90%"
+                                          width = "99%"
                                         ),
                                         selectInput(
                                           inputId = "year",
@@ -108,7 +108,7 @@ ui <- fluidPage(
                                           choices = target_year$year,
                                           multiple = TRUE,
                                           selected= default_year,
-                                          width = "90%"
+                                          width = "99%"
                                         ),
                                         selectInput(
                                           inputId = "gear",
@@ -116,7 +116,7 @@ ui <- fluidPage(
                                           choices = target_gear$gear,
                                           multiple = TRUE,
                                           selected= target_gear$gear,
-                                          width = "90%"
+                                          width = "99%"
                                         ),
                                         textInput("yourWKT","Paste you WKT",value=new_wkt),
                                         verbatimTextOutput("value"),
@@ -128,7 +128,7 @@ ui <- fluidPage(
                                         tags$br()
                           ),
                           absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                        draggable = TRUE, top = 200, left = "auto", right="5%", width = "20%", height = "auto",
+                                        draggable = TRUE, top = 150, left = "auto", right="1%", width = "23%", height = "auto",
                                         tags$br(),
                                         plotlyOutput("pie_area_catch", width="100%"),
                                         tags$br(),
@@ -140,7 +140,7 @@ ui <- fluidPage(
                                         tags$br(),
                                         plotlyOutput("pie_ratio_catch")
                           ),
-                          absolutePanel(id = "controls", class = "panel panel-default", bottom =  "2%", left = "20%", width = "60%", fixed=TRUE, draggable = FALSE, height = "auto",
+                          absolutePanel(id = "controls", class = "panel panel-default", bottom =  "2%", left = "25%", width = "50%", fixed=TRUE, draggable = FALSE, height = "auto",
                                         plotlyOutput("plotly_time_series_all_datasets")
                                         # fluidRow(
                                         #   column(10,dygraphOutput("dygraph_all_datasets",height="400")),

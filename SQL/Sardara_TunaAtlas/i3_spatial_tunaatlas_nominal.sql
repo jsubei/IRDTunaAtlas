@@ -16,7 +16,7 @@
             geargroup_label.codesource_gear AS c_g_engin,
             sum(tab.value) AS value,
 		area_labels.id_area,
-		area_labels.geom
+		st_simplify(geom,0.1) as geom
 
            FROM metadata.metadata, fact_tables.catch tab 
            
@@ -30,7 +30,7 @@
              LEFT JOIN species.species_mapping ON species_mapping.species_mapping_id_from = tab.id_species
              LEFT JOIN species.species_labels speciesgroup_label ON speciesgroup_label.id_species = species_mapping.species_mapping_id_to
              
-          WHERE "time".year::numeric <= 2005::numeric AND metadata.identifier = 'global_catch_firms_level0'::text AND metadata.id_metadata = tab.id_metadata
+          WHERE "time".year::numeric <= 2005::numeric AND metadata.identifier = 'global_nominal_catch_firms_level0'::text AND metadata.id_metadata = tab.id_metadata
           
           GROUP BY "time".year, "time".month, species_labels.codesource_species, geargroup_label.codesource_gear,area_labels.id_area,area_labels.geom) sub_qry3
           
@@ -68,7 +68,7 @@
                             WHERE time_1.year::numeric > ((( SELECT min(time_2.year) AS min
                            FROM "time"."time" time_2))::numeric + 5::numeric) AND time_1.year::numeric <= 2005::numeric) sub_qry ON "time".year < sub_qry.reference_year AND "time".year::numeric >= (sub_qry.reference_year::numeric - 5::numeric) 
                            
-                  WHERE metadata.identifier = 'global_catch_firms_level0'::text AND metadata.id_metadata = tab.id_metadata
+                  WHERE metadata.identifier = 'global_nominal_catch_firms_level0'::text AND metadata.id_metadata = tab.id_metadata
                                           
                                           
                   GROUP BY sub_qry.reference_year, "time".year, "time".month, species_labels.codesource_species, geargroup_label.codesource_gear,area_labels.id_area) subsub

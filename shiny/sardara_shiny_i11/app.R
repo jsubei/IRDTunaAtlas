@@ -36,8 +36,8 @@ source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtl
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i11_CatchesByCountry.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/wkt2spdf.R")
 ####################################################################################################################################################################################################################################
-source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
-# source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+# source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
+source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
 ####################################################################################################################################################################################################################################
 
 global_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
@@ -555,6 +555,7 @@ server <- function(input, output, session) {
     # qpal <- brewer.pal(n = 20, name = "RdBu")
     
     # https://r-spatial.github.io/sf/articles/sf5.html
+    # https://rstudio.github.io/leaflet/showhide.html
     mymap <- leaflet() %>% 
       addProviderTiles("Esri.OceanBasemap") %>% 
       # setView(lng = lon_centroid, lat =lat_centroid, zoom = 3
@@ -642,7 +643,7 @@ server <- function(input, output, session) {
   
   
   
-  
+  # https://francoisguillem.shinyapps.io/shiny-demo/ => ADD TIME TO PLAY A VIDEO !!
   output$map_i11 <- renderLeaflet({
     # toto <- data() %>% filter (year <= max(input$yearInterval) & year>=min(input$yearInterval)) %>% group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>%
     # toto <- data() %>% group_by(species,country,geom_wkt) %>% summarise(value = sum(value)) %>% spread(country, value, fill=0)  %>%  mutate(total = rowSums(across(any_of(as.vector(input$country))))) #  %>% filter (total>mean(total))

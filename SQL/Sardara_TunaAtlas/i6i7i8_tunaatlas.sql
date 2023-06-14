@@ -1,14 +1,14 @@
---SELECT 
---row_number() OVER () AS ogc_fid,
---wkt 
---FROM (
---SELECT
---	 distinct st_astext(geom)  AS wkt
---FROM (
+-- View: public.i6i7i8
 
+-- DROP MATERIALIZED VIEW public.i6i7i8;
+
+CREATE MATERIALIZED VIEW public.i6i7i8
+TABLESPACE pg_default
+AS
 	SELECT 
 		row_number() OVER () AS ogc_fid,
 		fact.id_area AS geom_id,
+		    --st_geometrytype(area_labels.geom) AS feature_type,
 		area_labels.geom AS geom,
 --		st_astext(area_labels.geom) AS geom_wkt,
 		"time".year AS year,
@@ -46,7 +46,10 @@
 		fact.id_area, geom, "time".year, species_labels.codesource_species, fishingfleet_labels.codesource_fishingfleet
 		-- fact.id_area, geom_wkt, "time".year, species_labels.codesource_species, fact.id_species, fact.id_fishingfleet
 		
-		
---) subqry
-	
---) AS foo 	
+WITH DATA;
+
+ALTER TABLE public.i6i7i8
+    OWNER TO tunaatlas_u;
+
+GRANT ALL ON TABLE public.i6i7i8 TO tunaatlas_u;
+GRANT SELECT ON TABLE public.i6i7i8 TO tunaatlas_inv;

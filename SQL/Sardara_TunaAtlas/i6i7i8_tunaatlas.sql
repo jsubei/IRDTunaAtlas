@@ -14,7 +14,7 @@
 		"time".year AS year,
 --		fact.id_species  AS species,
 		species_labels.codesource_species AS species,
-		flag_labels.codesource_flag AS country,
+		fishingfleet_labels.codesource_fishingfleet AS country,
 		sum(fact.value) AS value,
 		count(fact.value) AS count 
 		
@@ -29,9 +29,9 @@
 		LEFT JOIN species.species_mapping ON species_mapping.species_mapping_id_from = fact.id_species
 		LEFT JOIN species.species_labels speciesgroup_label ON speciesgroup_label.id_species = species_mapping.species_mapping_id_to 
 		
-		LEFT JOIN flag.flag_labels  USING (id_flag)
-		LEFT JOIN flag.flag_mapping ON flag_mapping.flag_mapping_id_from = fact.id_flag
-		LEFT JOIN flag.flag_labels flaggroup_label ON flaggroup_label.id_flag = flag_mapping.flag_mapping_id_to 
+		LEFT JOIN fishingfleet.fishingfleet_labels  USING (id_fishingfleet)
+		LEFT JOIN fishingfleet.fishingfleet_mapping ON fishingfleet_mapping.fishingfleet_mapping_id_from = fact.id_fishingfleet
+		LEFT JOIN fishingfleet.fishingfleet_labels fishingfleetgroup_label ON fishingfleetgroup_label.id_fishingfleet = fishingfleet_mapping.fishingfleet_mapping_id_to 
 
         WHERE 
         	area.area_labels.tablesource_area = 'cwp_grid' 
@@ -43,8 +43,8 @@
 --      	"time".year <= 2005::numeric 
         	
 	GROUP BY 
-		fact.id_area, geom, "time".year, species_labels.codesource_species, flag_labels.codesource_flag
-		-- fact.id_area, geom_wkt, "time".year, species_labels.codesource_species, fact.id_species, fact.id_flag
+		fact.id_area, geom, "time".year, species_labels.codesource_species, fishingfleet_labels.codesource_fishingfleet
+		-- fact.id_area, geom_wkt, "time".year, species_labels.codesource_species, fact.id_species, fact.id_fishingfleet
 		
 		
 --) subqry

@@ -36,8 +36,8 @@
         WHERE 
         	area.area_labels.tablesource_area = 'cwp_grid' 
         	AND 
-        	substring(area.area_labels.codesource_area from 1 for 1) ='6' 
-        	AND 
+--        	substring(area.area_labels.codesource_area from 1 for 1) ='6' 
+--        	AND 
         	st_area(area.area_labels.geom)=25
 --      	AND 
 --      	"time".year <= 2005::numeric 

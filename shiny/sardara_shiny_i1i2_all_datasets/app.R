@@ -1,5 +1,5 @@
 library(shiny)
-library(geojsonio)
+# library(geojsonio)
 library(plyr)
 library(dplyr)
 library(DBI)
@@ -21,13 +21,37 @@ library(viridis)
 library(xts)
 library(dygraphs)
 library(tidyr)
+library(pool)
 ####################################################################################################################################################################################################################################
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i1_SpeciesByOcean.R")
 source("https://raw.githubusercontent.com/juldebar/IRDTunaAtlas/master/R/TunaAtlas_i2_SpeciesByGear.R")
 ####################################################################################################################################################################################################################################
-DRV=RPostgres::Postgres()
+DRV=RPostgreSQL::PostgreSQL()
 # source(file = "~/Desktop/CODES/IRDTunaAtlas/credentials.R")
-source(file = "~/Bureau/CODES/IRDTunaAtlas/credentials.R")
+dotenv::load_dot_env("~/Bureau/CODE/tunaatlas_pie_map_shiny_OLD/tunaatlas_pie_map_shiny/connection_tunaatlas_inv.txt")
+
+db_host <- Sys.getenv("DB_HOST")
+db_port <- as.integer(Sys.getenv("DB_PORT"))
+db_name <- Sys.getenv("DB_NAME")
+db_user <- Sys.getenv("DB_USER_READONLY")
+db_password <- Sys.getenv("DB_PASSWORD")
+
+# dbPool(RPostgreSQL::PostgreSQL(),
+#        host = db_host,
+#        port = db_port,
+#        dbname = db_name,
+#        user = db_user,
+#        password = db_password)        
+
+# pool <- connect_to_db()
+
+pool <- dbConnect(drv=DRV,
+                 dbname = db_name,
+                 host = db_host,
+                 user=db_user,
+                 password=db_password)
+
+
 ###################################################################################################################################################################################################################################
 
 new_wkt <- 'POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'
@@ -38,15 +62,16 @@ query_all_datasets <- reactiveVal()
 
 # target_species<- c("YFT","BFT")
 # target_year <- c(seq(1:10)+1994)
-target_dataset <- dbGetQuery(con, "SELECT DISTINCT(dataset) FROM public.i1i2_spatial_all_datasets ORDER BY dataset;")
-target_species <- dbGetQuery(con, "SELECT DISTINCT(species) FROM public.i1i2_spatial_all_datasets ORDER BY species;")
-target_year <- dbGetQuery(con, "SELECT DISTINCT(year) FROM public.i1i2_spatial_all_datasets ORDER BY year;")
-target_gear <- dbGetQuery(con, "SELECT DISTINCT(gear_group) as gear FROM public.i1i2_spatial_all_datasets ORDER BY gear_group;")
-target_ocean <- dbGetQuery(con, "SELECT DISTINCT(ocean) as ocean FROM public.i1i2_spatial_all_datasets ORDER BY ocean;")
-target_unit <- dbGetQuery(con, "SELECT DISTINCT(unit) AS unit FROM public.i1i2_spatial_all_datasets ORDER BY unit;")
-target_area <- dbGetQuery(con, "SELECT DISTINCT(area)::varchar AS area FROM public.i1i2_spatial_all_datasets ORDER BY area DESC;")
+target_dataset <- dbGetQuery(pool, "SELECT DISTINCT(dataset) FROM public.shinycatch ORDER BY dataset;")
+target_species <- dbGetQuery(pool, "SELECT DISTINCT(species) FROM public.shinycatch ORDER BY species;")
+target_year <- dbGetQuery(pool, "SELECT DISTINCT(year) FROM public.shinycatch ORDER BY year;")
+target_gear <- dbGetQuery(pool, "SELECT DISTINCT(gear_type) as gear FROM public.shinycatch ORDER BY gear_type;")
+# target_ocean <- st_read(pool, "SELECT DISTINCT(ocean) as ocean FROM public.shinycatch ORDER BY ocean;")
+target_unit <- dbGetQuery(pool, "SELECT DISTINCT(measurement_unit) AS unit FROM public.shinycatch ORDER BY unit;")
+target_area <- dbGetQuery(pool, "SELECT DISTINCT(st_area(geom)) AS area FROM public.shinycatch ORDER BY area DESC;")
 
-default_species <- 'YFT'
+
+default_species <- c('YFT','SKJ','BET','SBF','ALB')
 default_year <- c(seq(min(target_year):max(target_year))+min(target_year)-1)
 # default_gear <- c('BB','PS')
 default_gear <- unique(target_gear)
@@ -58,7 +83,7 @@ default_unit <-  c('MT','t','no')
 default_area <- unique(target_area$area)
 
 #check what are existing / possible combinations between dimension values
-filters_combinations <- dbGetQuery(con, "SELECT species, year, gear_group as gear FROM public.i1i2_spatial_all_datasets GROUP BY species, year,gear_group;")
+filters_combinations <- dbGetQuery(pool, "SELECT species, year, gear_type as gear FROM public.shinycatch GROUP BY species, year,gear_type;")
 
 ui <- fluidPage(
   titlePanel("Tuna Atlas: spatial indicators (maps, charts, plots...)"),
@@ -264,14 +289,15 @@ server <- function(input, output, session) {
     if(is.null(input$year)){year_name=target_year$year}else{year_name=input$year}
     # if(is.null(input$dataset)){dataset_name=target_dataset$dataset}else{year_name=input$dataset}
     query <- glue::glue_sql(
-      "SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom  FROM public.i1i2_spatial_all_datasets 
+      # "SELECT dataset, measurement_unit, 'indian' AS ocean, gear_type, year, species, count AS value, st_area(geom) AS area, geom  FROM public.shinycatch 
+      "SELECT dataset, measurement_unit, 'indian' AS ocean, gear_type, year, species, measurement_value  AS value, st_area(geom) AS area, geom  FROM public.shinycatch 
       WHERE ST_Within(geom,ST_GeomFromText(({wkt*}),4326))
       AND  dataset IN ({dataset_name*}) 
       AND  species IN ({species_name*}) 
-      AND gear_group IN ({gear_group_name*})
+      AND gear_type IN ({gear_group_name*})
       AND year IN ({year_name*})
-      AND area::varchar IN ({area_name*})
-      AND unit IN ({unit_name*}) ",
+      AND st_area(geom)::varchar IN ({area_name*})
+      AND measurement_unit IN ({unit_name*}) ",
       wkt = wkt(),
       dataset_name = input$dataset,
       species_name = input$species,
@@ -279,52 +305,53 @@ server <- function(input, output, session) {
       year_name = year_name,
       unit_name = input$unit,
       area_name = input$area,
-      .con = con)
+      .con = pool)
   },
   ignoreNULL = FALSE)
   
   metadata <- reactive({
     query_metadata(paste0("SELECT geom, sum(value) AS value FROM(",sql_query(),") AS foo GROUP BY geom"))
-    st_read(con, query = query_metadata()) 
+    st_read(pool, query = query_metadata()) 
   })  
   
   # unit, ocean, gear_group, year, species ;")
   data_all_datasets <- eventReactive(input$submit, {
-    query_all_datasets(paste0("SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value, unit FROM (",sql_query(),") AS foo GROUP BY dataset, year, species, unit"))
-    st_read(con, query = query_all_datasets())
+    # df_i1=dbGetQuery(pool, "SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, sum(value) as value, measurement_unit FROM (SELECT dataset, measurement_unit, 'indian' AS ocean, gear_type, year, species, measurement_value AS value, st_area(geom) AS area, geom FROM public.shinycatch WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND dataset IN ('global_catch_5deg_1m_firms_level1', 'global_catch_firms_level0', 'global_catch_ird_level2', 'global_nominal_catch_firms') AND species IN ('ALB', 'BET', 'SBF', 'SKJ', 'YFT') AND gear_type IN ('07.5', '10.9', '09.9', '02.2', '09.32', '99.9', '07.2', '08.1', '09.5', '03.22', '03.15', '01.1', '09.1', '10.1', '03.29', '07.9', '09.31', '09.4', '05.9', '01.2', '02.9', '07.4') AND year IN ('1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021') AND st_area(geom)::varchar IN ('NA', '25', '1') AND measurement_unit IN ('t'))  AS foo GROUP BY dataset, year, measurement_unit")  %>%
+    query_all_datasets(paste0("SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, sum(value) as value, measurement_unit FROM (",sql_query(),") AS foo GROUP BY dataset, year, measurement_unit"))
+    st_read(pool, query = query_all_datasets())
   },
   # on.exit(dbDisconnect(conn), add = TRUE)
   ignoreNULL = FALSE)
   
   
   data_pie_all_datasets <- eventReactive(input$submit, {
-    st_read(con, query = paste0("SELECT dataset, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY  dataset"))
+    st_read(pool, query = paste0("SELECT dataset, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY  dataset"))
     
   },
   # on.exit(dbDisconnect(conn), add = TRUE)
   ignoreNULL = FALSE)
   
   data_pie_area_catch <- eventReactive(input$submit, {
-    st_read(con, query = paste0("SELECT dataset, area, unit, count(*), SUM(value)  as value FROM (",sql_query(),") AS foo GROUP BY dataset, area, unit ORDER BY dataset"))
+    st_read(pool, query = paste0("SELECT dataset, area, measurement_unit, count(*), SUM(value)  as value FROM (",sql_query(),") AS foo GROUP BY dataset, area, measurement_unit ORDER BY dataset"))
   },
   ignoreNULL = FALSE)
   
   data_barplot_all_datasets <- eventReactive(input$submit, {
-    st_read(con, query = paste0("SELECT  dataset, unit, count(*)::decimal AS count, SUM(value) AS value  FROM (",sql_query(),") AS foo GROUP BY dataset, unit ORDER BY dataset"))
+    st_read(pool, query = paste0("SELECT  dataset, measurement_unit, count(*)::decimal AS count, SUM(value) AS value  FROM (",sql_query(),") AS foo GROUP BY dataset, measurement_unit ORDER BY dataset"))
   },
   # on.exit(dbDisconnect(conn), add = TRUE)
   ignoreNULL = FALSE)
   
   
   data_i1 <- eventReactive(input$submit, {
-    st_read(con, query = paste0("SELECT dataset, unit, ocean, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY  dataset,unit, ocean, year, species"))
+    st_read(pool, query = paste0("SELECT dataset, measurement_unit, ocean, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY  dataset,measurement_unit, ocean, year, species"))
   },
   # on.exit(dbDisconnect(conn), add = TRUE)
   ignoreNULL = FALSE)
   
   
   data_i2 <- eventReactive(input$submit, {
-    st_read(con, query = paste0("SELECT unit, gear_group AS gear_type, year, species, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY unit, gear_group, year, species")) 
+    st_read(pool, query = paste0("SELECT measurement_unit, gear_type AS gear_type, year, species, sum(value) as value FROM (",sql_query(),") AS foo GROUP BY measurement_unit, gear_type, year, species")) 
   },
   # on.exit(dbDisconnect(conn), add = TRUE)
   ignoreNULL = FALSE)
@@ -361,7 +388,7 @@ server <- function(input, output, session) {
   })
   
   output$DT_data_barplot_all_datasets <- renderDT({
-    # data_barplot_all_datasets()   %>% mutate(unit=replace(unit,unit=='MT', 't'))  %>% pivot_wider(names_from = unit, values_from = c("value", "count"), names_sep="_",values_fill = 0)
+    # data_barplot_all_datasets()   %>% mutate(measurement_unit=replace(measurement_unit,measurement_unit=='MT', 't'))  %>% pivot_wider(names_from = measurement_unit, values_from = c("value", "count"), names_sep="_",values_fill = 0)
     data_barplot_all_datasets() 
   }) 
   
@@ -492,25 +519,25 @@ server <- function(input, output, session) {
   
   output$dygraph_all_datasets <- renderDygraph({
     
-    # df_i1 = data_all_datasets()  %>% filter(unit %in% c('t','MT'))  %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    # df_i1 = data_all_datasets()  %>% filter(measurement_unit %in% c('t','MT'))  %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
     # df_i1 = data_all_datasets()  %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
-    df_i1 = data_all_datasets()  %>% mutate(unit=replace(unit,unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    df_i1 = data_all_datasets()  %>% mutate(measurement_unit=replace(measurement_unit,measurement_unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
     df_i1 <- as_tibble(df_i1)  # %>% top_n(3)
     
     tuna_catches_timeSeries <-NULL
     
-    if(length(unique(df_i1$unit))>1){
-      df_i1_t <- df_i1 %>% filter(unit  == 't') 
-      df_i1_no <- df_i1 %>% filter(unit == 'no')  
-      # if(switch_unit()){
+    if(length(unique(df_i1$measurement_unit))>1){
+      df_i1_t <- df_i1 %>% filter(measurement_unit  == 't') 
+      df_i1_no <- df_i1 %>% filter(measurement_unit == 'no')  
+      # if(switch_measurement_unit()){
       #   df_i1 <- df_i1_no
       # }else{
       #   df_i1 <- df_i1_t
       # }
       
-      # if(length(colnames(dplyr::select(df_i1_t,-c(species,year,unit))))>1){
-      for(d in 1:length(colnames(dplyr::select(df_i1_t,-c(species,year,unit))))){
-        this_dataset <-colnames(dplyr::select(df_i1_t,-c(species,year,unit)))[d]
+      # if(length(colnames(dplyr::select(df_i1_t,-c(species,year,measurement_unit))))>1){
+      for(d in 1:length(colnames(dplyr::select(df_i1_t,-c(species,year,measurement_unit))))){
+        this_dataset <-colnames(dplyr::select(df_i1_t,-c(species,year,measurement_unit)))[d]
         if(sum(dplyr::select(df_i1_t, this_dataset))>0){
           df_i1_t  <- df_i1_t  %>% dplyr::rename(!!paste0(this_dataset,'_t') := !!this_dataset)
           this_time_serie <- xts(x = dplyr::select(df_i1_t, c(paste0(this_dataset,'_t'))), order.by = df_i1_t$year)
@@ -519,9 +546,9 @@ server <- function(input, output, session) {
           }
         }
       }
-      # if(length(colnames(dplyr::select(df_i1_no,-c(species,year,unit))))>1){
-      for(d in 1:length(colnames(dplyr::select(df_i1_no,-c(species,year,unit))))){
-        this_dataset <- colnames(dplyr::select(df_i1_no,-c(species,year,unit)))[d]
+      # if(length(colnames(dplyr::select(df_i1_no,-c(species,year,measurement_unit))))>1){
+      for(d in 1:length(colnames(dplyr::select(df_i1_no,-c(species,year,measurement_unit))))){
+        this_dataset <- colnames(dplyr::select(df_i1_no,-c(species,year,measurement_unit)))[d]
         if(sum(dplyr::select(df_i1_no,this_dataset))>0){
           df_i1_no  <- df_i1_no  %>% dplyr::rename(!!paste0(this_dataset,'_no') := !!this_dataset)
           this_time_serie <- xts(x = dplyr::select(df_i1_no, c(paste0(this_dataset,'_no'))), order.by = df_i1_no$year)
@@ -530,8 +557,8 @@ server <- function(input, output, session) {
       }
       
     }else{
-      for(d in 1:length(colnames(dplyr::select(df_i1,-c(species,year,unit))))){
-        this_dataset <- colnames(dplyr::select(df_i1,-c(species,year,unit)))[d]
+      for(d in 1:length(colnames(dplyr::select(df_i1,-c(species,year,measurement_unit))))){
+        this_dataset <- colnames(dplyr::select(df_i1,-c(species,year,measurement_unit)))[d]
         this_time_serie <- xts(x = dplyr::select(df_i1, c(this_dataset)), order.by = df_i1$year)
         if(d==1){tuna_catches_timeSeries <- this_time_serie}else{
           tuna_catches_timeSeries <- cbind(tuna_catches_timeSeries, this_time_serie)
@@ -552,7 +579,7 @@ server <- function(input, output, session) {
       #   
     }
     
-    g1 <- dygraph(tuna_catches_timeSeries, main = "Times series of values with selected units (tons or numbers) for the selected datasets") %>% dyRangeSelector() %>% dyLegend(labelsDiv = "legendDivID", labelsSeparateLines = T)
+    g1 <- dygraph(tuna_catches_timeSeries, main = "Times series of values with selected measurement_units (tons or numbers) for the selected datasets") %>% dyRangeSelector() %>% dyLegend(labelsDiv = "legendDivID", labelsSeparateLines = T)
     
     
     
@@ -563,17 +590,22 @@ server <- function(input, output, session) {
   output$plotly_time_series_all_datasets <- renderPlotly({
     
     
-    # df_i1 =  st_read(con, query = "SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value, unit FROM (SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom FROM public.i1i2_spatial_all_datasets WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND dataset IN ('global_catch_1deg_1m_ps_bb_firms_level0', 'global_catch_5deg_1m_firms_level0', 'global_catch_firms_level0', 'global_nominal_catch_firms_level0') AND species IN ('YFT') AND gear_group IN ('BB', 'LL', 'OTHER', 'PS', 'UNK') AND year IN ('1918', '1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') AND unit IN ('MT', 'no', 't') ) AS foo GROUP BY dataset, year, species, unit")  %>%
-      # mutate(unit=replace(unit,unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
-    df_i1 = data_all_datasets()  %>% mutate(unit=replace(unit,unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    # df_i1 =  st_read(pool, query = "SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, species, sum(value) as value, measurement_unit FROM (SELECT dataset, measurement_unit, ocean, gear_group, year, species, value, area, geom FROM public.shinycatch WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND dataset IN ('global_catch_1deg_1m_ps_bb_firms_level0', 'global_catch_5deg_1m_firms_level0', 'global_catch_firms_level0', 'global_nominal_catch_firms_level0') AND species IN ('YFT') AND gear_group IN ('BB', 'LL', 'OTHER', 'PS', 'UNK') AND year IN ('1918', '1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') AND measurement_unit IN ('MT', 'no', 't') ) AS foo GROUP BY dataset, year, species, measurement_unit")  %>%
+      # mutate(measurement_unit=replace(measurement_unit,measurement_unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    # df_i1=dbGetQuery(pool, "SELECT dataset, to_date(year::varchar(4),'YYYY') AS year, sum(value) as value, measurement_unit FROM (SELECT dataset, measurement_unit, 'indian' AS ocean, gear_type, year, species, measurement_value AS value, st_area(geom) AS area, geom FROM public.shinycatch WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND dataset IN ('global_catch_5deg_1m_firms_level1', 'global_catch_firms_level0', 'global_catch_ird_level2', 'global_nominal_catch_firms') AND species IN ('ALB', 'BET', 'SBF', 'SKJ', 'YFT') AND gear_type IN ('07.5', '10.9', '09.9', '02.2', '09.32', '99.9', '07.2', '08.1', '09.5', '03.22', '03.15', '01.1', '09.1', '10.1', '03.29', '07.9', '09.31', '09.4', '05.9', '01.2', '02.9', '07.4') AND year IN ('1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021') AND st_area(geom)::varchar IN ('NA', '25', '1') AND measurement_unit IN ('t'))  AS foo GROUP BY dataset, year, measurement_unit")  %>%
+    # mutate(measurement_unit=replace(measurement_unit,measurement_unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
+    df_i1 = data_all_datasets()  %>% mutate(measurement_unit=replace(measurement_unit,measurement_unit=='MT', 't')) %>% spread(dataset, value, fill=0) #   %>%  mutate(total = rowSums(across(any_of(as.vector(target_ocean$ocean)))))
     df_i1 <- as_tibble(df_i1)  # %>% top_n(3)
     
     
-    if(length(unique(df_i1$unit))>1){
-      df_i1_t <- df_i1 %>% filter(unit  == 't') 
-      df_i1_no <- df_i1 %>% filter(unit == 'no')  
-      for(d in 1:length(colnames(dplyr::select(df_i1_t,-c(species,year,unit))))){
-        this_dataset <-colnames(dplyr::select(df_i1_t,-c(species,year,unit)))[d]
+    if(length(unique(df_i1$measurement_unit))>1){
+      df_i1_t <- df_i1 %>% filter(measurement_unit  == 't') 
+      df_i1_no <- df_i1 %>% filter(measurement_unit == 'no')  
+      if(nrow(df_i1_t)>0){
+        
+      # for(d in 1:length(colnames(dplyr::select(df_i1_t,-c(species,year,measurement_unit))))){
+      for(d in 1:length(colnames(dplyr::select(df_i1_t,-c(year,measurement_unit)))) ){
+          this_dataset <-colnames(dplyr::select(df_i1_t,-c(year,measurement_unit)))[d]
         if(sum(dplyr::select(df_i1_t, this_dataset))>0){
           # data  <- df_i1_t  %>% dplyr::select(c(year,!!this_dataset))
           if(d==1){
@@ -583,16 +615,20 @@ server <- function(input, output, session) {
           }
         }
       }
-      for(d in 1:length(colnames(dplyr::select(df_i1_no,-c(species,year,unit))))){
-        this_dataset <-colnames(dplyr::select(df_i1_no,-c(species,year,unit)))[d]
-        if(sum(dplyr::select(df_i1_no, this_dataset))>0){
-          fig <-  fig %>% add_trace(x = df_i1_no$year, y = df_i1_no[,this_dataset][[1]], name = paste0(this_dataset,"_no"), mode = 'lines') 
+      }
+      if(nrow(df_i1_no)>0){
+        for(d in 1:length(colnames(dplyr::select(df_i1_no,-c(year,measurement_unit))))){
+          this_dataset <-colnames(dplyr::select(df_i1_no,-c(year,measurement_unit)))[d]
+          if(sum(dplyr::select(df_i1_no, this_dataset))>0){
+            fig <-  fig %>% add_trace(x = df_i1_no$year, y = df_i1_no[,this_dataset][[1]], name = paste0(this_dataset,"_no"), mode = 'lines') 
+          }
         }
       }
+
       
     }else{
-      for(d in 1:length(colnames(dplyr::select(df_i1,-c(species,year,unit))))){
-        this_dataset <-colnames(dplyr::select(df_i1,-c(species,year,unit)))[d]
+      for(d in 1:length(colnames(dplyr::select(df_i1,-c(year,measurement_unit))))){
+        this_dataset <-colnames(dplyr::select(df_i1,-c(year,measurement_unit)))[d]
         if(sum(dplyr::select(df_i1, this_dataset))>0){
           # data  <- df_i1  %>% dplyr::select(c(year,!!this_dataset))
           if(d==1){
@@ -625,7 +661,7 @@ server <- function(input, output, session) {
                    textposition = 'inside',
                    textinfo = 'label+percent',
                    showlegend = TRUE)
-    fig <- fig %>% layout(title = 'Ratio of all datasets for selected units',
+    fig <- fig %>% layout(title = 'Ratio of all datasets for selected measurement_units',
                           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     fig
@@ -637,12 +673,12 @@ server <- function(input, output, session) {
   
 output$pie_area_catch<- renderPlotly({ 
   
-  df_i2 = data_pie_area_catch()   %>% mutate(unit=replace(unit,unit=='MT', 't')) # %>% filter(unit == 't') # %>% filter(dataset=='global_nominal_catch_firms_level0')
-  # df_i2 = st_read(con, query = paste0("SELECT dataset, area, unit, count(*), SUM(value)  as value FROM (SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom FROM public.i1i2_spatial_all_datasets                                         WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND  species IN ('YFT') AND gear_group IN ('LL', 'PS', 'BB', 'OTHER', 'UNK') AND year IN ('1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') ) AS foo GROUP BY dataset, area, unit ORDER BY dataset"))
-  # df_i2 <- df_i2 %>% mutate(unit=replace(unit,unit=='MT', 't')) # %>% filter(unit == 't')
-  if(length(unique(df_i2$unit))>1){
-    df_i2_t <- df_i2 %>% filter(unit == 't')
-    df_i2_no <- df_i2 %>% filter(unit == 'no')
+  df_i2 = data_pie_area_catch()   %>% mutate(measurement_unit=replace(measurement_unit,measurement_unit=='MT', 't')) # %>% filter(measurement_unit == 't') # %>% filter(dataset=='global_nominal_catch_firms_level0')
+  # df_i2 = st_read(pool, query = paste0("SELECT dataset, area, measurement_unit, count(*), SUM(measurement_value)  as value FROM (SELECT dataset, measurement_unit, ocean, gear_group, year, species, measurement_value, area, geom FROM public.shinycatch                                         WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND  species IN ('YFT') AND gear_group IN ('LL', 'PS', 'BB', 'OTHER', 'UNK') AND year IN ('1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') ) AS foo GROUP BY dataset, area, measurement_unit ORDER BY dataset"))
+  # df_i2 <- df_i2 %>% mutate(measurement_unit=replace(measurement_unit,measurement_unit=='MT', 't')) # %>% filter(measurement_unit == 't')
+  if(length(unique(df_i2$measurement_unit))>1){
+    df_i2_t <- df_i2 %>% filter(measurement_unit == 't')
+    df_i2_no <- df_i2 %>% filter(measurement_unit == 'no')
     if(switch_unit()){
       df_i2 <- df_i2_no
     }else{
@@ -689,8 +725,8 @@ output$pie_area_catch<- renderPlotly({
   
 })
 
-# st_read(con, query = paste0("SELECT dataset, area, unit, count(*), SUM(value)  as value FROM (",sql_query(),") AS foo GROUP BY dataset, area, unit ORDER BY dataset"))
-# st_read(con, query = paste0("SELECT  dataset, unit, count(*) AS count, SUM(value) AS value  FROM (",sql_query(),") AS foo  WHERE unit in ('t','MT','no') GROUP BY dataset, unit ORDER BY dataset"))
+# st_read(pool, query = paste0("SELECT dataset, area, unit, count(*), SUM(measurement_value)  as value FROM (",sql_query(),") AS foo GROUP BY dataset, area, unit ORDER BY dataset"))
+# st_read(pool, query = paste0("SELECT  dataset, unit, count(*) AS count, SUM(measurement_value) AS value  FROM (",sql_query(),") AS foo  WHERE unit in ('t','MT','no') GROUP BY dataset, unit ORDER BY dataset"))
 
 # output$barplot_datasets <- renderPlotly({
 #   
@@ -719,8 +755,9 @@ output$pie_area_catch<- renderPlotly({
 output$barplot_datasets <- renderPlotly({
   # https://tutorials.cpsievert.me/20190821/#13
   # https://stackoverflow.com/questions/55002248/plotly-stacked-bar-chart-add-trace-loop-issue
-  df_i1 <- data_barplot_all_datasets()  %>% mutate(unit=replace(unit,unit=='MT', 't'))  %>% pivot_wider(names_from = unit, values_from = c("value", "count"), names_sep="_",values_fill = 0)
-  # df_i1 <- st_read(con, query = paste0("SELECT  dataset, unit, count(*)::decimal AS count, SUM(value) AS value  FROM (SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom FROM public.i1i2_spatial_all_datasets WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND dataset IN ('global_catch_1deg_1m_ps_bb_firms_level0', 'global_catch_5deg_1m_firms_level0', 'global_catch_firms_level0', 'global_nominal_catch_firms_level0') AND species IN ('YFT') AND gear_group IN ('BB', 'LL', 'OTHER', 'PS', 'UNK') AND year IN ('1918', '1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') AND unit IN ('MT', 'no', 't')) AS foo GROUP BY dataset, unit ORDER BY dataset"))   %>% mutate(unit=replace(unit,unit=='MT', 't'))  %>% pivot_wider(names_from = unit, values_from = c("value", "count"), names_sep="_",values_fill = 0)
+  df_i1 <- data_barplot_all_datasets()  %>% mutate(measurement_unit=replace(measurement_unit,measurement_unit=='MT', 't'))  %>% 
+    pivot_wider(names_from = measurement_unit, values_from = c("value", "count"), names_sep="_",values_fill = 0)
+  # df_i1 <- st_read(pool, query = paste0("SELECT  dataset, unit, count(*)::decimal AS count, SUM(value) AS value  FROM (SELECT dataset, unit, ocean, gear_group, year, species, value, area, geom FROM public.shinycatch WHERE ST_Within(geom,ST_GeomFromText(('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))'),4326)) AND dataset IN ('global_catch_1deg_1m_ps_bb_firms_level0', 'global_catch_5deg_1m_firms_level0', 'global_catch_firms_level0', 'global_nominal_catch_firms_level0') AND species IN ('YFT') AND gear_group IN ('BB', 'LL', 'OTHER', 'PS', 'UNK') AND year IN ('1918', '1919', '1920', '1921', '1922', '1923', '1924', '1925', '1926', '1927', '1928', '1929', '1930', '1931', '1932', '1933', '1934', '1935', '1936', '1937', '1938', '1939', '1940', '1941', '1942', '1943', '1944', '1945', '1946', '1947', '1948', '1949', '1950', '1951', '1952', '1953', '1954', '1955', '1956', '1957', '1958', '1959', '1960', '1961', '1962', '1963', '1964', '1965', '1966', '1967', '1968', '1969', '1970', '1971', '1972', '1973', '1974', '1975', '1976', '1977', '1978', '1979', '1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019') AND area::varchar IN ('NA', '9101.3790835111', '825', '775', '750', '6995.49529425369', '6014.62349518009', '600', '525', '50', '450', '400', '375', '325', '3125', '3021.33388249682', '2750', '2625', '2612.4315513254', '2550', '250', '25', '2375', '2325', '2275', '2100', '200', '1425', '1350', '1300', '1250', '1125', '10040.35433829', '100', '1') AND unit IN ('MT', 'no', 't')) AS foo GROUP BY dataset, unit ORDER BY dataset"))   %>% mutate(unit=replace(unit,unit=='MT', 't'))  %>% pivot_wider(names_from = unit, values_from = c("value", "count"), names_sep="_",values_fill = 0)
   df_i1 <- as.data.frame(df_i1)
   # df_i1 <- data_barplot_all_datasets()  %>% mutate(unit=replace(unit,unit=='MT', 't'))   %>% df_i1(id = rownames(.))  %>% pivot_wider(names_from = unit, values_from = c("value", "count"), names_sep="_",values_fill = 0, -id)  %>%  plot_ly(x = ~id, y=~value, type="bar", color=~variable) %>% layout(barmode = "stack")
   
